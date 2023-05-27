@@ -1,11 +1,11 @@
 ---
 title: 11.MySQL基于规则的优化
 date: 2023-05-27 14:21:17
-tags: MySQL
+tags: [MySQL,MySQL是怎样运行的]
 categories: 数据库
 ---
 
-##条件简化
+## 条件简化
 1.移除不必要的括号
 2.常量传递
 3.等值传递
@@ -15,7 +15,7 @@ categories: 数据库
 子查询的执行方式
 - 对于包含不相关的标量子查询或者行子查询的语句来说，MySQL会分别独立执行外层查询和子查询，就当作两个单表查询就行
 - 对于相关的标量子查询或者行子查询，它的执行方式如下：
-![QQ截图20230217111828.png](https://upload-images.jianshu.io/upload_images/28458225-eba15d005160d484.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![QQ截图20230217111828.png](images/11_1.jpg)
 
 
 IN子查询优化

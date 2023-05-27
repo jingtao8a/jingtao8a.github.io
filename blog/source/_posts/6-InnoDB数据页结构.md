@@ -1,24 +1,24 @@
 ---
 title: 6.InnoDB数据页结构
 date: 2023-05-27 14:18:38
-tags: MySQL
+tags: [MySQL,MySQL是怎样运行的]
 categories: 数据库
 ---
-##数据页结构图
-![QQ截图20221212140703.png](https://upload-images.jianshu.io/upload_images/28458225-386ffdb5a663567e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+## 数据页结构图
+![QQ截图20221212140703.png](images/6_1.jpg)
 
 >每当我们插入一条记录，都会从Free Space部分，也就是尚未使用的存储空间中申请一个记录大小的空间划分到User Records部分，当Free Space部分的空间全部被User Records部分替代掉之后，也就意味着这个页使用完了，如果还有新的记录插入的话，就需要去申请新的页了
 
 >为了更好的管理在User Records中的这些记录，行格式中的记录头信息至关重要，以下为compact行格式中的记录头信息
 
-![QQ截图20221216113033.png](https://upload-images.jianshu.io/upload_images/28458225-768ff3bceb595a5a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![QQ截图20221216113033.png](images/6_2.jpg)
 
-##页目录（Page Directory)
+## 页目录（Page Directory)
 1.将所有正常的记录（包括最大和最小记录，不包括标记为已删除的记录）划分为几个组。
 2.每个组的最后一条记录（也就是组内最大的那条记录）的头信息中的n_owned属性表示该记录拥有多少条记录，也就是该组内共有几条记录。
 3.将每个组的最后一条记录的地址偏移量单独提取出来按顺序存储到靠近页的尾部的地方，这个地方就是所谓的Page Directory，也就是页目录（此时应该返回头看看页面各个部分的图）。页面目录中的这些地址偏移量被称为槽（英文名：Slot），所以这个页面目录就是由槽组成的。
 
-![QQ截图20221216113857.png](https://upload-images.jianshu.io/upload_images/28458225-a4ed29dded216fe4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![QQ截图20221216113857.png](images/6_3.jpg)
 
 >对于最小记录所在的分组只能有 1 条记录，最大记录所在的分组拥有的记录条数只能在 1~8 条之间，剩下的分组中记录的条数范围只能在是 4~8 条之间。所以分组是按照下面的步骤进行的：
 
@@ -30,17 +30,17 @@ categories: 数据库
 1.通过二分法确定该记录所在的槽，并找到该槽中主键值最小的那条记录。
 2.通过记录的next_record属性遍历该槽所在的组中的各个记录。
 
-##页面头部(Page Header)
-![QQ截图20221216114601.png](https://upload-images.jianshu.io/upload_images/28458225-c7bb22086a660585.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+## 页面头部(Page Header)
+![QQ截图20221216114601.png](images/6_4.jpg)
 
-##文件头部（File Header)
-![QQ截图20221216114854.png](https://upload-images.jianshu.io/upload_images/28458225-5ae554acd7a73976.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+## 文件头部（File Header)
+![QQ截图20221216114854.png](images/6_5.jpg)
 - FIL_PAGE_TYPE 页的类型
-![QQ截图20221216115011.png](https://upload-images.jianshu.io/upload_images/28458225-7cc95b11f0a0f926.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![QQ截图20221216115011.png](images/6_6.jpg)
 - FIL_PAGE_PREV和FIL_PAGE_NEXT
 InnoDB都是以页为单位存放数据的，有时候我们存放某种类型的数据占用的空间非常大（比方说一张表中可以有成千上万条记录），InnoDB可能不可以一次性为这么多数据分配一个非常大的存储空间，如果分散到多个不连续的页中存储的话需要把这些页关联起来，FIL_PAGE_PREV和FIL_PAGE_NEXT就分别代表本页的上一个和下一个页的页号。
 
-##FILE TAILER
+## FILE TAILER
 
 InnoDB会把数据存储到磁盘上，操作数据时，需要以页为单位将数据移动到内存中，如果该页中的数据在内存中被修改了，那么在修改后的某个时间需要把数据同步到磁盘中。但是在同步了一半的时候中断电了咋办?
 -  前4个字节代表页的校验和

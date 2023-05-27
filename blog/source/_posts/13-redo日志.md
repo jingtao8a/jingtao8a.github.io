@@ -1,7 +1,7 @@
 ---
 title: 13.redo日志
 date: 2023-05-27 14:22:32
-tags: MySQL
+tags: [MySQL,MySQL是怎样运行的]
 categories: 数据库
 ---
 

@@ -1,7 +1,7 @@
 ---
 title: 10.InnoDB统计数据是如何收集的
 date: 2023-05-27 14:20:43
-tags: MySQL
+tags: [MySQL,MySQL是怎样运行的]
 categories: 数据库
 ---
 
