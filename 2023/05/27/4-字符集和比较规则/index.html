@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>4.字符集和比较规则 | jingtao8a blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="##ASCII字符集  总共128个字符，包括一些不可见字符##ISO 8859-1 字符集（latin1）共收录256个字符，是在ASCII字符集的基础上又扩充了128个西欧常用字符（包括德法两国的字母），也可以使用1个字节来进行编码。##GB2312字符集收录了汉字以及拉丁字母，希腊字母 收录了汉字以及拉丁字母、希腊字母、日文平假名及片假名字母、俄语西里尔字母。其中收录汉字6763个，其他文字">
+<meta property="og:type" content="article">
+<meta property="og:title" content="4.字符集和比较规则">
+<meta property="og:url" content="http://example.com/2023/05/27/4-%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99/index.html">
+<meta property="og:site_name" content="jingtao8a blog">
+<meta property="og:description" content="##ASCII字符集  总共128个字符，包括一些不可见字符##ISO 8859-1 字符集（latin1）共收录256个字符，是在ASCII字符集的基础上又扩充了128个西欧常用字符（包括德法两国的字母），也可以使用1个字节来进行编码。##GB2312字符集收录了汉字以及拉丁字母，希腊字母 收录了汉字以及拉丁字母、希腊字母、日文平假名及片假名字母、俄语西里尔字母。其中收录汉字6763个，其他文字">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/28458225-80fb989679ad4f7b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/28458225-2dcb3a005aa2bdfa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/28458225-38392e6c5164c3cf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/28458225-f735a2d9305afbd6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="article:published_time" content="2023-05-27T06:17:04.000Z">
+<meta property="article:modified_time" content="2023-05-27T06:17:27.516Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/28458225-80fb989679ad4f7b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+  
+    <link rel="alternate" href="/atom.xml" title="jingtao8a blog" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">jingtao8a blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-4-字符集和比较规则" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2023/05/27/4-%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99/" class="article-date">
+  <time class="dt-published" datetime="2023-05-27T06:17:04.000Z" itemprop="datePublished">2023-05-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      4.字符集和比较规则
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>##ASCII字符集</p>
+<blockquote>
+<p>总共128个字符，包括一些不可见字符<br>##ISO 8859-1 字符集（latin1）<br>共收录256个字符，是在ASCII字符集的基础上又扩充了128个西欧常用字符（包括德法两国的字母），也可以使用1个字节来进行编码。<br>##GB2312字符集<br>收录了汉字以及拉丁字母，希腊字母 收录了汉字以及拉丁字母、希腊字母、日文平假名及片假名字母、俄语西里尔字母。其中收录汉字6763个，其他文字符号682个。同时这种字符集又兼容ASCII字符集，所以在编码方式上显得有些奇怪：<br>1.如果该字符在ASCII字符集中，则采用1字节编码<br>2.否则采用2字节编码<br>##GBK字符集<br>GBK字符集只是在收录字符范围上对GB2312字符集作了扩充，编码方式上兼容GB2312<br>##utf8字符集<br>收录地球上能想到的所有字符，而且还在不断扩充。这种字符集兼容ASCII字符集，采用变长编码方式，编码一个字符需要使用1～4个字节</p>
+</blockquote>
+<p><strong>其实准确的说，utf8只是Unicode字符集的一种编码方案，Unicode字符集可以采用utf8、utf16、utf32这几种编码方案，utf8使用1～4个字节编码一个字符，utf16使用2个或4个字节编码一个字符，utf32使用4个字节编码一个字符。更详细的Unicode和其编码方案的知识不是本书的重点，大家上网查查。MySQL中并不区分字符集和编码方案的概念，所以后边介绍的时候把utf8、utf16、utf32都当作一种字符集对待。</strong> </p>
+<p>##MySQL中支持的字符集和排序规则<br>####MySQL中的utf8和utf8mb4</p>
+<ul>
+<li>utf8mb3：阉割过的utf8字符集，只使用1～3个字节表示字符。</li>
+<li>utf8mb4：正宗的utf8字符集，使用1～4个字节表示字符。</li>
+</ul>
+<p>####MySQL字符集的查看</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW (CHARACTER SET|CHARSET) [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
+
+<p>####MySQL比较规则的查看</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW COLLATION [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
+<p>####各个级别的字符集和比较规则</p>
+<ul>
+<li><p>服务器级别<br>MySQL提供了两个系统变量来表示服务器级别的字符集和比较规则:<br><img src="https://upload-images.jianshu.io/upload_images/28458225-80fb989679ad4f7b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ截图20221205152423.png"><br>服务器级别默认的字符集是utf8，默认的比较规则是utf8_general_ci<br>可以用以下命令查看：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW VARIABLES LIKE [匹配模式]</span><br></pre></td></tr></table></figure></li>
+<li><p>数据库级别<br>我们在创建和修改数据库的时候可以指定该数据库的字符集和比较规则</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CREATE DATABASE 数据库名</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [[DEFAULT] COLLATE 比较规则名称];</span><br><span class="line"></span><br><span class="line">ALTER DATABASE 数据库名</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [[DEFAULT] COLLATE 比较规则名称];</span><br></pre></td></tr></table></figure>
+<p>如果想查看当前数据库使用的字符集和比较规则，可以查看下面两个系统变量的值（前提是使用USE语句选择当前默认数据库，如果没有默认数据库，则变量与相应的服务器级系统变量具有相同的值）：<br><img src="https://upload-images.jianshu.io/upload_images/28458225-2dcb3a005aa2bdfa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ截图20221205153115.png"></p>
+</li>
+<li><p>表级别<br>我们也可以在创建和修改表的时候指定表的字符集和比较规则，语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE 表名 (列的信息)</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [COLLATE 比较规则名称]]</span><br><span class="line"></span><br><span class="line">ALTER TABLE 表名</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [COLLATE 比较规则名称]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>列级别<br>需要注意的是，对于存储字符串的列，同一个表中的不同的列也可以有不同的字符集和比较规则。我们在创建和修改列定义的时候可以指定该列的字符集和比较规则，语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE 表名(</span><br><span class="line">    列名 字符串类型 [CHARACTER SET 字符集名称] [COLLATE 比较规则名称],</span><br><span class="line">    其他列...</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">ALTER TABLE 表名 MODIFY 列名 字符串类型 [CHARACTER SET 字符集名称] [COLLATE 比较规则名称];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>对于某个列来说，如果在创建和修改的语句中没有指明字符集和比较规则，将使用该列所在表的字符集和比较规则作为该列的字符集和比较规则。<br><strong>小贴士：在转换列的字符集时需要注意，如果转换前列中存储的数据不能用转换后的字符集进行表示，就会发生错误。比方说原先列使用的字符集是utf8，列中存储了一些汉字，现在把列的字符集转换为ascii的话就会出错，因为ascii字符集并不能表示汉字字符。</strong></p>
+</li>
+</ul>
+<p>##MySQL中字符集的转换</p>
+<blockquote>
+<p>我们知道从客户端发往服务器的请求本质上就是一个字符串，服务器向客户端返回的结果本质上也是一个字符串，而字符串其实是使用某种字符集编码的二进制数据。</p>
+</blockquote>
+<p><img src="https://upload-images.jianshu.io/upload_images/28458225-38392e6c5164c3cf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ截图20221205153733.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/28458225-f735a2d9305afbd6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="QQ截图20221205153848.png"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2023/05/27/4-%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99/" data-id="cli5lweiu000nv9eaakr56wak" data-title="4.字符集和比较规则" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2023/05/27/5-InnoDB%E8%AE%B0%E5%BD%95%E8%A1%8C%E6%A0%BC%E5%BC%8F/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          5.InnoDB记录行格式
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/05/27/3-%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">3.状态变量</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/MySQL/" style="font-size: 10px;">MySQL</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">May 2023</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2023/05/27/15-%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">15.事务的隔离级别</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/27/14-undo%E6%97%A5%E5%BF%97/">14.undo日志</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/27/13-redo%E6%97%A5%E5%BF%97/">13.redo日志</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/27/12-%E4%BA%8B%E5%8A%A1/">12.事务</a>
+          </li>
+        
+          <li>
+            <a href="/2023/05/27/11-MySQL%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E4%BC%98%E5%8C%96/">11.MySQL基于规则的优化</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2023 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
