@@ -105,11 +105,3 @@ deploy:
   type: git
   repo: git@github.com:jingtao8a/jingtao8a.github.io.git
   branch: jingtao8a_blog
-
-
-#search
-search:
-  path: search.xml
-  field: post
-  format: html
-  limit: 10000
