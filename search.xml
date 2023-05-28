@@ -491,4 +491,170 @@
         <tag>MySQL是怎样运行的</tag>
       </tags>
   </entry>
+  <entry>
+    <title>cmake学习</title>
+    <url>/2023/05/28/cmake%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<p>语法手册：cmake语法手册及教程_可克的博客-CSDN博客_cmake语法</p>
+<p><a href="https://www.bilibili.com/video/BV1vR4y1u77h?spm_id_from=333.337.search-card.all.click">哔哩哔哩视频</a></p>
+<p>视频下方有笔记</p>
+<p><img src="/images/cmake%E5%AD%A6%E4%B9%A0/1.jpg" alt="图片"></p>
+<p>add_definitions()添加编译选项</p>
+<p>include_directories()将指定目录添加到编译器的头文件搜索路径下</p>
+<p><a href="https://www.jianshu.com/p/e7de3de1b0fa">参考</a></p>
+<p>add_library()生成静态库（STATIC)或者动态库（SHARED）</p>
+<p>add_executable()生成可执行文件</p>
+<p>aux_source_directory(dir VAR) 发现一个目录(dir)下所有的源代码文件并将列表存储在一个变量(VAR)中</p>
+<p>target_link_libraries( # 目标库 demo # 目标库需要链接的库 ${log-lib} )</p>
+]]></content>
+      <categories>
+        <category>cmake</category>
+      </categories>
+      <tags>
+        <tag>cmake</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>configure命令</title>
+    <url>/2023/05/28/configure%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_40941932/article/details/109992151">参考</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>configure</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux下目录各个文件夹详解</title>
+    <url>/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_39652397/article/details/123794887">参考</a></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux不同目录详解</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux文件权限和属性</title>
+    <url>/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/</url>
+    <content><![CDATA[<p>如果一个文件被设置了SUID或SGID位，会分别表现在所有者或同组用户的权限的可执行位上。例如：</p>
+<p>1、-rwsr-xr-x 表示SUID和所有者权限中可执行位被设置</p>
+<p>2、-rwSr–r– 表示SUID被设置，但所有者权限中可执行位没有被设置</p>
+<p>3、-rwxr-sr-x 表示SGID和同组用户权限中可执行位被设置</p>
+<p>4、-rw-r-Sr– 表示SGID被设置，但同组用户权限中可执行位没有被设置</p>
+<p>给文件加SUID和SUID的命令如下：</p>
+<p>chmod u+s filename 设置SUID位</p>
+<p>chmod u-s filename 去掉SUID设置</p>
+<p>chmod g+s filename 设置SGID位</p>
+<p>chmod g-s filename 去掉SGID设置</p>
+<p>SUID属性<br>例如&#x2F;usr&#x2F;bin&#x2F;passwd  带有SUID属性 属于root用户 root用户主<br>其它用户只有&#x2F;usr&#x2F;bin&#x2F;passwd的可执行权限，在执行这个命令时会暂时获取root权限</p>
+<p>SGID属性<br>和SUID属性十分相似<br>不同的是其它用户在执行有SGID属性的命令时，会暂时获取该程序群组的支持</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux文件权限</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux配置环境变量</title>
+    <url>/2023/05/28/linux%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/an520_/article/details/125220048">参考</a></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux环境变量配置</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动态链接</title>
+    <url>/2023/05/28/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/</url>
+    <content><![CDATA[<h3 id="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。"><a href="#静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。" class="headerlink" title="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。"></a>静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。</h3><p>-shared</p>
+<blockquote>
+<p>生成动态链接模块时只使用-shared，由于装载时重定位的方法需要修改指令，没有办法做到同一份指令被多个进程共享，因为指令被重定位之后对于每个进程来讲是不同的。</p>
+</blockquote>
+<p>-fPIC 地址无关代码</p>
+<blockquote>
+<p>实现的基本思想就是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分可以保持不变，而数据部分在每个进程中拥有一个副本。这种方案就是地址无关技术</p>
+</blockquote>
+<p>GOT全局偏移表</p>
+<blockquote>
+<p>对于动态链接模块中,对于外部符号（数据）的访问的机制，当指令需要访问某个外部变量时，程序会先找到GOT，然后根据GOT中变量所对应的项找到变量的目标地址。每个变量都对应一个4个字节的地址，链接器在装载模块的时候会查找每个变量所在的地址，然后填充GOT中的各个项。由于GOT表本身是放在数据段的，所以它可以在模块装载时被修改，并且每个进程都可以有独立的副本。</p>
+</blockquote>
+<p>-fPIE</p>
+<blockquote>
+<p>地址无关代码技术除了可以用在动态链接模块上，它也可以用于可执行文件</p>
+</blockquote>
+<p>共享模块（动态链接模块）的全局变量问题</p>
+<blockquote>
+<p>当一个模块引用了定义在共享对象的全局变量的时候，由于可执行文件在之前链接时就必须确定该全局变量的地址，所以连接器会在创建可执行文件时，在它的.bss段创建一个global变量的副本。导致同一变量同时存在于多个位置<br>于是解决的办法只有一个，那就是所有的使用这个变量的指令都指向位于可执行文件中的那个副本。ELF共享库在编译时，默认都把定义在模块内部的全局变量当作定义在其他模块的全局变量，也就是说当作前面的类型四，通过GOT来实现变量的访问。当共享模块被装载时，如果某个全局变量在可执行文件中拥有副本，那么动态链接器就会把GOT中的相应地址指向该副本，这样该变量在运行时实际上最终就只有一个实例。如果变量在共享模块中被初始化，那么动态链接器还需要将该初始化值复制到程序主模块中的变量副本；如果该全局变量在程序主模块中没有副本，那么GOT中的相应地址就指向模块内部的该变量副本。</p>
+</blockquote>
+<p>** 默认情况下，如果可执行文件是动态链接的，那么GCC会使用PIC的方法来产生可执行文件的代码段部分，以便于不同的进程能够共享代码段，节省内存。所以动态链接的可执行文件中存在.got段**</p>
+<p>延迟绑定</p>
+<blockquote>
+<p>由于动态链接下对于全局数据的访问和跨模块的调用都要进行复杂的GOT定位，然后间接寻址或调用，导致程序的运行速度减慢大概1%~%5。又因为动态链接的链接工作在运行时完成，导致程序的启动速度减慢。<br>程序运行过程中，会有很多函数没有用到（错误处理函数，没有使用的功能模块等），所以没有必要一开始就把所有函数都链接好，ELF采用延迟绑定的方法，基本思想是当函数第一次被用到时才由动态链接器进行绑定（符号查找，重定位等），没用到的不绑定。这提高了程序的启动速度。<br>ELF使用PLT（Procedure Linkage Table）来实现延迟绑定,它使用了一些很精巧的指令序列来完成</p>
+</blockquote>
+<p>ELF将GOT拆分成了两个表.got和.got.plt，其中.got用来保存全局变量引用的地址，.got.plt用来保存函数引用的地址<br>PLT在ELF文件中以独立的段存放，段名通常叫做.plt，因为它本身是一些地址无关代码，所以可以跟代码段合并成同一个可读可写可执行的“Segment”被载入内存<br><a href="https://markrepo.github.io/kernel/2018/08/19/dynamic-link/">参考链接</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>链接、装载与库</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动手深度学习</title>
+    <url>/2023/05/28/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<h2 id="正规方程"><a href="#正规方程" class="headerlink" title="正规方程"></a>正规方程</h2><p>正规方程是通过求解下面的方程来找出使得代价最小的函数<img src="/images/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/1.jpg"><br>只适用于线性模型，不适合逻辑回归模型等其它模型</p>
+<h2 id="过拟合、欠拟合、权重衰退"><a href="#过拟合、欠拟合、权重衰退" class="headerlink" title="过拟合、欠拟合、权重衰退"></a>过拟合、欠拟合、权重衰退</h2><h3 id="训练误差和泛化误差"><a href="#训练误差和泛化误差" class="headerlink" title="训练误差和泛化误差"></a>训练误差和泛化误差</h3><p>训练误差：模型在训练数据集上计算得到的误差<br>泛化误差：模型应用在同样从原始样本的分布中抽取的无限多数据样本时，模型误差的期望</p>
+<blockquote>
+<p>我们永远不能准确地计算出泛化误差。这是因为无限多地数据样本是一个虚构的对象。在实际中，我们只能通过将模型应用于一个独立的测试集来估计泛化误差，该测试集由随机选取的、未曾在训练集中出现的数据样本构成</p>
+</blockquote>
+<h3 id="模型复杂度"><a href="#模型复杂度" class="headerlink" title="模型复杂度"></a>模型复杂度</h3><p>几个倾向于影响模型泛化的因素<br>1.可调整参数的数量。当可调整参数的数量（自由度）很大时，模型往往更容易过拟合<br>2.参数采用的值。当权重的取值范围较大时，模型可能更容易过拟合<br>3.训练样本的数量。即使模型很简单，也很容易过拟合只包含一两个样本的数据集。而过拟合一个有数百万个样本的数据集则需要一个极其灵活的模型</p>
+<blockquote>
+<p>正则化是处理过拟合的常用方法：在训练集的损失函数中加入惩罚项，以降低学习到的模型的复杂度</p>
+</blockquote>
+<h2 id="Unet网络"><a href="#Unet网络" class="headerlink" title="Unet网络"></a>Unet网络</h2><p><a href="https://www.jianshu.com/p/14641b79a672">Unet</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>静态链接</title>
+    <url>/2023/05/28/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/</url>
+    <content><![CDATA[<blockquote>
+<p>连接器采用“两部链接”的方法，将链接过程分为两部：</p>
+</blockquote>
+<p>1.空间和地址分配：扫描所有的输入目标文件，获得各个节的长度、属性、位置并将它们合并，计算合并后各个段的长度与位置，建立映射关系。收集所有输入目标文件中符号表中所有的符号定义和符号引用，统一放到全局符号表中<br>2.符号解析与重定位：使用第一步中收集到的所有信息，读取输入文件中节的数据、重定位信息，并且进行符号解析与重定位、调整代码中的地址等。</p>
+<p><strong>重定位过程是链接过程的核心</strong></p>
+<h2 id="符号解析与重定位"><a href="#符号解析与重定位" class="headerlink" title="符号解析与重定位"></a>符号解析与重定位</h2><h4 id="符号解析"><a href="#符号解析" class="headerlink" title="符号解析"></a>符号解析</h4><blockquote>
+<p>重定位的过程伴随着符号解析过程，每个目标文件都可能定义一些符号，也可能引用到定义在其他目标文件的符号。重定位过程中，每个重定位的入口都是一个外部符号的引用，当链接器需要对某个符号的引用进行重定位时，他就要确定这个符号的目标地址。这时候链接器会去查找有所有输入目标文件的符号表组成的全局符号表，找到相应的符号后进行重定位，如果没有找到，就会报符号未定义的错误。</p>
+</blockquote>
+<h4 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h4><blockquote>
+<p>对于32位 x86平台下的ELF文件的重定位入口所修正的指令寻址方式只有两种：</p>
+</blockquote>
+<p>1.绝对近址32位寻址<br>2.相对近址32为寻址</p>
+<blockquote>
+<p>这两种重定位指令修正方式每个被修正的位置的长度都为32位，即4字节。而且都是近址寻址，不用考虑Intel的段间远址寻址。</p>
+</blockquote>
+<p>X86基本重定位类型：<br><img src="/images/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/1.jpg" alt="QQ截图20221203153333.png"></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>链接、装载与库</tag>
+      </tags>
+  </entry>
 </search>
