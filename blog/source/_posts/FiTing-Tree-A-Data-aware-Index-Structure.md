@@ -1,5 +1,5 @@
 ---
-title: FiTing-Tree-A-Data-aware-Index-Structure
+title: FITing-Tree-A-Data-aware-Index-Structure
 date: 2023-10-03 05:51:28
 tags: Learned Index
 categories: Learned Index
@@ -71,3 +71,25 @@ categories: Learned Index
 - 为了减小插入时页面内数据移动的开销，每个segment包含一个额外的固定大小的缓冲区，此缓冲区保持排序，以实现有效的搜索和合并操作，一旦缓冲区达到预定的大小(buff)，它与段中的数据进行合并，再次执行分割算法
 - 另外，由于为每个段添加缓冲区可能违反FITing-Tree的max-error，我们透明地将缓冲区地大小合并到分割过程地错误阐述中，即分割过程中地错误阈值为(error -buff)
 ![img](../images/FiTing-Tree-A-Data-aware-Index-Structure/9.png)
+
+## COST MODEL
+由于指定的错误阈值error会影响查找和插入的性能以及索引的大小
+提供cost model的目的就是帮助DBA在不同的工作负载下选择合适的错误阈值error
+
+### Latency Guarantee
+查找延迟保证
+
+由于查找需要找到相关的segment,然后搜索segment(数据+缓冲区)，并且error的值会影响创建的段的数量(即更小的error会产生更多的段),我们使用一个函数，它返回为给定数据集创建的segment数量和error值。我们使用Se来表示指定数据集在给定错误阈值e下生成的segment的数量。
+
+error值为e的总估计查找延迟可以用以下表达式来建模,其中b是tree的fanout,buff是segment的最大buffer大小
+![img](../images/FiTing-Tree-A-Data-aware-Index-Structure/10.png)
+
+满足给定延迟要求并且存储占用最小的索引由以下表达式给出,其中E表示一组可能的错误值
+![img](../images/FiTing-Tree-A-Data-aware-Index-Structure/11.png)
+
+### Space Budget
+空间预算
+可以用以下函数来估计给定的错误阈值e下的只读聚类索引的大小(byte)
+![img](../images/FiTing-Tree-A-Data-aware-Index-Structure/12.png)
+因此满足给定存储预算的最小误差阈值由以下表达式给出
+![img](../images/FiTing-Tree-A-Data-aware-Index-Structure/13.png)
