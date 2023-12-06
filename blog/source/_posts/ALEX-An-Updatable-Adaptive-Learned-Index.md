@@ -6,54 +6,91 @@ categories: Learned Index
 ---
 
 
-## 3 ALEX OVERVIEW
-### 3.1 DESIGN OVERVIEW
- 1.gapped array
-2.Exponential search without error bounds
-3.Model-based insertion
-4.Dynamically adjusts the shape and height of the RMI depending on the workload
-5.Use Cost model to adjust the structure of RMI
+ALEX：An Updatable Adaptive Learned Index
 
-### 3.2 NODE LAYOUT
+## 应用场景：
+在DBMS中代替传统的索引结构，类似于B树、B+树之类的变种
 
-- 每个Data Node保存一个线性回归模型(用于预测key的位置)，两个gapped arrays，并使用一个bitmap跟踪节点中每个位置是否被key占用或者是间隙(Array使用gaps右侧最近的key填充间隙)
+## 问题描述：
+ALEX索引需要实现点查找、范围查询、插入、删除和批量载入
+ALEX的目标是
+1.比B+树写数据更快
+2.比B+树和learned index读数据要更快
+3.索引大小要比B+树和learned Index要小
 
-- 每个Internal Node保存一个线性回归模型和一个数组(保存指向child node的指针)，模型均匀地将keys分摊到每个child node，Internal Node中的指针数量限制始终为2的幂，它的作用是提供一种灵活的方法来划分key空间
+## 难点与分析过程：
+- 写数据时：B+树插入到数据节点时需要进行大量的移位操作，对于一个dense Array 它的插入时间复杂度为O(n)
+- 写数据时：B+树插入到数据节点时，根据节点是否已满的条件来将数据节点分裂，分裂到根节点会导致树高的增加
+- 读数据时：B+树遍历到数据节点后，使用二分查找确定带查找的key的position，它的时间复杂度为O（log2n)
+- 读数据时：最初的Learned Index是先将数据排序好之后，再在该数据上创建模型，这样用最后的数据节点来预测key的位置时会有较大出错的概率，并且还需要存储Error Bound
 
-## 4. ALEX ALGORITHMS
-**点查询：**
-> 从root node开始，遍历到data node，data node通过线性回归模型预测key在key array的位置（有必要的话，使用指数查找，没找到返回null），然后查找对应的payload array
+## 方法：
+- **写数据时**：ALEX使用一个gap array（间隙数组），这样在插入过程中需要更少的移位操作，它的时间复杂度近似于O（log2n）
+- **写数据时**：插入已满数据节点时，使用一个intra-node cost model模型来决定将数据节点扩展（如果没有）或者是分裂
+Intra-node cost model根据每个数据节点存储的两个信息（1.**平均每次操作指数搜索的迭代次数** 2.**平均每次插入时的移位操作次数**）计算经验成本，再和数据节点的预期成本（节点创建时预期的成本）比较
+如果经验成本与预期成本没有较大的偏离（超过50%）则执行节点扩展（不会超过节点最大大小限制），否则执行节点分裂
+- **读数据时**：ALEX使用指数查找，先用数据节点的线性模型预测一个position，再判断该position上的key是否大于或者小于待查找的key，以此判断指数查找的方向
 
-范围查询:
-> 查找first key和点查询一样，之后使用bitmap跳过gaps，如果有需要的话，跳到下一个data node
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/1.png)
+指数查找的时间复杂度分析如下
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/2.png)
+并且使用指数查找算法后，也不需要在数据节点模型中存储error bound。
 
-**插入未满的Data Node：**
-```
-点查询遍历到data node，使用模型预测插入的key的位置
-If 插入无法维持排序顺序
-使用指数查找找到正确的插入位置
-If 插入位置是一个gap
-直接插入
-Else 
-移动右侧的key一个位置，插入 
-```
-**插入已满的Data Node：**
-扩展和拆分策略，使用cost模型从两者之间选择
-- Criteria for Node Fullness: ALEX 不会等到data node100% full，因为这样gap array的插入性能会随着gap数量的减少而恶化，提出dl和du密度（0~1之间，用于描述已插入key的空间比例），用于在空间和查找性能之间权衡
-- Node Expansion Mechanism:
-- Node Split Mechanism: 1.split sideway  2.split down
-- Cost Models:
-  每个Data node记录两个统计数据信息 1.指数搜索操作的平均次数 2.插入时的平均移位次数，intra-node cost model根据信息1来预测查找性能，根据信息1和信息2来预测插入性能。对于新创建的节点，没有这两个信息，信息1为预测所有key的模型的预测误差的以2为底的平均对数，信息2为所有key到gap array中最近gap的平均距离。
-- Tra-verseToLeaf cost model: 
-  预测从root node遍历到data node的时间(使用两个数据，data node的深度，所有internal node和data node 的metadata的总大小bytes)
-- Insertion Algorithm: 
-  使用intra-node cost model计算Data Node 的empirical cost，将expetected cost 和 empirical cost比较，如果没有较大的偏离，我们执行Node Expansion Mechanism，
+- **读数据时**：ALEX在创建数据节点时使用基于模型的插入，先训练好模型之后，再将模型尽量插入预测的位置，这样可以大大减少预测错误的概率
 
-**删除、更新、其它操作**
-如果删除一个key后，该Data Node的密度低于dl，需要收缩数据节点
+**ALEX的节点：**
+**Internal node：**
+线性模型（slope intercept）、point array
+**Leaf node：**
+线性模型（slope intercept）、gap array 、bitmap
 
-**Bulk Load：**
-目的是找到一个RMI结构(cost最小)，使用TraverseToLeaf和intra-node models预测cost
-- Bulk Load Algorithm
-- The Fanout Tree:
-  生成RMI结构时，我们主要的挑战就是决定每个Node的最好的扇出数量，FT可以用来帮助我们决定每个RMI节点的扇出数量，在Bulk Load Algorithm中，每当我们要决定RMI node的扇出数量时，我们都要构建一颗FT
+**查找：**
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/3.png)
+
+**插入：**
+**未满节点:** 按照查找逻辑找到应该插入的数据节点，有必要的情况下用指数查找来找到正确的位置。
+**已满节点：** 已满节点的定义（有一个上下限密度dl du）
+节点扩展机制：
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/4.png)
+节点分裂机制：
+a.有冗余指针指向数据节点，可以用它分别指向另外两个数据节点
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/5.png)
+
+b.如果父节点满了，像B+树那样进行拆分，分类一直可以传播到根节点
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/6.png)
+
+**删除：**
+简单删除key和payload，如果Data Node由于删除而达到密度下限dl，那么我们将收缩Data Node避免低空间利用率（思考：是否可以引入合并操作）
+
+**更新：**
+Delete和Insert操作结合
+
+**界外插入：**
+首先，当ALEX检测到现有key空间之外的插入时，将扩展root节点；如果此扩展将导致根节点超过最大节点大小，ALEX则会创建一个新的root节点，并为新root节点的每个其他指针槽创建一个新的数据节点。
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/7.png)
+其次，ALEX最右边的数据节点通过记录节点中的最大键的值和插入超过该最大值的计数器来检测插入行为。如果多次插入都超过该最大值，这意味着这是一个只追加行为，因此数据节点向右扩展，扩展的空间用来更多类似于追加的插入
+
+**批量加载**
+RMI成本是通过TraverseToLeaf和intra-node cost model来计算的
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/8.png) 
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/9.png)
+每个node为internal node或者leaf node由fanout tree决定，
+决定每一个node的类型时都独自创建一棵fanout tree
+
+
+## 结果
+数据集选取：
+使用某个数据集的8字节的key运行所有的实验，并随机生成固定大小的payload。
+我们在4个数据集上评估了ALEX，其特征和CDF如下所示
+经度数据集由Open Street Maps中世界各地的经度组成
+Longlat数据集由复合键组成（k=180*floor(longitude)+latitude, 经纬度也是来自Open Street Maps)
+Lognormal数据集的值是根据对数正态分布N（0，4）生成的，并乘上10^9，再四舍五入到最接近的整数。
+YCSB数据集表示根据YCSB基准生成的用户ID的值，这些值均匀分布在整个64位域中，并使用80字节的有效载荷
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/10.png)
+工作负载：我们评估ALEX的主要指标是平均吞吐量（指定时间内完成的插入或读取量），评估了5个工作负载的吞吐量
+（1）只读工作负载 （2）具有95%的读取和5%插入的读取繁重的工作负载（3）具有50%的读取和50%的插入的写繁重的工作负载（4）具有95%读取和5%插入的读取的短范围查询的工作负载（5）只写工作负载
+![img](../images/ALEX-An-Updatable-Adaptive-Learned-Index/11.png)
+ALEX和learned Index；B+ Tree；模型增强B+ Tree；ART对比
+- 在只读工作负载上，ALEX比B+树、learned index、模型增强B+树和ART在吞吐量上高4.1x、2.2x、2.9x、3.0x和在索引大小上小800x、15x、160x、8000x
+- 在读写工作负载上，ALEX比B+树、模型增强B+树和ART在吞吐量上高4.0x、2.7x、2.7x，
+在索引大小上小2000x、475x、36000x
