@@ -7,6 +7,7 @@ categories: cmu15445-2023
 
 ## TASK 1 Copy-On-Write Trie
 COW Trie在每次插入和删除时不会改变原有节点，而是对该节点的副本进行修改后，依次为其父节点创建修改后的副本，最后返回一个新的根节点。
+此外，删除操作中，如果回溯路径上的某节点无值，且不存在子节点，还需要删除该节点
 ***
 插入("ad", 2),创建了一个新的Node2
 ![img](../images/cmu15445-project0/2.png)
@@ -114,16 +115,100 @@ auto Trie::Put(std::string_view key, T value) const -> Trie {
 
 
 ## TASK 2 Concurrent Key-Value Store
+> concurrent Key-Value store需要支持 **多个读者和一个写者** 工作的情况
+> 也就是当一个写者在创建一个新的root的时候，读者可以在old root进行读操作
+Tire_store.cpp文件<br>
 
+读操作
+```cpp
+template <class T>
+auto TrieStore::Get(std::string_view key) -> std::optional<ValueGuard<T>> {
+  // Pseudo-code:
+  // (1) Take the root lock, get the root, and release the root lock. Don't lookup the value in the
+  //     trie while holding the root lock.
+  // (2) Lookup the value in the trie.
+  // (3) If the value is found, return a ValueGuard object that holds a reference to the value and the
+  //     root. Otherwise, return std::nullopt.
+  Trie root;
+  {
+    std::lock_guard<std::mutex> guard(root_lock_);
+    root = root_;
+  }
+  const T *val = root.Get<T>(key);
+  if (!val) {
+    return std::nullopt;
+  }
 
+  return ValueGuard<T>(root, *val);
+}
+```
+写操作
+```cpp
+template <class T>
+void TrieStore::Put(std::string_view key, T value) {
+  // You will need to ensure there is only one writer at a time. Think of how you can achieve this.
+  // The logic should be somehow similar to `TrieStore::Get`.
+  std::lock_guard<std::mutex> guard(write_lock_);
+  Trie root;
+  {
+    std::lock_guard<std::mutex> guard1(root_lock_);
+    root = root_;
+  }
+
+  Trie new_root = root.Put<T>(key, std::move(value));
+
+  {
+    std::lock_guard<std::mutex> guard1(root_lock_);
+    root_ = new_root;
+  }
+}
+
+void TrieStore::Remove(std::string_view key) {
+  // You will need to ensure there is only one writer at a time. Think of how you can achieve this.
+  // The logic should be somehow similar to `TrieStore::Get`.
+  std::lock_guard<std::mutex> guard(write_lock_);
+  Trie root;
+  {
+    std::lock_guard<std::mutex> guard1(root_lock_);
+    root = root_;
+  }
+
+  Trie new_root = root.Remove(key);
+
+  {
+    std::lock_guard<std::mutex> guard1(root_lock_);
+    root_ = new_root;
+  }
+}
+```
 
 
 ## TASK 3 Debugging
 
-
+skip.......
 
 
 ## TASK 4 SQL String Functions
+实现Upper方法和Lower方法
+src/include/execution/string_expression.h
+```cpp
+auto Compute(const std::string &val) const -> std::string {
+    // TODO(student): implement upper / lower.
+    std::string res;
+    res.resize(val.length());
+    switch (expr_type_) {
+      case StringExpressionType::Lower:
+        std::transform(val.begin(), val.end(), res.begin(), ::tolower);
+        break;
+      case StringExpressionType::Upper:
+        std::transform(val.begin(), val.end(), res.begin(), ::toupper);
+        break;
+    }
+    return res;
+  }
+```
+运行结果如下:<br/>
+<img src="../images/cmu15445-project0/4.png" height="200">
 
-
-
+测试通过截图：<br/>
+<img src="../images/cmu15445-project0/5.png" height="500">
