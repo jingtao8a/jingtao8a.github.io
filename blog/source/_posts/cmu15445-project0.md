@@ -208,7 +208,7 @@ auto Compute(const std::string &val) const -> std::string {
   }
 ```
 运行结果如下:<br/>
-<img src="../images/cmu15445-project0/4.png" height="200">
+![img](../images/cmu15445-project0/4.png)
 
 测试通过截图：<br/>
-<img src="../images/cmu15445-project0/5.png" height="500">
+![img](../images/cmu15445-project0/5.png)
