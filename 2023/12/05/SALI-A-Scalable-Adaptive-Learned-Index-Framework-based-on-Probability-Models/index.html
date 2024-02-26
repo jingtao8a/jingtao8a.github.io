@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="SALI: A Scalable Adaptive Learned Index Framework based onProbability Models一个基于概率模型的可进化学习索引框架 研究背景LI：只读可写：1.基于缓冲区的策略（插入时放入缓冲区，到达一个阈值后进行合并操作）XIndex、FINEdex2.基于模型的策略（就地插入）ALEX（在插入冲突中，映射的slot已经被占用，通过移动来">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models">
+<meta property="og:url" content="http://jingtao8a.github.io/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="SALI: A Scalable Adaptive Learned Index Framework based onProbability Models一个基于概率模型的可进化学习索引框架 研究背景LI：只读可写：1.基于缓冲区的策略（插入时放入缓冲区，到达一个阈值后进行合并操作）XIndex、FINEdex2.基于模型的策略（就地插入）ALEX（在插入冲突中，映射的slot已经被占用，通过移动来">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/1.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/2.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/3.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/4.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/5.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/6.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/7.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/8.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/9.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/10.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/11.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/12.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/13.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/14.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/15.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/16.png">
+<meta property="article:published_time" content="2023-12-06T06:02:09.000Z">
+<meta property="article:modified_time" content="2024-02-26T07:45:34.714Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="Learned Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/1.png">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-12-05 22:02:09" itemprop="dateCreated datePublished" datetime="2023-12-05T22:02:09-08:00">2023-12-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>SALI: A Scalable Adaptive Learned Index Framework based on<br>Probability Models<br>一个基于概率模型的可进化学习索引框架</p>
+<h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><p>LI：只读<br>可写：<br>1.基于缓冲区的策略（插入时放入缓冲区，到达一个阈值后进行合并操作）<br>XIndex、FINEdex<br>2.基于模型的策略（就地插入）<br>ALEX（在插入冲突中，映射的slot已经被占用，通过移动来尝试重新组织节点）、<br>LIPP（利用链接方案，为相应的时隙创建一个新节点，将最后一英里问题转化为子树遍历问题）</p>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/1.png" alt="img"><br>上述的索引结构都不能以高并发性进行扩展</p>
+<p>并发数较少的时候，与基于模型的策略（ALEX+、LIPP+）相比，基于缓冲区策略（XIndex、FINEdex）的索引表现出较差的基本性能和较差的扩展性；并且随着并发数的提高，“最后一英里问题”搜索会迅速饱和内存带宽，从而成为系统的瓶颈（ALEX+必须为此操作获取粗粒度写锁，线程数量增加时，越来越多的线程被阻塞）</p>
+<p>LIPP+没有最后一英里问题，但是它需要在每个节点中维护统计信息，如访问计数和冲突计数（以触发节点再训练，防止性能下降）。这些节点计数器在线程之间造成高争用。</p>
+<h2 id="难点与分析过程"><a href="#难点与分析过程" class="headerlink" title="难点与分析过程"></a>难点与分析过程</h2><p>我们需要设计一个满足如下要求的可扩展学习索引<br>1.Efficient Concurrency高效并发：<br>为了实现高效的插入性能，索引必须跟踪统计信息，这些信息反映了由于新的插入而导致的索引结构随时间的退化（这些信息对于触发节点再训练至关重要），但是节点计数器在线程之间会造成高争用，需要一种轻量级方法<br>2.Adaptive ability适应能力<br>与均匀工作负载相比，学习索引在倾斜插入工作负载下表现出次优性能。因此，学习索引需要有自适应能力以保证其在并发场景的鲁棒性。此外，学习的索引缺乏用于查找操作的优化策略。在偏斜的工作负载下，学习索引尚未充分利用显著降低索引空间成本的机会。</p>
+<p>3.Low overheads of basic performance基本性能的低开销<br>(1)Efficient lookup<br>实现高查找性能，通常取决于最大限度地减少查找的预测错误<br>(2)Efficient insert<br>采用基于模型的策略，而不是基于缓冲区的策略，通过在每个节点中保留间隙，可以显著提高学习索引的插入性能</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>提出SALI<br>1.利用LIPP+结构（使用细粒度锁）<br>2.除了模型重训练以外定义一组节点进化策略，以允许学习到的索引自适应于不同的工作负载倾斜（建议对具有不同读写热度的节点应用不同的进化策略）<br>3.用轻量级概率模型取代了现有学习索引中的每个节点的统计信息，以消除统计信息维护的可扩展性瓶颈</p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/2.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/3.png" alt="img"></p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/4.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/5.png" alt="img"></p>
+<p>进化策略：<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/6.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/7.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/8.png" alt="img"></p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/9.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/10.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/11.png" alt="img"></p>
+<p>概率模型：<br>为了确保最佳性能，学习索引必须监控退化统计信息，以便在必要时启动调整；另外，进化策略需要额外的统计信息。<br>基本概念：模拟信息积累时利用概率</p>
+<p>例子：<br>1.当模拟指定时间段内插入key的累积数量时，我们设计一个基于插入率和插入时间的概率模型<br>2.几何分布可以用来模拟信息的累计（插入冲突等）</p>
+<p>触发insert evolution的条件</p>
+<p>Condition1：评估一个节点及其子树中新key插入的频率<br>该节点容纳足够数量的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/12.png" alt="img"></p>
+<p>n.current_num:是指在当前插入操作结束时节点中包含的key的数量<br>n.build_num:是指上一次执行完进化策略后节点中的key的数量<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/13.png" alt="img"></p>
+<p>Condition2：节点内冲突的升级（判断节点是否恶化）<br>Node必须由足够的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/14.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/15.png" alt="img"></p>
+<p><strong>先计算Pconflict是否被触发，如果触发，再判断Pacc是否被触发，如果两个条件都被触发，执行进化策略</strong></p>
+<p>触发lookup evolution的条件<br>Phl<br>还需要考虑以下两个条件<br>Condition1:<br>再很长的一段时间内，节点上的查找操作没有触发进化策略</p>
+<p>Condition2:<br>节点累计数据的速率并不慢</p>
+<p>For condition1：如果一个节点的最后一次进化操作是由hot lookup触发的，这意味着自那以后没有插入操作触发该节点进化，即该节点没有严重恶化，并且新插入key的数量可能很少，可以将Phl调整到一个更小的值</p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/16.png" alt="img"></p>
+<p>For condition2：引入Pacc，如果自上次进化操作以来插入了大量新的key，则表明可能需要进行新一轮的进化操作</p>
+<p>每个线程维护一个skip_counter，每次查找操作，skip_counter加1，10次查找操作后，执行一次伯努利实验来判断Phl是否被触发。如果Phl被触发，判断Pacc是否也被触发，如果触发，执行进化策略。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learned-Index/" rel="tag"># Learned Index</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/12/05/NFL-Robust-Learned-Index-via-Distribution-Transformation/" rel="prev" title="NFL-Robust-Learned-Index-via-Distribution-Transformation">
+      <i class="fa fa-chevron-left"></i> NFL-Robust-Learned-Index-via-Distribution-Transformation
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/12/07/cmake-generator-error-under-windows-system/" rel="next" title="cmake-generator-error-under-windows-system">
+      cmake-generator-error-under-windows-system <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A0%94%E7%A9%B6%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">研究背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">2.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%BE%E7%82%B9%E4%B8%8E%E5%88%86%E6%9E%90%E8%BF%87%E7%A8%8B"><span class="nav-number">3.</span> <span class="nav-text">难点与分析过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">方法</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

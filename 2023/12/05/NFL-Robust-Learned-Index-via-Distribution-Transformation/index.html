@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="应用场景： 只读负载 读写负载，但是数据分布变化不大（即CDF随着key的插入删除变化较小）  问题描述：之前的学习索引通过设计更好的启发式方法来划分key空间，使得每一份被分割的sub key空间可以更好地被线性模型拟合。缺点：  为了达到这个目的，学习索引必须构建更深的层次结构，从而产生更多的遍历时间和预测数量（类似于用一个分段线性函数去拟合数据分布CDF）。  难点和分析过程：本文提出了学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NFL-Robust-Learned-Index-via-Distribution-Transformation">
+<meta property="og:url" content="http://jingtao8a.github.io/2023/12/05/NFL-Robust-Learned-Index-via-Distribution-Transformation/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="应用场景： 只读负载 读写负载，但是数据分布变化不大（即CDF随着key的插入删除变化较小）  问题描述：之前的学习索引通过设计更好的启发式方法来划分key空间，使得每一份被分割的sub key空间可以更好地被线性模型拟合。缺点：  为了达到这个目的，学习索引必须构建更深的层次结构，从而产生更多的遍历时间和预测数量（类似于用一个分段线性函数去拟合数据分布CDF）。  难点和分析过程：本文提出了学习">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/2.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/3.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/4.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/5.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/6.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/7.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/8.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/9.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/10.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/11.jpg">
+<meta property="og:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/12.jpg">
+<meta property="article:published_time" content="2023-12-06T05:37:11.000Z">
+<meta property="article:modified_time" content="2024-02-26T07:45:34.714Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="Learned Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2023/12/05/NFL-Robust-Learned-Index-via-Distribution-Transformation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>NFL-Robust-Learned-Index-via-Distribution-Transformation | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/05/NFL-Robust-Learned-Index-via-Distribution-Transformation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NFL-Robust-Learned-Index-via-Distribution-Transformation
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-12-05 21:37:11" itemprop="dateCreated datePublished" datetime="2023-12-05T21:37:11-08:00">2023-12-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h2><ul>
+<li>只读负载</li>
+<li>读写负载，但是数据分布变化不大（即CDF随着key的插入删除变化较小）</li>
+</ul>
+<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>之前的学习索引通过设计更好的启发式方法来划分key空间，使得每一份被分割的sub key空间可以更好地被线性模型拟合。<br>缺点：</p>
+<ul>
+<li>为了达到这个目的，学习索引必须构建更深的层次结构，从而产生更多的遍历时间和预测数量<br>（类似于用一个分段线性函数去拟合数据分布CDF）。</li>
+</ul>
+<h2 id="难点和分析过程："><a href="#难点和分析过程：" class="headerlink" title="难点和分析过程："></a>难点和分析过程：</h2><p>本文提出了学习索引NFL（包括两个结构Normalizing Flow 和 Learned Index ）</p>
+<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg" alt="img"><br>思想： 先用分布转换模型将复杂key分布转换为近似均匀的分布，然后利用转换的key构建学习索引</p>
+<p><strong>难点</strong></p>
+<p>（1）Efficacy of Normalizing flow:</p>
+<ul>
+<li>由于key的数字数据特征有限，分布转换模型表现不佳</li>
+<li>均匀分布很难作为训练目标（我们设计了一个具有丰富特征空间的分布转换模型和一个易于操作的训练目标）</li>
+</ul>
+<p>（2）Efficiency of normalizing flow</p>
+<ul>
+<li>分布转化必须是高效的在线步骤，这样就限制了NF的复杂性。但是直接减少参数数量标准化流程可能会降低转换质量（这样会导致学习索引需要更深的层次结构和更多的模型来近似CDF），（我们设计了一套效率优化方案，并且保证NF的功效）</li>
+</ul>
+<p>（3）Lack of proper indexes for transformed keys：</p>
+<ul>
+<li>numerica NF的转换使线性模型拟合地更好，学习索引应该以新的视角重新思考。（我们提出了After-Flow Learned Index（AFLI），充分利用转换后的key）</li>
+</ul>
+<p><strong>方法</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg" alt="img"><br>以下两个是评价模型转换质量的指标<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/2.jpg" alt="img"></p>
+<p>Tail conflict degree：</p>
+<p>Numerical Normalizing Flow:<br>Feature Space Expansion:现有的NF大多用在cv和nlp领域，用于处理高纬的图片和文本，这些数据都有丰富的特征。然而keys都是数值数据，含有的特征较少。<br>使用Algorithm 3.1分布转换算法（对keys的数值特征进行扩展）<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/3.jpg" alt="img"></p>
+<p>特征扩展的时间复杂度为O（n x d）</p>
+<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/4.png" alt="img"></p>
+<p>Structure of AFLI：<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/5.jpg" alt="img"></p>
+<p><strong>Model node:</strong><br>Empty Slot：unused slot<br>Data Slot：key payload<br>Bucket Pointer: 指向一个bucket<br>Node Pointer：指向一个model node或者dense node<br><strong>Bucket:</strong><br>a short data array.它的size由tail conflict degree决定，但将保持在预设阈值范围内。我们提供两种桶，线性桶（默认）和有序桶</p>
+<p><strong>Dense node：</strong><br>Also a data array，比bucket大一点，但是比Model node小很多，是一个ordered and gapped array, gap的最大值由tail conflict degree</p>
+<p><strong>Analysis:</strong><br>当索引无法建立模型节点时，因为节点中的所有键都太近（即拟合线性模型的斜率为0），索引会分配一个dense array</p>
+<p><strong>Queries:</strong><br>（1）从root node开始查找，如果是model node，先用linear model预测position，判断它的类型，如果是empty slot，表示不存在；如果是data slot，比较是否是相同的key；如果是bucket pointer，在bucket中查找；如果是node pointer，递归操作<br>（2）如果node是dense node，使用二分查找查找这个结果。</p>
+<p><strong>Insertions:</strong><br>（1）如果key-payload pair被插入model node，先用linear model预测position</p>
+<ul>
+<li>如果是empty slot，直接存储key-payload</li>
+<li>如果是data slot，表明发生冲突，创建一个bucket来存储这两个key</li>
+<li>如果是bucket pointer或者node pointer，插入key-payload到bucket或者child node中<br>（2）插入到bucket中时，将key-payload会直接被加到sorted data的末尾；如果bucket是一个ordered mode，将会执行一次插入排序。<br>（3）插入到dense node中时，先在array上执行二分查找，如果那个position是一个empty slot，我们会直接插入key-payload pair；，否则会移动到最近的empty slot再插入。</li>
+</ul>
+<p>如果bucket或者dense node没有empty slots，我们尽量通过一个modeling operation将它转换为model node<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/6.jpg" alt="img"></p>
+<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/7.jpg" alt="img"><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/8.jpg" alt="img"></p>
+<p>我们首先一个使用线性回归创建线性模型（Line 1）<br>如果slope 为0（所有key被映射到一个相同的position），我们为创建一个dense node（Line 2 - 4）<br>否则如果我们成功创建一个linear model，就计算model node所有位置的conflict degree（Line 6）<br>然后我们遍历所有预测的位置，决定每个pos的entry type。如果conflict degree为1，我们直接在data slot存储该key；如果conflict degree大于1但是比bucket的tail confict degree小，存储在一个bucket中（Line 14 - 17）；<br>否则，如果某个position的confict degree比bucket的tail conflict degree大，找到下一个conflict degree也大于tail conflict degree的position或者到末尾，并将经过的position的key都收集起来，并分配一个新的节点来处理它们（第18 - 21行）<br>BulkLoad：首先计算tail conflict degree. The returned result is the root node.<br>Update: lookup + in-place update<br>Delete</p>
+<h2 id="结果："><a href="#结果：" class="headerlink" title="结果："></a>结果：</h2><p><strong>数据集：</strong><br>选取了7个不同的数据集进行评估<br>（Key的类型为double     payload的类型是int64）</p>
+<p>对每种类型的数据集构建了四种类型的工作负载</p>
+<p>每种工作负载包括 批量加载和运行阶段<br>我们使用批量加载操作来加载数据集的50%的key；在运行阶段，根据不同的操作比率生成请求</p>
+<ul>
+<li>只读</li>
+<li>读80% 写20%</li>
+<li>写 20% 读80%</li>
+<li>只写</li>
+</ul>
+<p>将NFL与LIPP、ALEX、PGM-index、B-Tree、an efficient B-Tree对比</p>
+<p><strong>平均吞吐量</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/9.jpg" alt="img"></p>
+<ul>
+<li>只读：NFL与LIPP、ALEX、PGM、B-Tree相比，平均吞吐量分别提高了2.34倍、2.46倍、3.82倍、7.45倍；对于具有大冲突程度的工作负载（即LLT和FB），可以分别实现比LIPP、ALEX高2.41x和3.70x的吞吐量。</li>
+<li>重读：与LIPP、ALEX、PGM、B-Tree相比，NFL在吞吐量上分别提高72.22%、101.05%、611.48%、389.45%</li>
+<li>重写：与LIPP、ALEX、PGM、B-Tree相比，NFL在吞吐量上分别提高29.10%、39.28%、50.88%、162.92%</li>
+<li>只写：与LIPP、ALEX、B-Tree相比，NFL在吞吐量上分别提高22.65%、28.30%和131.58%</li>
+</ul>
+<p><strong>延迟</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/10.jpg" alt="img"></p>
+<ul>
+<li>只读：与LIPP、ALEX、PGM index、B-Tree相比，NFL可以将延迟分别降低58.68%、32.89%、62.73%和80.77%</li>
+<li>读写：与LIPP、ALEX、PGM index和B-Tree相比，NFL可以将延迟分别降低26.64%、45.05%、59.49%、65.31%</li>
+<li>只写：与LIPP、ALEX、B-Tree相比，NFL可以将延迟减少2.26%、27.92%、50.48%</li>
+</ul>
+<p><strong>批量加载时间</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/11.jpg" alt="img"></p>
+<p>与LIPP、ALEX、B-Tree相比，NFL需要2.25倍、0.86倍、2.81倍的大容量加载时间，其中77%的时间是用来转换key的</p>
+<p><strong>索引大小：</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/12.jpg" alt="img"><br>NFL的指数大小分别是ALEX和PGM的2.26倍和3.1倍；然而，NFL的大小仅为LIPP大小的0.51</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learned-Index/" rel="tag"># Learned Index</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/10/10/Updatable-Learned-Index-with-Precise-Positions/" rel="prev" title="Updatable-Learned-Index-with-Precise-Positions">
+      <i class="fa fa-chevron-left"></i> Updatable-Learned-Index-with-Precise-Positions
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/" rel="next" title="SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models">
+      SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">应用场景：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">问题描述：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%BE%E7%82%B9%E5%92%8C%E5%88%86%E6%9E%90%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">难点和分析过程：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">结果：</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

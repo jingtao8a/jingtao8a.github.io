@@ -1,0 +1,1073 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>1.启动选项</title>
+    <url>/2023/05/27/1-%E5%90%AF%E5%8A%A8%E9%80%89%E9%A1%B9/</url>
+    <content><![CDATA[<blockquote>
+<p>在MySQL安装目录下的bin目录中的各种可执行文件，不论是服务器相关的程序（比如mysqld、mysqld_safe）还是客户端相关的程序（比如mysql、mysqladmin），在启动的时候基本都可以指定启动参数。这些启动参数可以放在命令行中指定，也可以把它们放在配置文件中指定。</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqld --skip-networking 禁止客户端使用TCP/IP网络进行通信</span><br><span class="line">mysqld --default-storage-engine=MyISAM 指定服务端的存储引擎&#x27;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysql -h -u -p 客户端</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><blockquote>
+<p>MySQL程序在启动时会寻找多个路径下的配置文件，这些路径有的是固定的，有的是可以在命令行指定的。根据操作系统的不同，配置文件的路径也有所不同。</p>
+</blockquote>
+<p><img src="/images/1_1.jpg" alt="本地图片"></p>
+<ul>
+<li><p>%WINDIR%是机器上的Windows目录，通常是C:\WINDOWS，可以使用echo %WINDIR%查看</p>
+</li>
+<li><p>BASEDIR指的是MySQL安装目录</p>
+</li>
+<li><p>第四个路径指的是我们在启动程序时可以通过指定default-extra-file参数来额外配置文件路径</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqld --defaults-extra-file=C:\Users\xiaohaizi\my_extra_file.txt</span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><img src="/images/1_2.jpg" alt="本地图片"></p>
+<ul>
+<li>MYSQL_HOME是一个环境变量，该变量的值是我们自己设置的，我们想设置就设置，不想设置就不设置。该变量的值代表一个路径，我们可以在该路径下创建一个my.cnf配置文件，那么这个配置文件中只能放置关于启动服务器程序相关的选项（言外之意就是其他的配置文件既能存放服务器相关的选项也能存放客户端相关的选项，.mylogin.cnf除外，它只能存放客户端相关的一些选项）</li>
+<li>defaults-extra-file的含义与Windows中的一样。<br><strong>在mysqld_safe调用mysqld时，会把它处理不了的这个skip-networking选项交给mysqld处理。</strong></li>
+</ul>
+<h3 id="配置文件的内容"><a href="#配置文件的内容" class="headerlink" title="配置文件的内容"></a>配置文件的内容</h3><p>[server]<br>(具体的启动选项…)</p>
+<p>[mysqld]<br>(具体的启动选项…)</p>
+<p>[mysqld_safe]<br>(具体的启动选项…)</p>
+<p>[client]<br>(具体的启动选项…)</p>
+<p>[mysql]<br>(具体的启动选项…)</p>
+<p>[mysqladmin]<br>(具体的启动选项…)</p>
+<p><img src="/images/1_3.jpg" alt="本地图片"><br>不同的启动命令读取配置文件的不同的组</p>
+<h3 id="配置文件的优先级"><a href="#配置文件的优先级" class="headerlink" title="配置文件的优先级"></a>配置文件的优先级</h3><p>如果我们在多个配置文件中设置了相同的启动选项，那以最后一个配置文件中的为准</p>
+<h3 id="同一个配置文件中多个组的优先级"><a href="#同一个配置文件中多个组的优先级" class="headerlink" title="同一个配置文件中多个组的优先级"></a>同一个配置文件中多个组的优先级</h3><p>比如mysqld命令启动服务端程序，可以访问配置文件中的[mysqld]、[server]等，那么将以最后一个出现的组中的启动选项为准</p>
+<h3 id="default-file使用"><a href="#default-file使用" class="headerlink" title="default-file使用"></a>default-file使用</h3><p> 如果我们不想让MySQL到默认的路径下搜索配置文件（就是上表中列出的那些），可以在命令行指定defaults-file选项，比如这样（以UNIX系统为例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mysqld --defaults-file=/tmp/myconfig.txt</span><br></pre></td></tr></table></figure>
+<p><strong>如果同一个启动选项既出现在配置文件中，又出现在命令行中，以命令行为准</strong></p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>10.InnoDB统计数据是如何收集的</title>
+    <url>/2023/05/27/10-InnoDB%E7%BB%9F%E8%AE%A1%E6%95%B0%E6%8D%AE%E6%98%AF%E5%A6%82%E4%BD%95%E6%94%B6%E9%9B%86%E7%9A%84/</url>
+    <content><![CDATA[<p>InnoDB提供了两种存储统计数据的方式</p>
+<ul>
+<li>永久性的统计数据：<br>这些数据存储在磁盘上，服务器重启之后这些统计数据还在</li>
+<li>非永久性的统计数据：<br>这种数据存储在内存中，服务器重启之后，在某些适当的场景下才会重新收集这些统计数据<blockquote>
+<p>系统变量innodb_status_persistent来控制到底采用哪种方式去存储统计数据。另外，InnoDB默认是以表为单位来收集和存储统计数据的，所以可以把某些表的统计数据存储在磁盘上，把另一些表的统计数据存储在内存中。可以在创建和修改表的时候通过指定STATS_PERSISTENT属性来指明该表的统计数据存储方式</p>
+</blockquote>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>11.MySQL基于规则的优化</title>
+    <url>/2023/05/27/11-MySQL%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E4%BC%98%E5%8C%96/</url>
+    <content><![CDATA[<h2 id="条件简化"><a href="#条件简化" class="headerlink" title="条件简化"></a>条件简化</h2><p>1.移除不必要的括号<br>2.常量传递<br>3.等值传递<br>4.表达式计算<br>5.HAVING子句和WHERE子句的合并</p>
+<p>子查询的执行方式</p>
+<ul>
+<li>对于包含不相关的标量子查询或者行子查询的语句来说，MySQL会分别独立执行外层查询和子查询，就当作两个单表查询就行</li>
+<li>对于相关的标量子查询或者行子查询，它的执行方式如下：<br><img src="/images/11_1.jpg" alt="QQ截图20230217111828.png"></li>
+</ul>
+<p>IN子查询优化</p>
+<p>如果子查询的结果集中的记录条数很少，那么把子查询和外层查询分别看成两个单独的单表查询效率还是很高的，但是子查询的结果集太多的话会导致一下问题</p>
+<ul>
+<li>结果集太多，内存无法存下</li>
+<li>对于外层查询来说，如果子查询的结果集太多，就意味着IN子句中的参数很多，会导致（1.无法有效的使用索引，只能对外层查询进行全表扫描 2.在对外层查询执行全表扫描时，由于IN子句中的参数太多，这会导致检测一条记录是否符合和IN子句中的参数匹配花费的时间太长）<blockquote>
+<p>解决办法：不直接将不相关子查询的结果集当作外层查询的参数，而是将该结果写入一个临时表（1.该临时表的列就是子查询结果集中的列 2.写入临时表的记录会被去重 3.一般情况下子查询结果不会大的离谱，所以会为集合中的数据建立基于内存的存储引擎的临时表，并为该表建立哈希索引，如果子查询结果很大，会转而使用基于磁盘的存储引擎来保存结果集中的记录，索引类型也对应转变为B+树索引）</p>
+</blockquote>
+</li>
+</ul>
+<p>物化表转连接</p>
+<p>松散索引扫描</p>
+<p>如果IN子查询不满足转换为semi-join的条件，又不能转换为物化表或者转换为物化表的成本太大，那么它就会转换为EXISTS查询</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>12.事务</title>
+    <url>/2023/05/27/12-%E4%BA%8B%E5%8A%A1/</url>
+    <content><![CDATA[<p>1.原子性：要么全做，要么全不做<br>2.隔离性：保证其它的状态转换不会影响到本次的状态转换<br>3.一致性（符合所有现实世界的约束）：</p>
+<blockquote>
+<ul>
+<li>数据库本身能为我们保证一部分一致性需求,比如MySQL数据库可以为表建立主键、唯一索引、外键、声明某个列为NOT NULL来拒绝NULL值的插入。又比如对某个列建立了唯一索引时，如果插入某条记录时该列的值重复了，那么MySQL就会报错并且拒绝插入，MySQL还支持CHECK语法来自定义约束,但是实际上MySQL并不会去检查CHECK子句中的约束是否成立，但是我们还是可以通过定义触发器的方式来自定义一些约束条件以保证数据库中的一致性</li>
+<li>更多的一致性需求需要靠写业务代码的程序员自己保证，现实生活中复杂的一致性需求比比皆是，而由于性能问题把一致性需求交给数据库去解决这是不现实的，所以就把锅甩给了业务端程序员</li>
+</ul>
+</blockquote>
+<p>原子性和隔离性都会对一致性产生影响，数据库某些操作的原子性和隔离性都是保证一致性的一种手段，在操作执行完成后保证符合所有既定的约束则是一种结果</p>
+<p>4.持久性：状态转换后，这个转换的结果是永久保留的</p>
+<p>事务的定义：把需要保证原子性、隔离性、一致性、持久性的一个或多个数据库操作称之为一个事务</p>
+<p>事务的状态转换图如下<br><img src="/images/12_1.jpg" alt="微信截图_20230218105257.png"></p>
+<h3 id="隐式提交"><a href="#隐式提交" class="headerlink" title="隐式提交"></a>隐式提交</h3><p>当我们适用START TRANSACTION 或者BEGIN 语句开启了一个事务，或者把系统标量auto commit为OFF时，事务就不会进行自动提交，但是如果我们输入了某些语句之后就会悄悄的提交掉<br>1.定义或修改数据库对象的数据定义语言：所谓的数据库对象，指的就是数据库、表、视图、存储过程等，当我们使用CREATE、ALTER、DROP等语句去修改这些所谓的数据库对象时，就会隐式的提交前面语句所属的事务<br>2.隐式使用或修改数据库中的表：当我们使用ALTER USER、CREATE USER、DROP USER、GRANT、RENAME USER、REVOKE、SET PASSWORD等语句时也会隐式的提交前面语句所属于的事务<br>3.事务控制或关于锁定的语句：当我们在一个事务还没有提交或者回滚时就又使用START TRANSACTION 或者BEGIN语句开启了另一个事务，会隐式提交上一个事务<br>4.加载数据的语句：使用LOAD DATA等<br>5.关于MySQL复制的一些语句：使用START SLAVE、STOP SLAVE、RESET SLAVE、CHANGE MASTER TO等语句时也会隐式的提交前面语句所属的事务<br>6.其它的一些语句：使用ANALYZE TABLE、CACHE INDEX、CHECK TABLE、FLUSH、LOAD INDEX INTO CACHE、OPTIMIZE TABLE、REPAIR TABLE、RESET等语句</p>
+<h3 id="保存点"><a href="#保存点" class="headerlink" title="保存点"></a>保存点</h3><p>定义保存点的语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SAVEPOINT 保存点的名称</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ROLLBACK [WORK] TO [SAVEPOINT] 保存点名称</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>13.redo日志</title>
+    <url>/2023/05/27/13-redo%E6%97%A5%E5%BF%97/</url>
+    <content><![CDATA[<p>与在事务提交时将所有修改过的内存中的页面刷新到磁盘中相比，只将该事务执行过程中产生的redo日志刷新到磁盘的好处如下<br>1.redo日志占用的空间非常小<br>2.redo日志是顺序写入磁盘的</p>
+<p>每条语句包含多个mtr，每个mtr包含一组redo log<br>一个mtr运行结束后，会将产生的一组redolog复制到log buffer中，在一些情况下它们会被刷新到磁盘里<br>1.log buffer空间不足时<br>2.事务提交时<br>3.后台线程不停地刷<br>4.正常关闭服务器<br>5.做checkpoint 时<br>6.其它情况</p>
+<p>redo日志文件前4个block</p>
+<ul>
+<li>log file header：描述该日志文件地一些整体属性</li>
+<li>checkpoint1</li>
+<li>无用</li>
+<li>checkpoint2</li>
+</ul>
+<p>Log Sequence Number（日志序列号）lsn<br>每一组由mtr生成地redo日志都有一个唯一的lsn值与其对应，lsn值越小，说明redo日志产生的越早</p>
+<p>在mtr结束时，还会将执行过程中可能修改过的页面加入到buffer pool 的flush链表</p>
+<p>checkpoint：<br>redo日志只是为了系统崩溃后恢复脏页用的，如果对应的脏页已经刷新到磁盘，就不需要对应的redo日志了，所以判断某些redo日志占用的磁盘空间是否可以覆盖的依据就是它对应的脏页是否已经刷新到磁盘里。</p>
+<p>做一次checkpoint其实可以分为两个步骤<br>1.计算一下当前系统中可以被覆盖的redo日志对应的lsn值最大是多少（有必要的话更新checkpoint_lsn）<br>2.将checkpoint_lsn和对应的redo日志文件组偏移量以及此次checkpoint的编号写到日志文件的管理信息（目前系统做了多少次checkpoint的变量checkpoint_no，每做一次checkpoint，该变量就加1）</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>14.undo日志</title>
+    <url>/2023/05/27/14-undo%E6%97%A5%E5%BF%97/</url>
+    <content><![CDATA[<h2 id="事务id"><a href="#事务id" class="headerlink" title="事务id"></a>事务id</h2><ul>
+<li>对于只读事务来说，只有在它第一次对某个用户创建的临时表执行增、删、改操作时才会为这个事务分配一个事务id</li>
+<li>对于读写事务来说，只有在它第一次对某个表（包括用户创建的临时表）执行增、删、改操作时才会为这个事务分配一个事务id</li>
+</ul>
+<p>聚簇索引的记录还会自动添加名为trx_id、roll_pointer的隐藏列<br>其中trx_id就是对这个聚簇索引记录做改动的语句所在的事务对应的事务id<br>roll_pointer就是一个指向记录对应的undo日志的一个指针</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>15.事务的隔离级别</title>
+    <url>/2023/05/27/15-%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/</url>
+    <content><![CDATA[<p>事务并发执行遇到的问题<br>1.脏写：<br>一个事务修改了另一个未提交事务修改过的数据<br>2.脏读<br>一个事务读到了另一个未提交事务修改过的数据<br>3.不可重复读<br>一个事务只能读到另一个已经提交的事务修改过的数据，并且其它事务每对该数据进行一次修改，并提交后都能查询得到最新值<br>4.幻读<br>一个事务先根据某些条件查询出一些记录，之后另一个事务又向表中插入了符合这些条件的记录，原先的事务再次按照该条件查询时，能把另一个事务插入的记录也读出来</p>
+<p>MySQL四种隔离级别<br><img src="/images/15_1.jpg" alt="微信截图_20230219113504.png"></p>
+<p>MVCC原理（多版本并发控制）<br>版本链<br>READ COMMITTED和REPEATABLE READ生成ReadView的时机不同</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>2.系统变量</title>
+    <url>/2023/05/27/2-%E7%B3%BB%E7%BB%9F%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h3 id="系统变量简介"><a href="#系统变量简介" class="headerlink" title="系统变量简介"></a>系统变量简介</h3><blockquote>
+<p>MySQL服务器程序运行过程中会用到许多影响程序行为的变量，它们被称为MySQL系统变量，比如允许同时连入的客户端数量用系统变量max_connections表示，表的默认存储引擎用系统变量default_storage_engine表示，查询缓存的大小用系统变量query_cache_size表示，MySQL服务器程序的系统变量有好几百条，我们就不一一列举了。</p>
+</blockquote>
+<p>我们可以使用下列命令查看MySQL服务器程序支持的系统变量以及它们的当前值：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW VARIABLES [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
+<h3 id="设置系统变量"><a href="#设置系统变量" class="headerlink" title="设置系统变量"></a>设置系统变量</h3><h4 id="通过启动选项设置"><a href="#通过启动选项设置" class="headerlink" title="通过启动选项设置"></a>通过启动选项设置</h4><p>1.通过命令行添加启动选项。<br>2.通过配置文件添加启动选项</p>
+<h4 id="服务器程序运行过程中设置"><a href="#服务器程序运行过程中设置" class="headerlink" title="服务器程序运行过程中设置"></a>服务器程序运行过程中设置</h4><h5 id="设置不同作用范围的系统变量"><a href="#设置不同作用范围的系统变量" class="headerlink" title="设置不同作用范围的系统变量"></a>设置不同作用范围的系统变量</h5><blockquote>
+<p>我们前面说过，多个客户端程序可以同时连接到一个服务器程序。对于同一个系统变量，我们有时想让不同的客户端有不同的值。比方说狗哥使用客户端A，他想让当前客户端对应的默认存储引擎为InnoDB，所以他可以把系统变量default_storage_engine的值设置为InnoDB；猫爷使用客户端B，他想让当前客户端对应的默认存储引擎为MyISAM，所以他可以把系统变量default_storage_engine的值设置为MyISAM。这样可以使狗哥和猫爷的的客户端拥有不同的默认存储引擎，使用时互不影响，十分方便。但是这样各个客户端都私有一份系统变量会产生这么两个问题：</p>
+</blockquote>
+<ul>
+<li>有一些系统变量并不是针对单个客户端的，比如允许同时连接到服务器的客户端数量max_connections，查询缓存的大小query_cache_size，这些公有的系统变量让某个客户端私有显然不合适。</li>
+<li>一个新连接到服务器的客户端对应的系统变量的值该怎么设置？<blockquote>
+<p>为了解决这两个问题，设计MySQL的大佬提出了系统变量的作用范围的概念，具体来说作用范围分为这两种,GLOBAL（全局变量，影响服务器整体操作）和SESSION（会话变量，影响某个客户端连接的操作，别名LOCAL）通过启动选项设置的系统变量的作用范围都是GLOBAL的，也就是对所有客户端都有效的</p>
+</blockquote>
+</li>
+</ul>
+<p>在服务器程序运行期间通过客户端程序设置系统变量的语法：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SET [GLOBAL|SESSION] 系统变量名 = 值;</span><br></pre></td></tr></table></figure>
+<h5 id="查看不同作用范围的系统变量"><a href="#查看不同作用范围的系统变量" class="headerlink" title="查看不同作用范围的系统变量"></a>查看不同作用范围的系统变量</h5><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW [GLOBAL|SESSION] VARIABLES [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
+<p>小贴士：如果某个客户端改变了某个系统变量在<code>GLOBAL</code>作用范围的值，并不会影响该系统变量在当前已经连接的客户端作用范围为<code>SESSION</code>的值，只会影响后续连入的客户端在作用范围为<code>SESSION</code>的值。</p>
+<h5 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h5><ul>
+<li><p>并不是所有系统变量都具有<code>GLOBAL</code>和<code>SESSION</code>的作用范围。</p>
+<ul>
+<li><p>有一些系统变量只具有<code>GLOBAL</code>作用范围，比方说<code>max_connections</code>，表示服务器程序支持同时最多有多少个客户端程序进行连接。</p>
+</li>
+<li><p>有一些系统变量只具有<code>SESSION</code>作用范围，比如<code>insert_id</code>，表示在对某个包含<code>AUTO_INCREMENT</code>列的表进行插入时，该列初始的值。</p>
+</li>
+<li><p>有一些系统变量的值既具有<code>GLOBAL</code>作用范围，也具有<code>SESSION</code>作用范围，比如我们前面用到的<code>default_storage_engine</code>，而且其实大部分的系统变量都是这样的，</p>
+</li>
+</ul>
+</li>
+<li><p>有些系统变量是只读的，并不能设置值。</p>
+<p>  比方说<code>version</code>，表示当前<code>MySQL</code>的版本，我们客户端是不能设置它的值的，只能在<code>SHOW VARIABLES</code>语句里查看。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>3.状态变量</title>
+    <url>/2023/05/27/3-%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h3 id="状态变量"><a href="#状态变量" class="headerlink" title="状态变量"></a>状态变量</h3><blockquote>
+<p>为了让我们更好的了解服务器程序的运行情况，MySQL服务器程序中维护了很多关于程序运行状态的变量，它们被称为状态变量。比方说Threads_connected表示当前有多少客户端与服务器建立了连接，Handler_update表示已经更新了多少行记录等，像这样显示服务器程序状态信息的状态变量还有好几百个，我们就不一一介绍了，等遇到了会详细说它们的作用的。</p>
+</blockquote>
+<p>  由于状态变量是用来显示服务器程序运行状况的，所以它们的值只能由服务器程序自己来设置，我们程序员是不能设置的。与系统变量类似，状态变量也有GLOBAL和SESSION两个作用范围的，所以查看状态变量的语句可以这么写：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW [GLOBAL|SESSION] STATUS [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>4.字符集和比较规则</title>
+    <url>/2023/05/27/4-%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99/</url>
+    <content><![CDATA[<h2 id="ASCII字符集"><a href="#ASCII字符集" class="headerlink" title="ASCII字符集"></a>ASCII字符集</h2><blockquote>
+<p>总共128个字符，包括一些不可见字符</p>
+</blockquote>
+<h2 id="ISO-8859-1-字符集（latin1）"><a href="#ISO-8859-1-字符集（latin1）" class="headerlink" title="ISO 8859-1 字符集（latin1）"></a>ISO 8859-1 字符集（latin1）</h2><blockquote>
+<p>共收录256个字符，是在ASCII字符集的基础上又扩充了128个西欧常用字符（包括德法两国的字母），也可以使用1个字节来进行编码。</p>
+</blockquote>
+<h2 id="GB2312字符集"><a href="#GB2312字符集" class="headerlink" title="GB2312字符集"></a>GB2312字符集</h2><blockquote>
+<p>收录了汉字以及拉丁字母，希腊字母 收录了汉字以及拉丁字母、希腊字母、日文平假名及片假名字母、俄语西里尔字母。其中收录汉字6763个，其他文字符号682个。同时这种字符集又兼容ASCII字符集，所以在编码方式上显得有些奇怪：<br>1.如果该字符在ASCII字符集中，则采用1字节编码<br>2.否则采用2字节编码</p>
+</blockquote>
+<h2 id="GBK字符集"><a href="#GBK字符集" class="headerlink" title="GBK字符集"></a>GBK字符集</h2><blockquote>
+<p>GBK字符集只是在收录字符范围上对GB2312字符集作了扩充，编码方式上兼容GB2312</p>
+</blockquote>
+<h2 id="utf8字符集"><a href="#utf8字符集" class="headerlink" title="utf8字符集"></a>utf8字符集</h2><blockquote>
+<p>收录地球上能想到的所有字符，而且还在不断扩充。这种字符集兼容ASCII字符集，采用变长编码方式，编码一个字符需要使用1～4个字节</p>
+</blockquote>
+<p><strong>其实准确的说，utf8只是Unicode字符集的一种编码方案，Unicode字符集可以采用utf8、utf16、utf32这几种编码方案，utf8使用1～4个字节编码一个字符，utf16使用2个或4个字节编码一个字符，utf32使用4个字节编码一个字符。更详细的Unicode和其编码方案的知识不是本书的重点，大家上网查查。MySQL中并不区分字符集和编码方案的概念，所以后边介绍的时候把utf8、utf16、utf32都当作一种字符集对待。</strong> </p>
+<h2 id="MySQL中支持的字符集和排序规则"><a href="#MySQL中支持的字符集和排序规则" class="headerlink" title="MySQL中支持的字符集和排序规则"></a>MySQL中支持的字符集和排序规则</h2><h4 id="MySQL中的utf8和utf8mb4"><a href="#MySQL中的utf8和utf8mb4" class="headerlink" title="MySQL中的utf8和utf8mb4"></a>MySQL中的utf8和utf8mb4</h4><ul>
+<li>utf8mb3：阉割过的utf8字符集，只使用1～3个字节表示字符。</li>
+<li>utf8mb4：正宗的utf8字符集，使用1～4个字节表示字符。</li>
+</ul>
+<h4 id="MySQL字符集的查看"><a href="#MySQL字符集的查看" class="headerlink" title="MySQL字符集的查看"></a>MySQL字符集的查看</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW (CHARACTER SET|CHARSET) [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
+
+<h4 id="MySQL比较规则的查看"><a href="#MySQL比较规则的查看" class="headerlink" title="MySQL比较规则的查看"></a>MySQL比较规则的查看</h4><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW COLLATION [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
+<h4 id="各个级别的字符集和比较规则"><a href="#各个级别的字符集和比较规则" class="headerlink" title="各个级别的字符集和比较规则"></a>各个级别的字符集和比较规则</h4><ul>
+<li><p>服务器级别<br>MySQL提供了两个系统变量来表示服务器级别的字符集和比较规则:<br><img src="/images/4_1.jpg" alt="QQ截图20221205152423.png"><br>服务器级别默认的字符集是utf8，默认的比较规则是utf8_general_ci<br>可以用以下命令查看：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">SHOW VARIABLES LIKE [匹配模式]</span><br></pre></td></tr></table></figure></li>
+<li><p>数据库级别<br>我们在创建和修改数据库的时候可以指定该数据库的字符集和比较规则</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE 数据库名</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [[DEFAULT] COLLATE 比较规则名称];</span><br><span class="line"></span><br><span class="line">ALTER DATABASE 数据库名</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [[DEFAULT] COLLATE 比较规则名称];</span><br></pre></td></tr></table></figure>
+<p>如果想查看当前数据库使用的字符集和比较规则，可以查看下面两个系统变量的值（前提是使用USE语句选择当前默认数据库，如果没有默认数据库，则变量与相应的服务器级系统变量具有相同的值）：<br><img src="/images/4_2.jpg" alt="QQ截图20221205153115.png"></p>
+</li>
+<li><p>表级别<br>我们也可以在创建和修改表的时候指定表的字符集和比较规则，语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TABLE 表名 (列的信息)</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [COLLATE 比较规则名称]</span><br><span class="line"></span><br><span class="line">ALTER TABLE 表名</span><br><span class="line">    [[DEFAULT] CHARACTER SET 字符集名称]</span><br><span class="line">    [COLLATE 比较规则名称]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>列级别<br>需要注意的是，对于存储字符串的列，同一个表中的不同的列也可以有不同的字符集和比较规则。我们在创建和修改列定义的时候可以指定该列的字符集和比较规则，语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TABLE 表名(</span><br><span class="line">    列名 字符串类型 [CHARACTER SET 字符集名称] [COLLATE 比较规则名称],</span><br><span class="line">    其他列...</span><br><span class="line">);</span><br><span class="line"></span><br><span class="line">ALTER TABLE 表名 MODIFY 列名 字符串类型 [CHARACTER SET 字符集名称] [COLLATE 比较规则名称];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>对于某个列来说，如果在创建和修改的语句中没有指明字符集和比较规则，将使用该列所在表的字符集和比较规则作为该列的字符集和比较规则。<br><strong>小贴士：在转换列的字符集时需要注意，如果转换前列中存储的数据不能用转换后的字符集进行表示，就会发生错误。比方说原先列使用的字符集是utf8，列中存储了一些汉字，现在把列的字符集转换为ascii的话就会出错，因为ascii字符集并不能表示汉字字符。</strong></p>
+</li>
+</ul>
+<h2 id="MySQL中字符集的转换"><a href="#MySQL中字符集的转换" class="headerlink" title="MySQL中字符集的转换"></a>MySQL中字符集的转换</h2><blockquote>
+<p>我们知道从客户端发往服务器的请求本质上就是一个字符串，服务器向客户端返回的结果本质上也是一个字符串，而字符串其实是使用某种字符集编码的二进制数据。</p>
+</blockquote>
+<p><img src="/images/4_3.jpg" alt="QQ截图20221205153733.png"></p>
+<p><img src="/images/4_4.jpg" alt="QQ截图20221205153848.png"></p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>5.InnoDB记录行格式</title>
+    <url>/2023/05/27/5-InnoDB%E8%AE%B0%E5%BD%95%E8%A1%8C%E6%A0%BC%E5%BC%8F/</url>
+    <content><![CDATA[<h1 id="InnoDB页简介"><a href="#InnoDB页简介" class="headerlink" title="InnoDB页简介"></a>InnoDB页简介</h1><blockquote>
+<p>InnoDB是一个将表中的数据存储到磁盘上的存储引擎。由于磁盘IO和内存IO速度差了几个量级，InnoDB采取的方式是：<strong>将数据划分为若干个页，以页作为磁盘和内存之间的交互的基本单位，InnoDB中页的大小一般为16KB</strong>。</p>
+</blockquote>
+<h1 id="InnoDB行格式"><a href="#InnoDB行格式" class="headerlink" title="InnoDB行格式"></a>InnoDB行格式</h1><blockquote>
+<p>我们平时是以记录为单位来向表中插入数据的，这些记录在磁盘上的存放方式也被称为<strong>行格式</strong>或者<strong>记录格式</strong></p>
+</blockquote>
+<h3 id="指定行格式的语法"><a href="#指定行格式的语法" class="headerlink" title="指定行格式的语法"></a>指定行格式的语法</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TABLE 表名 (列的信息) ROW_FORMAT=行格式名称</span><br><span class="line">    </span><br><span class="line">ALTER TABLE 表名 ROW_FORMAT=行格式名称</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="COMPACT行格式"><a href="#COMPACT行格式" class="headerlink" title="COMPACT行格式"></a>COMPACT行格式</h3><p><img src="/images/5_1.jpg" alt="QQ截图20221205160357.png"></p>
+<p>一条完整的记录其实可以被分为记录的额外信息和记录的真实数据两大部分。</p>
+<ul>
+<li><p>记录的额外信息：服务器为了描述这条记录而不得不添加的一些信息，分为3类，变长字段长度列表、NULL值列表、记录头信息<br>1.变长字段长度列表：MySQL支持一些变长的数据类型，比如VARCHAR(M)、VARBINARY(M)、各种TEXT类型，各种BLOB类型，这些变长字段占用的存储空间分为两部分（真正的数据内容和占用的字节数），对于CHAR(M）类型的列来说，当列采用的是定长字符集时，该列占用的字节数不会被加到变长字段长度列表，而如果采用变长字符集时，该列占用的字节数也会被加到变长字段长度列表<br><strong>在COMPACT行格式中，把所有的变长字段的真实数据占用的字节长度都存放在记录的开头部位，从而形成一个变长字段长度列表，按逆序排放</strong><br>2.NULL值列表：处理过程是这样的，先统计表中哪些列允许存储NULL值(主键列、被NOT NULL修饰的列都是不可以存储NULL值的)，所以在统计的时候不会把这些列算进去，接着如果有的列可以存储NULL值，那么就需要NULL值列表，将每个允许存储NULL的列对应一个二进制位（为1代表该列值为NULL，为0代表不为NULL），其次MySQL规定NULL值列表必须用整数个字节的位表示，如果使用的二进制位个数不是整数个字节，则在字节的高位补0<br>3.记录头信息：它是由固定的5个字节组成，不同位代表不同意思<br><img src="/images/5_2.jpg" alt="QQ截图20221205161836.png"></p>
+</li>
+<li><p>记录的真实数据<br>MySQL会为每个记录默认的添加一些列（也称为隐藏列），具体的列如下：<br><img src="/images/5_3.jpg" alt="QQ截图20221205162406.png"><br>InnoDB表对主键的生成策略:优先使用用户自定义主键作为主键，如果用户没有定义主键，则选取一个Unique键作为主键，如果表中连Unique键都没有定义的化，则InnoDB会为表默认添加一个名为row_id的隐藏列作为主键</p>
+</li>
+</ul>
+<h3 id="Redundant行格式"><a href="#Redundant行格式" class="headerlink" title="Redundant行格式"></a>Redundant行格式</h3><p><img src="/images/5_4.jpg" alt="QQ截图20221207112201.png"></p>
+<ul>
+<li><p>记录的额外信息<br>1.字段长度偏移列表：与compact行格式相比，没有了变长两个字，多了偏移两个字，Redundant的行格式会把该条记录中所有（包括隐藏列）的长度信息都按照逆序存储到字段长度偏移列表。同时Redundant的行格式是按照两个相邻数值的差值来计算各个列值的长度。<br><img src="/images/5_5.jpg" alt="QQ截图20221207115628.png"></p>
+</li>
+<li><p>记录头信息<br><img src="/images/5_6.jpg" alt="QQ截图20221207113712.png"><br><img src="/images/5_7.jpg" alt="QQ截图20221207113735.png"></p>
+</li>
+</ul>
+<p>对于Compact和Reduntant行格式来说，如果某一列中的数据非常多的话，在本记录的真实数据处只会存储该列的前768个字节的数据和一个指向其它页的地址，然后把剩下的数据存放到其它页中，这个过程叫做<strong>行溢出，存储超出768字节的那些页也被称为溢出页</strong></p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>6.InnoDB数据页结构</title>
+    <url>/2023/05/27/6-InnoDB%E6%95%B0%E6%8D%AE%E9%A1%B5%E7%BB%93%E6%9E%84/</url>
+    <content><![CDATA[<h2 id="数据页结构图"><a href="#数据页结构图" class="headerlink" title="数据页结构图"></a>数据页结构图</h2><p><img src="/images/6_1.jpg" alt="QQ截图20221212140703.png"></p>
+<blockquote>
+<p>每当我们插入一条记录，都会从Free Space部分，也就是尚未使用的存储空间中申请一个记录大小的空间划分到User Records部分，当Free Space部分的空间全部被User Records部分替代掉之后，也就意味着这个页使用完了，如果还有新的记录插入的话，就需要去申请新的页了</p>
+</blockquote>
+<blockquote>
+<p>为了更好的管理在User Records中的这些记录，行格式中的记录头信息至关重要，以下为compact行格式中的记录头信息</p>
+</blockquote>
+<p><img src="/images/6_2.jpg" alt="QQ截图20221216113033.png"></p>
+<h2 id="页目录（Page-Directory"><a href="#页目录（Page-Directory" class="headerlink" title="页目录（Page Directory)"></a>页目录（Page Directory)</h2><p>1.将所有正常的记录（包括最大和最小记录，不包括标记为已删除的记录）划分为几个组。<br>2.每个组的最后一条记录（也就是组内最大的那条记录）的头信息中的n_owned属性表示该记录拥有多少条记录，也就是该组内共有几条记录。<br>3.将每个组的最后一条记录的地址偏移量单独提取出来按顺序存储到靠近页的尾部的地方，这个地方就是所谓的Page Directory，也就是页目录（此时应该返回头看看页面各个部分的图）。页面目录中的这些地址偏移量被称为槽（英文名：Slot），所以这个页面目录就是由槽组成的。</p>
+<p><img src="/images/6_3.jpg" alt="QQ截图20221216113857.png"></p>
+<blockquote>
+<p>对于最小记录所在的分组只能有 1 条记录，最大记录所在的分组拥有的记录条数只能在 1<del>8 条之间，剩下的分组中记录的条数范围只能在是 4</del>8 条之间。所以分组是按照下面的步骤进行的：</p>
+</blockquote>
+<ul>
+<li>初始情况下一个数据页里只有最小记录和最大记录两条记录，它们分属于两个分组。</li>
+<li>之后每插入一条记录，都会从页目录中找到主键值比本记录的主键值大并且差值最小的槽，然后把该槽对应的记录的n_owned值加1，表示本组内又添加了一条记录，直到该组中的记录数等于8个</li>
+<li>在一个组中的记录数等于8个后再插入一条记录时，会将组中的记录拆分成两个组，一个组中4条记录，另一个5条记录。这个过程会在页目录中新增一个槽来记录这个新增分组中最大的那条记录的偏移量。</li>
+</ul>
+<p>在一个数据页中查找指定主键值的记录的过程分为两步：<br>1.通过二分法确定该记录所在的槽，并找到该槽中主键值最小的那条记录。<br>2.通过记录的next_record属性遍历该槽所在的组中的各个记录。</p>
+<h2 id="页面头部-Page-Header"><a href="#页面头部-Page-Header" class="headerlink" title="页面头部(Page Header)"></a>页面头部(Page Header)</h2><p><img src="/images/6_4.jpg" alt="QQ截图20221216114601.png"></p>
+<h2 id="文件头部（File-Header"><a href="#文件头部（File-Header" class="headerlink" title="文件头部（File Header)"></a>文件头部（File Header)</h2><p><img src="/images/6_5.jpg" alt="QQ截图20221216114854.png"></p>
+<ul>
+<li>FIL_PAGE_TYPE 页的类型<br><img src="/images/6_6.jpg" alt="QQ截图20221216115011.png"></li>
+<li>FIL_PAGE_PREV和FIL_PAGE_NEXT<br>InnoDB都是以页为单位存放数据的，有时候我们存放某种类型的数据占用的空间非常大（比方说一张表中可以有成千上万条记录），InnoDB可能不可以一次性为这么多数据分配一个非常大的存储空间，如果分散到多个不连续的页中存储的话需要把这些页关联起来，FIL_PAGE_PREV和FIL_PAGE_NEXT就分别代表本页的上一个和下一个页的页号。</li>
+</ul>
+<h2 id="FILE-TAILER"><a href="#FILE-TAILER" class="headerlink" title="FILE TAILER"></a>FILE TAILER</h2><p>InnoDB会把数据存储到磁盘上，操作数据时，需要以页为单位将数据移动到内存中，如果该页中的数据在内存中被修改了，那么在修改后的某个时间需要把数据同步到磁盘中。但是在同步了一半的时候中断电了咋办?</p>
+<ul>
+<li>前4个字节代表页的校验和<blockquote>
+<p>这个部分是和File Header中的校验和相对应的。每当一个页面在内存中修改了，在同步之前就要把它的校验和算出来，因为File Header在页面的前面，所以校验和会被首先同步到磁盘，当完全写完时，校验和也会被写到页的尾部，如果完全同步成功，则页的首部和尾部的校验和应该是一致的。如果写了一半儿断电了，那么在File Header中的校验和就代表着已经修改过的页，而在File Trialer中的校验和代表着原先的页，二者不同则意味着同步中间出了错。</p>
+</blockquote>
+</li>
+<li>后4个字节代表页面被最后修改时对应的日志序列位置（LSN）<blockquote>
+<p>这个部分也是为了校验页的完整性的，只不过我们目前还没说LSN是个什么意思，所以大家可以先不用管这个属性。这个File Trailer与File Header类似，都是所有类型的页通用的。</p>
+</blockquote>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>7.B+树索引</title>
+    <url>/2023/05/27/7-B-%E6%A0%91%E7%B4%A2%E5%BC%95/</url>
+    <content><![CDATA[<h1 id="在没有索引的请况下："><a href="#在没有索引的请况下：" class="headerlink" title="在没有索引的请况下："></a>在没有索引的请况下：</h1><h3 id="在一个页中查找"><a href="#在一个页中查找" class="headerlink" title="在一个页中查找"></a>在一个页中查找</h3><ul>
+<li>以主键为搜索条件<br>可以在页目录中使用二分法快速定位到对应的槽，然后再遍历该槽对应分组中的记录即可快速找到指定的记录。</li>
+<li>以其它列为搜索条件<br>这种情况下只能从最小记录开始依次遍历单链表中的每条记录，然后对比每条记录是不是符合搜索条件。</li>
+</ul>
+<p>###在很多个页中查找</p>
+<blockquote>
+<p>分为两个步骤：<br>1.定位到记录所在的页<br>2.从所在的页内中查找相应的记录</p>
+</blockquote>
+<p>由于我们并不能快速的定位到记录所在的页，所以只能从第一个页沿着双向链表一直往下找，在每一个页中根据我们刚刚介绍过的查找方式去查找指定的记录,当然这种方法是非常耗时的</p>
+<h1 id="索引查找"><a href="#索引查找" class="headerlink" title="索引查找"></a>索引查找</h1><p>一个简单的索引方案</p>
+<ul>
+<li>下一个数据页中用户记录的主键值必须大于上一个页中用户记录的主键值</li>
+<li>给所有页建立一个目录项，每个页对应一个目录项，每个目录项包括下面两个部分（页的用户记录中最小的主键值，我们用key来表示。页号，我们用page_no表示。）</li>
+</ul>
+<p>InnoDB中的索引方案</p>
+<ul>
+<li>InnoDB是使用页来作为管理存储空间的基本单位，也就是最多能保证16KB的连续存储空间，而随着表中记录数量的增多，需要非常大的连续的存储空间才能把所有的目录项都放下，这对记录数量非常多的表是不现实的。</li>
+<li>我们时常会对记录进行增删，假设我们把页28中的记录都删除了，页28也就没有存在的必要了，那意味着目录项2也就没有存在的必要了，这就需要把目录项2后的目录项都向前移动一下，这种牵一发而动全身的设计不是什么好主意～</li>
+</ul>
+<p>所以InnoDB复用了之前存储用户记录的数据页来存储目录项，为了和用户记录做一下区分，我们把这些用来表示目录项的记录称为目录项记录。<br>InnoDB就是通过记录头信息中的record_type来进行区分一条普通的记录是普通用户记录还是目录项记录</p>
+<p>当为这些存储目录项记录的页再生成一个更高级的目录，就像是一个多级目录一样，大目录里嵌套小目录，小目录里才是实际的数据，随着表中记录的增加，这个目录的层级会继续增加，如果简化一下，那么我们可以用下面这个图来描述它：<br><img src="/images/7_1.jpg" alt="QQ截图20221216141803.png"><br>一般情况下，我们用到的B+树都不会超过4层，那我们通过主键值去查找某条记录最多只需要做4个页面内的查找（查找3个目录项页和一个用户记录页），又因为在每个页面内有所谓的Page Directory（页目录），所以在页面内也可以通过二分法实现快速定位记录</p>
+<h3 id="聚簇索引"><a href="#聚簇索引" class="headerlink" title="聚簇索引"></a>聚簇索引</h3><p>我们上面介绍的B+树本身就是一个目录，或者说本身就是一个索引。它有两个特点：</p>
+<p>1.使用记录主键值的大小进行记录和页的排序，这包括三个方面的含义：</p>
+<ul>
+<li>页内的记录是按照主键的大小顺序排成一个单向链表。</li>
+<li>各个存放用户记录的页也是根据页中用户记录的主键大小顺序排成一个双向链表。</li>
+<li>存放目录项记录的页分为不同的层次，在同一层次中的页也是根据页中目录项记录的主键大小顺序排成一个双向链表。</li>
+</ul>
+<p>2.B+树的叶子节点存储的是完整的用户记录。</p>
+<ul>
+<li>所谓完整的用户记录，就是指这个记录中存储了所有列的值（包括隐藏列）。</li>
+</ul>
+<p>具有以上两种特性的B+树称为聚簇索引，所有完整的用户记录都存放在这个聚簇索引的叶子节点处。这种索引不需要通过使用INDEX语句去创建。</p>
+<h3 id="二级索引（辅助索引）"><a href="#二级索引（辅助索引）" class="headerlink" title="二级索引（辅助索引）"></a>二级索引（辅助索引）</h3><p>上面介绍的聚簇索引只能在搜索条件是主键值时才能发挥作用，因为B+树中的数据都是按照主键进行排序的。如果想以别的列作为搜索条件，可以多建立几棵B+树<br>在查找数据的过程中，查找完二级索引后只能获得主键值，仍然需要到聚簇索引中再查一遍，这个过程称为回表</p>
+<h3 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h3><p>我们页可以同时以多个列的大小作为排序规则，也就是同时为多个列建立索引，联合索引的本质上也是一个二级索引。</p>
+<h1 id="B-树索引注意事项"><a href="#B-树索引注意事项" class="headerlink" title="B+树索引注意事项"></a>B+树索引注意事项</h1><h3 id="根页面万年不动窝"><a href="#根页面万年不动窝" class="headerlink" title="根页面万年不动窝"></a>根页面万年不动窝</h3><ul>
+<li>每当为某个表创建一个B+树索引（聚簇索引不是人为创建的，默认就有）的时候，都会为这个索引创建一个根节点页面。最开始表中没有数据的时候，每个B+树索引对应的根节点中既没有用户记录，也没有目录项记录</li>
+<li>随后向表中插入用户记录时，先把用户记录存储到这个根节点中</li>
+<li>当根节点中的可用空间用完时继续插入记录，此时会将根节点中的所有记录复制到一个新的分配页，然后再对这个新页进行页分裂的操作，根节点升级为存储目录项记录的页。</li>
+</ul>
+<h3 id="内节点中目录项记录的唯一性"><a href="#内节点中目录项记录的唯一性" class="headerlink" title="内节点中目录项记录的唯一性"></a>内节点中目录项记录的唯一性</h3><h3 id="一个页面最少存储2条记录"><a href="#一个页面最少存储2条记录" class="headerlink" title="一个页面最少存储2条记录"></a>一个页面最少存储2条记录</h3><h1 id="MyISAM中的索引方案"><a href="#MyISAM中的索引方案" class="headerlink" title="MyISAM中的索引方案"></a>MyISAM中的索引方案</h1><p>将索引和数据分开存储</p>
+<ul>
+<li>将表中的记录按照记录的插入顺序单独村粗在一个文件中，称之为数据文件。可以通过行号快速访问到一条记录</li>
+<li>会将索引信息另外存储到一个称为索引文件的另一个文件中。MyISAM会单独为表的主键创建一个索引，只不过在索引的叶子节点中存储的不是完整的用户记录，而是主键值 + 行号 的组合。先通过索引找到行号，再通过行号去找到对应的记录</li>
+<li>如果有需要的话，我们也可以对其它的列分别建立索引或者建立联合索引，原理和InnoDB中的索引差不多，不过在叶子节点处存储的是相应的列 + 行号。这些索引也全部都是二级索引。</li>
+</ul>
+<h1 id="MySQL中创建和删除索引的语句"><a href="#MySQL中创建和删除索引的语句" class="headerlink" title="MySQL中创建和删除索引的语句"></a>MySQL中创建和删除索引的语句</h1><p>我们可以在创建表的时候指定需要建立索引的单个列或者建立联合索引的多个列：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">CREATE TALBE 表名 (</span><br><span class="line">    各种列的信息 ··· , </span><br><span class="line">    [KEY|INDEX] 索引名 (需要被索引的单个列或多个列)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">ALTER TABLE 表名 ADD [INDEX|KEY] 索引名 (需要被索引的单个列或多个列);</span><br><span class="line">ALTER TABLE 表名 DROP [INDEX|KEY] 索引名;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>8.单表访问方法</title>
+    <url>/2023/05/27/8-%E5%8D%95%E8%A1%A8%E8%AE%BF%E9%97%AE%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<blockquote>
+<p>const:<br>1.直接利用主键值在聚簇索引中定位对应的用户记录<br>2.根据唯一二级索引列来定位一条记录</p>
+</blockquote>
+<blockquote>
+<p>ref:<br>1.对某个普通的二级索引列与常数进行等值比较<br>2.无论是普通二级索引还是唯一二级索引，索引列值为NULL<br>3.对于某个包含多个索引列的二级索引来说，只要是最左边的连续索引列是与常数的等值比较</p>
+</blockquote>
+<blockquote>
+<p>ref_of_null:<br>1.当我们不仅想找出某个二级索引列的值等于某个常数的记录，还想把列的值为NULL的记录也找出来</p>
+</blockquote>
+<blockquote>
+<p>range:<br>1.利用索引进行范围匹配</p>
+</blockquote>
+<blockquote>
+<p>index:<br>1.直接遍历二级索引记录</p>
+</blockquote>
+<blockquote>
+<p>all:<br>1.全表扫描</p>
+</blockquote>
+<p>优化</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>9.连接的原理</title>
+    <url>/2023/05/27/9-%E8%BF%9E%E6%8E%A5%E7%9A%84%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<h3 id="连接过程简介"><a href="#连接过程简介" class="headerlink" title="连接过程简介"></a>连接过程简介</h3><ul>
+<li>涉及单表的条件</li>
+<li>涉及两表的条件</li>
+</ul>
+<p>1.嵌套循环连接<br>2.使用索引加快连接速度<br>3.基于块的嵌套循环连接</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>cmake学习</title>
+    <url>/2023/05/28/cmake%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<p>语法手册：cmake语法手册及教程_可克的博客-CSDN博客_cmake语法</p>
+<p><a href="https://www.bilibili.com/video/BV1vR4y1u77h?spm_id_from=333.337.search-card.all.click">哔哩哔哩视频</a></p>
+<p>视频下方有笔记</p>
+<p><img src="/images/cmake%E5%AD%A6%E4%B9%A0/1.jpg" alt="图片"></p>
+<p>add_definitions()添加编译选项</p>
+<p>include_directories()将指定目录添加到编译器的头文件搜索路径下</p>
+<p><a href="https://www.jianshu.com/p/e7de3de1b0fa">参考</a></p>
+<p>add_library()生成静态库（STATIC)或者动态库（SHARED）</p>
+<p>add_executable()生成可执行文件</p>
+<p>aux_source_directory(dir VAR) 发现一个目录(dir)下所有的源代码文件并将列表存储在一个变量(VAR)中</p>
+<p>target_link_libraries( # 目标库 demo # 目标库需要链接的库 ${log-lib} )</p>
+]]></content>
+      <categories>
+        <category>cmake</category>
+      </categories>
+      <tags>
+        <tag>cmake</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>configure命令</title>
+    <url>/2023/05/28/configure%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_40941932/article/details/109992151">参考</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>configure</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux下目录各个文件夹详解</title>
+    <url>/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_39652397/article/details/123794887">参考</a></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux不同目录详解</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux文件权限和属性</title>
+    <url>/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/</url>
+    <content><![CDATA[<p>如果一个文件被设置了SUID或SGID位，会分别表现在所有者或同组用户的权限的可执行位上。例如：</p>
+<p>1、-rwsr-xr-x 表示SUID和所有者权限中可执行位被设置</p>
+<p>2、-rwSr–r– 表示SUID被设置，但所有者权限中可执行位没有被设置</p>
+<p>3、-rwxr-sr-x 表示SGID和同组用户权限中可执行位被设置</p>
+<p>4、-rw-r-Sr– 表示SGID被设置，但同组用户权限中可执行位没有被设置</p>
+<p>给文件加SUID和SUID的命令如下：</p>
+<p>chmod u+s filename 设置SUID位</p>
+<p>chmod u-s filename 去掉SUID设置</p>
+<p>chmod g+s filename 设置SGID位</p>
+<p>chmod g-s filename 去掉SGID设置</p>
+<p>SUID属性<br>例如&#x2F;usr&#x2F;bin&#x2F;passwd  带有SUID属性 属于root用户 root用户主<br>其它用户只有&#x2F;usr&#x2F;bin&#x2F;passwd的可执行权限，在执行这个命令时会暂时获取root权限</p>
+<p>SGID属性<br>和SUID属性十分相似<br>不同的是其它用户在执行有SGID属性的命令时，会暂时获取该程序群组的支持</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux文件权限</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux配置环境变量</title>
+    <url>/2023/05/28/linux%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/an520_/article/details/125220048">参考</a></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux环境变量配置</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动态链接</title>
+    <url>/2023/05/28/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/</url>
+    <content><![CDATA[<h3 id="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。"><a href="#静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。" class="headerlink" title="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。"></a>静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。</h3><p>-shared</p>
+<blockquote>
+<p>生成动态链接模块时只使用-shared，由于装载时重定位的方法需要修改指令，没有办法做到同一份指令被多个进程共享，因为指令被重定位之后对于每个进程来讲是不同的。</p>
+</blockquote>
+<p>-fPIC 地址无关代码</p>
+<blockquote>
+<p>实现的基本思想就是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分可以保持不变，而数据部分在每个进程中拥有一个副本。这种方案就是地址无关技术</p>
+</blockquote>
+<p>GOT全局偏移表</p>
+<blockquote>
+<p>对于动态链接模块中,对于外部符号（数据）的访问的机制，当指令需要访问某个外部变量时，程序会先找到GOT，然后根据GOT中变量所对应的项找到变量的目标地址。每个变量都对应一个4个字节的地址，链接器在装载模块的时候会查找每个变量所在的地址，然后填充GOT中的各个项。由于GOT表本身是放在数据段的，所以它可以在模块装载时被修改，并且每个进程都可以有独立的副本。</p>
+</blockquote>
+<p>-fPIE</p>
+<blockquote>
+<p>地址无关代码技术除了可以用在动态链接模块上，它也可以用于可执行文件</p>
+</blockquote>
+<p>共享模块（动态链接模块）的全局变量问题</p>
+<blockquote>
+<p>当一个模块引用了定义在共享对象的全局变量的时候，由于可执行文件在之前链接时就必须确定该全局变量的地址，所以连接器会在创建可执行文件时，在它的.bss段创建一个global变量的副本。导致同一变量同时存在于多个位置<br>于是解决的办法只有一个，那就是所有的使用这个变量的指令都指向位于可执行文件中的那个副本。ELF共享库在编译时，默认都把定义在模块内部的全局变量当作定义在其他模块的全局变量，也就是说当作前面的类型四，通过GOT来实现变量的访问。当共享模块被装载时，如果某个全局变量在可执行文件中拥有副本，那么动态链接器就会把GOT中的相应地址指向该副本，这样该变量在运行时实际上最终就只有一个实例。如果变量在共享模块中被初始化，那么动态链接器还需要将该初始化值复制到程序主模块中的变量副本；如果该全局变量在程序主模块中没有副本，那么GOT中的相应地址就指向模块内部的该变量副本。</p>
+</blockquote>
+<p><strong>默认情况下，如果可执行文件是动态链接的，那么GCC会使用PIC的方法来产生可执行文件的代码段部分，以便于不同的进程能够共享代码段，节省内存。所以动态链接的可执行文件中存在.got段</strong></p>
+<p>延迟绑定</p>
+<blockquote>
+<p>由于动态链接下对于全局数据的访问和跨模块的调用都要进行复杂的GOT定位，然后间接寻址或调用，导致程序的运行速度减慢大概1%~%5。又因为动态链接的链接工作在运行时完成，导致程序的启动速度减慢。<br>程序运行过程中，会有很多函数没有用到（错误处理函数，没有使用的功能模块等），所以没有必要一开始就把所有函数都链接好，ELF采用延迟绑定的方法，基本思想是当函数第一次被用到时才由动态链接器进行绑定（符号查找，重定位等），没用到的不绑定。这提高了程序的启动速度。<br>ELF使用PLT（Procedure Linkage Table）来实现延迟绑定,它使用了一些很精巧的指令序列来完成</p>
+</blockquote>
+<p>ELF将GOT拆分成了两个表.got和.got.plt，其中.got用来保存全局变量引用的地址，.got.plt用来保存函数引用的地址<br>PLT在ELF文件中以独立的段存放，段名通常叫做.plt，因为它本身是一些地址无关代码，所以可以跟代码段合并成同一个可读可写可执行的“Segment”被载入内存<br><a href="https://markrepo.github.io/kernel/2018/08/19/dynamic-link/">参考链接</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>链接、装载与库</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动手深度学习</title>
+    <url>/2023/05/28/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<h2 id="正规方程"><a href="#正规方程" class="headerlink" title="正规方程"></a>正规方程</h2><p>正规方程是通过求解下面的方程来找出使得代价最小的函数<img src="/images/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/1.jpg"><br>只适用于线性模型，不适合逻辑回归模型等其它模型</p>
+<h2 id="过拟合、欠拟合、权重衰退"><a href="#过拟合、欠拟合、权重衰退" class="headerlink" title="过拟合、欠拟合、权重衰退"></a>过拟合、欠拟合、权重衰退</h2><h3 id="训练误差和泛化误差"><a href="#训练误差和泛化误差" class="headerlink" title="训练误差和泛化误差"></a>训练误差和泛化误差</h3><p>训练误差：模型在训练数据集上计算得到的误差<br>泛化误差：模型应用在同样从原始样本的分布中抽取的无限多数据样本时，模型误差的期望</p>
+<blockquote>
+<p>我们永远不能准确地计算出泛化误差。这是因为无限多地数据样本是一个虚构的对象。在实际中，我们只能通过将模型应用于一个独立的测试集来估计泛化误差，该测试集由随机选取的、未曾在训练集中出现的数据样本构成</p>
+</blockquote>
+<h3 id="模型复杂度"><a href="#模型复杂度" class="headerlink" title="模型复杂度"></a>模型复杂度</h3><p>几个倾向于影响模型泛化的因素<br>1.可调整参数的数量。当可调整参数的数量（自由度）很大时，模型往往更容易过拟合<br>2.参数采用的值。当权重的取值范围较大时，模型可能更容易过拟合<br>3.训练样本的数量。即使模型很简单，也很容易过拟合只包含一两个样本的数据集。而过拟合一个有数百万个样本的数据集则需要一个极其灵活的模型</p>
+<blockquote>
+<p>正则化是处理过拟合的常用方法：在训练集的损失函数中加入惩罚项，以降低学习到的模型的复杂度</p>
+</blockquote>
+<h2 id="Unet网络"><a href="#Unet网络" class="headerlink" title="Unet网络"></a>Unet网络</h2><p><a href="https://www.jianshu.com/p/14641b79a672">Unet</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>静态链接</title>
+    <url>/2023/05/28/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/</url>
+    <content><![CDATA[<blockquote>
+<p>连接器采用“两部链接”的方法，将链接过程分为两部：</p>
+</blockquote>
+<p>1.空间和地址分配：扫描所有的输入目标文件，获得各个节的长度、属性、位置并将它们合并，计算合并后各个段的长度与位置，建立映射关系。收集所有输入目标文件中符号表中所有的符号定义和符号引用，统一放到全局符号表中<br>2.符号解析与重定位：使用第一步中收集到的所有信息，读取输入文件中节的数据、重定位信息，并且进行符号解析与重定位、调整代码中的地址等。</p>
+<p><strong>重定位过程是链接过程的核心</strong></p>
+<h2 id="符号解析与重定位"><a href="#符号解析与重定位" class="headerlink" title="符号解析与重定位"></a>符号解析与重定位</h2><h4 id="符号解析"><a href="#符号解析" class="headerlink" title="符号解析"></a>符号解析</h4><blockquote>
+<p>重定位的过程伴随着符号解析过程，每个目标文件都可能定义一些符号，也可能引用到定义在其他目标文件的符号。重定位过程中，每个重定位的入口都是一个外部符号的引用，当链接器需要对某个符号的引用进行重定位时，他就要确定这个符号的目标地址。这时候链接器会去查找有所有输入目标文件的符号表组成的全局符号表，找到相应的符号后进行重定位，如果没有找到，就会报符号未定义的错误。</p>
+</blockquote>
+<h4 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h4><blockquote>
+<p>对于32位 x86平台下的ELF文件的重定位入口所修正的指令寻址方式只有两种：</p>
+</blockquote>
+<p>1.绝对近址32位寻址<br>2.相对近址32为寻址</p>
+<blockquote>
+<p>这两种重定位指令修正方式每个被修正的位置的长度都为32位，即4字节。而且都是近址寻址，不用考虑Intel的段间远址寻址。</p>
+</blockquote>
+<p>X86基本重定位类型：<br><img src="/images/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/1.jpg" alt="QQ截图20221203153333.png"></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>链接、装载与库</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ALEX-An-Updatable-Adaptive-Learned-Index</title>
+    <url>/2023/10/01/ALEX-An-Updatable-Adaptive-Learned-Index/</url>
+    <content><![CDATA[<p>ALEX：An Updatable Adaptive Learned Index</p>
+<h2 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h2><p>在DBMS中代替传统的索引结构，类似于B树、B+树之类的变种</p>
+<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>ALEX索引需要实现点查找、范围查询、插入、删除和批量载入<br>ALEX的目标是<br>1.比B+树写数据更快<br>2.比B+树和learned index读数据要更快<br>3.索引大小要比B+树和learned Index要小</p>
+<h2 id="难点与分析过程："><a href="#难点与分析过程：" class="headerlink" title="难点与分析过程："></a>难点与分析过程：</h2><ul>
+<li>写数据时：B+树插入到数据节点时需要进行大量的移位操作，对于一个dense Array 它的插入时间复杂度为O(n)</li>
+<li>写数据时：B+树插入到数据节点时，根据节点是否已满的条件来将数据节点分裂，分裂到根节点会导致树高的增加</li>
+<li>读数据时：B+树遍历到数据节点后，使用二分查找确定带查找的key的position，它的时间复杂度为O（log2n)</li>
+<li>读数据时：最初的Learned Index是先将数据排序好之后，再在该数据上创建模型，这样用最后的数据节点来预测key的位置时会有较大出错的概率，并且还需要存储Error Bound</li>
+</ul>
+<h2 id="方法："><a href="#方法：" class="headerlink" title="方法："></a>方法：</h2><ul>
+<li><strong>写数据时</strong>：ALEX使用一个gap array（间隙数组），这样在插入过程中需要更少的移位操作，它的时间复杂度近似于O（log2n）</li>
+<li><strong>写数据时</strong>：插入已满数据节点时，使用一个intra-node cost model模型来决定将数据节点扩展（如果没有）或者是分裂<br>Intra-node cost model根据每个数据节点存储的两个信息（1.<strong>平均每次操作指数搜索的迭代次数</strong> 2.<strong>平均每次插入时的移位操作次数</strong>）计算经验成本，再和数据节点的预期成本（节点创建时预期的成本）比较<br>如果经验成本与预期成本没有较大的偏离（超过50%）则执行节点扩展（不会超过节点最大大小限制），否则执行节点分裂</li>
+<li><strong>读数据时</strong>：ALEX使用指数查找，先用数据节点的线性模型预测一个position，再判断该position上的key是否大于或者小于待查找的key，以此判断指数查找的方向</li>
+</ul>
+<p><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/1.png" alt="img"><br>指数查找的时间复杂度分析如下<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/2.png" alt="img"><br>并且使用指数查找算法后，也不需要在数据节点模型中存储error bound。</p>
+<ul>
+<li><strong>读数据时</strong>：ALEX在创建数据节点时使用基于模型的插入，先训练好模型之后，再将模型尽量插入预测的位置，这样可以大大减少预测错误的概率</li>
+</ul>
+<p><strong>ALEX的节点：</strong><br><strong>Internal node：</strong><br>线性模型（slope intercept）、point array<br><strong>Leaf node：</strong><br>线性模型（slope intercept）、gap array 、bitmap</p>
+<p><strong>查找：</strong><br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/3.png" alt="img"></p>
+<p><strong>插入：</strong><br><strong>未满节点:</strong> 按照查找逻辑找到应该插入的数据节点，有必要的情况下用指数查找来找到正确的位置。<br><strong>已满节点：</strong> 已满节点的定义（有一个上下限密度dl du）<br>节点扩展机制：<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/4.png" alt="img"><br>节点分裂机制：<br>a.有冗余指针指向数据节点，可以用它分别指向另外两个数据节点<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/5.png" alt="img"></p>
+<p>b.如果父节点满了，像B+树那样进行拆分，分类一直可以传播到根节点<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/6.png" alt="img"></p>
+<p><strong>删除：</strong><br>简单删除key和payload，如果Data Node由于删除而达到密度下限dl，那么我们将收缩Data Node避免低空间利用率（思考：是否可以引入合并操作）</p>
+<p><strong>更新：</strong><br>Delete和Insert操作结合</p>
+<p><strong>界外插入：</strong><br>首先，当ALEX检测到现有key空间之外的插入时，将扩展root节点；如果此扩展将导致根节点超过最大节点大小，ALEX则会创建一个新的root节点，并为新root节点的每个其他指针槽创建一个新的数据节点。<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/7.png" alt="img"><br>其次，ALEX最右边的数据节点通过记录节点中的最大键的值和插入超过该最大值的计数器来检测插入行为。如果多次插入都超过该最大值，这意味着这是一个只追加行为，因此数据节点向右扩展，扩展的空间用来更多类似于追加的插入</p>
+<p><strong>批量加载</strong><br>RMI成本是通过TraverseToLeaf和intra-node cost model来计算的<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/8.png" alt="img"><br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/9.png" alt="img"><br>每个node为internal node或者leaf node由fanout tree决定，<br>决定每一个node的类型时都独自创建一棵fanout tree</p>
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><p>数据集选取：<br>使用某个数据集的8字节的key运行所有的实验，并随机生成固定大小的payload。<br>我们在4个数据集上评估了ALEX，其特征和CDF如下所示<br>经度数据集由Open Street Maps中世界各地的经度组成<br>Longlat数据集由复合键组成（k&#x3D;180*floor(longitude)+latitude, 经纬度也是来自Open Street Maps)<br>Lognormal数据集的值是根据对数正态分布N（0，4）生成的，并乘上10^9，再四舍五入到最接近的整数。<br>YCSB数据集表示根据YCSB基准生成的用户ID的值，这些值均匀分布在整个64位域中，并使用80字节的有效载荷<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/10.png" alt="img"><br>工作负载：我们评估ALEX的主要指标是平均吞吐量（指定时间内完成的插入或读取量），评估了5个工作负载的吞吐量<br>（1）只读工作负载 （2）具有95%的读取和5%插入的读取繁重的工作负载（3）具有50%的读取和50%的插入的写繁重的工作负载（4）具有95%读取和5%插入的读取的短范围查询的工作负载（5）只写工作负载<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/11.png" alt="img"><br>ALEX和learned Index；B+ Tree；模型增强B+ Tree；ART对比</p>
+<ul>
+<li>在只读工作负载上，ALEX比B+树、learned index、模型增强B+树和ART在吞吐量上高4.1x、2.2x、2.9x、3.0x和在索引大小上小800x、15x、160x、8000x</li>
+<li>在读写工作负载上，ALEX比B+树、模型增强B+树和ART在吞吐量上高4.0x、2.7x、2.7x，<br>在索引大小上小2000x、475x、36000x</li>
+</ul>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>RadixSpline-A-Single-Pass-Learned-Index</title>
+    <url>/2023/10/02/RadixSpline-A-Single-Pass-Learned-Index/</url>
+    <content><![CDATA[<h2 id="RadixSpline"><a href="#RadixSpline" class="headerlink" title="RadixSpline"></a>RadixSpline</h2><h3 id="组成部分"><a href="#组成部分" class="headerlink" title="组成部分"></a>组成部分</h3><blockquote>
+<ol>
+<li>a set of spline points</li>
+<li>a radix table</li>
+</ol>
+</blockquote>
+<h3 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h3><blockquote>
+<ol>
+<li>Build Spline<blockquote>
+<p>首先建立一个Spline Model S<br>S(ki) &#x3D; pi +&#x2F;- e<br>(ki, pi)为要查找的key和真实的position e为error<br>模型的计算如下，其中(kleft,pleft)和(kright, pright)为两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/1.png" alt="img"></p>
+</blockquote>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>2.Build Radix Tablle</p>
+<blockquote>
+<p><strong>作用：</strong> 用于所定查找key的附近的两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/2.png" alt="img"><br><strong>过程：</strong> 确定使用的key的prefix的长度r，分配2^r长度的数组，遍历所有的spline points，碰到新的prefix，就插入该数组 </p>
+</blockquote>
+</blockquote>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Bounding-the-Last-Mile-Efficient-Learned-String-Indexing</title>
+    <url>/2023/10/10/Bounding-the-Last-Mile-Efficient-Learned-String-Indexing/</url>
+    <content><![CDATA[<h2 id="INTRODUCTION"><a href="#INTRODUCTION" class="headerlink" title="INTRODUCTION"></a>INTRODUCTION</h2><p>ReadOnly<br>对字符串的学习索引最重要的问题是 last-mile-search,并且这种搜索在字符串场景中特别昂贵。</p>
+<p>两个原因</p>
+<blockquote>
+<ol>
+<li>由于难以建模真实世界的数据（许多真实世界的数据集具有很长的共同前缀以及每个字节相对较低的鉴别内容，CDF似乎是循序渐近的，这样传统的学习模型很难准确捕获和预测），这些场景的平均模型误差往往很高</li>
+<li>最后一英里的搜索是很慢的，每次比较是昂贵的，字符串的大尺寸减少了适合在缓存中的键的数量</li>
+</ol>
+</blockquote>
+<p>这项研究的基础： Bounded Error（这样就可以使用二分查找代替指数搜索）</p>
+<h2 id="SPLING-STRINGS"><a href="#SPLING-STRINGS" class="headerlink" title="SPLING STRINGS"></a>SPLING STRINGS</h2><p>问题描述：对于字符串而言，需要满足两种操作</p>
+<ol>
+<li>确定性查找，找到完全匹配的字符</li>
+<li>模糊匹配，找到第一个满足匹配条件的元素（下届）</li>
+</ol>
+<h3 id="RADIX-STRING-SPLINE"><a href="#RADIX-STRING-SPLINE" class="headerlink" title="RADIX STRING SPLINE"></a>RADIX STRING SPLINE</h3><p>RSS是一棵树，每个节点包含三个部分：<br><img src="/../imgaes/../images/Bounding-the-Last-Mile-Efficient-Learned-String-Indexing/2.png" alt="img"></p>
+<ul>
+<li>bounds: 可操作的数据下标范围</li>
+<li>重定向map(指针):包含并指向了一些key，这些key因为不满足当前节点的error bound，因而被分配到了其他节点</li>
+<li>一个使用K个byte作为前缀，错误范围为E的RadixSpline模型</li>
+</ul>
+<h4 id="如何构建？"><a href="#如何构建？" class="headerlink" title="如何构建？"></a>如何构建？</h4><ol>
+<li>首先，对数据集中所有字符串构建一个RadixSpline(使用前k个字节)。然后，遍历所有唯一的k字节前缀，并检查估计的位置是否在前缀的第一次出现和最后一次出现时都在规定的误差范围内。</li>
+<li>对于每个测试失败的前缀，我们将其添加到重定向表中，并在有问题前缀的所有字符串中构建一个新的RSS，从字节k开始而不是0</li>
+<li>这个过程递归地继续进行，直到每个key都得到满足为止。</li>
+</ol>
+<h4 id="如何查询"><a href="#如何查询" class="headerlink" title="如何查询"></a>如何查询</h4><p><img src="/../images/Bounding-the-Last-Mile-Efficient-Learned-String-Indexing/1.png" alt="img"><br>首先提取字符串的前k个字节，然后对重定向器进行二分查找，如果找到重定向新的RSS节点，就重新开始对下一个k字节进行操作；如果没有找到，那么就在当前节点使用适当的字符串前缀查找并返回结果。</p>
+<h2 id="HASH-CORRECTOR"><a href="#HASH-CORRECTOR" class="headerlink" title="HASH CORRECTOR"></a>HASH CORRECTOR</h2><p>待更新</p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>DILI-A-Distribution-Driven-Learned-Index</title>
+    <url>/2023/12/28/DILI-A-Distribution-Driven-Learned-Index/</url>
+    <content><![CDATA[<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><p>需要有一批数据用于批量加载构建初始数据，不支持从0开始构建（一个key一个key插入），支持读写操作。</p>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>在一棵树中查找一个key，包含两部分；找到包含key的leaf node，leaf node的local search<br>查找性能取决于leaf node的深度和线性回归模型的accuracy</p>
+<h2 id="方法和结果"><a href="#方法和结果" class="headerlink" title="方法和结果"></a>方法和结果</h2><p>提出一种two-phase bulk loading算法，先构建一棵BU（bottom-up）-Tree，它的node布局由greedy merging 算法（考虑了leaf node的深度和线性回归模型的accuracy）决定，接着根据BU-Tree的node布局构建DILI.<br>BU-Tree中internal node的range并不是被它的child平分<br>DILI与LIPP相比，每个leaf node的keys分布更接近线性，发生冲突的概率更低<br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/1.png" alt="img"></p>
+<p>Search without Optimization<br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/2.png" alt="img"></p>
+<p>Building BU-Tree<br>难点：确定nh的大小和nh - 1个breakpoints<br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/3.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/4.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/5.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/6.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/7.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/8.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/9.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/10.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/11.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/12.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/13.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>FITing-Tree-A-Data-aware-Index-Structure</title>
+    <url>/2023/10/03/FiTing-Tree-A-Data-aware-Index-Structure/</url>
+    <content><![CDATA[<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><ol>
+<li>一种新的索引结构，它使用分段线性函数紧凑地捕捉数据中的趋势，并通过此减少索引的内存大小</li>
+<li>这个索引结构的核心是一个参数error(查找key的预测position和实际position之间的最大距离)</li>
+<li>为了实现查找性能和空间之间的trade-off，我们提出了一种cost model在给定查找延迟需求(eg 500ns)和存储预算(eg 100MB)的情况下帮助DBA选择合适的error参数</li>
+</ol>
+<p>与最初的提出的技术相比，有以下优点：<br>(1)绑定最坏的查找性能<br>(2)有效地支持插入<br>(3)启动分页(所有数据不必驻留在一个连续的内存区域)</p>
+<p>另一个有趣的点：<br>由于FITing-Tree的内部节点是树形结构，仍然可以应用前缀和后缀截断的技术来进一步减少索引的大小</p>
+<h2 id="OverView"><a href="#OverView" class="headerlink" title="OverView"></a>OverView</h2><h3 id="Function-Representation"><a href="#Function-Representation" class="headerlink" title="Function Representation"></a>Function Representation</h3><p>使用分段线性函数拟合数据相比于更复杂的函数的优点<br>(分段线性函数近似的计算成本要低得多)<br>(1) 初始索引构建成本低<br>(2) 插入新的key延迟低<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/1.png" alt="img"><br>分段线性函数仍然存在误差error<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/2.png" alt="img"><br>通过以上公式，我们可以定义一个segment(一组排序好的数据)<br>分割过程结束后，FITing-Tree将每个segment的边界和斜率存储在叶子节点中，减少了索引的总体内存占用</p>
+<h3 id="FITing-Tree-Design"><a href="#FITing-Tree-Design" class="headerlink" title="FITing-Tree Design"></a>FITing-Tree Design</h3><h4 id="Clusted-Indexes"><a href="#Clusted-Indexes" class="headerlink" title="Clusted Indexes"></a>Clusted Indexes</h4><p><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/3.png" alt="img"></p>
+<h4 id="Non-clusted-Indexes"><a href="#Non-clusted-Indexes" class="headerlink" title="Non-clusted Indexes"></a>Non-clusted Indexes</h4><p><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/4.png" alt="img"></p>
+<h2 id="SEGMENTATION"><a href="#SEGMENTATION" class="headerlink" title="SEGMENTATION"></a>SEGMENTATION</h2><h3 id="Design-Choices"><a href="#Design-Choices" class="headerlink" title="Design Choices"></a>Design Choices</h3><p>下图是我们分段算法需要实现的目标，使得分段后满足最大的error<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/5.png" alt="img"><br>为了高效地构建索引和支持插入，需要一个高效地one-pass linear algorithm</p>
+<h3 id="Segment-Definition"><a href="#Segment-Definition" class="headerlink" title="Segment Definition"></a>Segment Definition</h3><p>当一个segment添加一个key时，违反了这个max-error，则定义这个segment已经达到最大了</p>
+<blockquote>
+<p>定理:最大segment所覆盖的最小位置数为max-error + 1</p>
+</blockquote>
+<h3 id="Segmentation-Algorithm-思考-可以不以用一个新的分段算法-或者在这个分段算法之上对这个进行改进"><a href="#Segmentation-Algorithm-思考-可以不以用一个新的分段算法-或者在这个分段算法之上对这个进行改进" class="headerlink" title="Segmentation Algorithm (思考: 可以不以用一个新的分段算法,或者在这个分段算法之上对这个进行改进)"></a>Segmentation Algorithm (思考: 可以不以用一个新的分段算法,或者在这个分段算法之上对这个进行改进)</h3><p><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/6.png" alt="img"><br>如图5所示，说明了圆锥体的更新方式:点1时圆锥体的原点。点2更新了高斜坡和低斜坡。点3在原锥内，但是它只更新圆锥的上界（点3的小于下界之上的误差）。点4在更新锥的外部，因此将是新段的第一个点<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/7.png" alt="img"></p>
+<h3 id="Algorithm-Analysis"><a href="#Algorithm-Analysis" class="headerlink" title="Algorithm Analysis"></a>Algorithm Analysis</h3><p>虽然以上收缩锥体算法的运行时间复杂度为O(n),但是它不是最优的。</p>
+<h2 id="INDEX-LOOKUPS"><a href="#INDEX-LOOKUPS" class="headerlink" title="INDEX LOOKUPS"></a>INDEX LOOKUPS</h2><h3 id="Point-Queries"><a href="#Point-Queries" class="headerlink" title="Point Queries"></a>Point Queries</h3><p><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/8.png" alt="img"></p>
+<h3 id="Range-Queries"><a href="#Range-Queries" class="headerlink" title="Range Queries"></a>Range Queries</h3><h2 id="INDEX-INSERTS"><a href="#INDEX-INSERTS" class="headerlink" title="INDEX INSERTS"></a>INDEX INSERTS</h2><h3 id="In-place-Insert-Strategy"><a href="#In-place-Insert-Strategy" class="headerlink" title="In-place Insert Strategy"></a>In-place Insert Strategy</h3><p>类似于页面的填充因子，我们将指定的误差分成两个部分：分割误差e和插入预算x<br>通过为每个segment保留插入预算x，可以确保插入新元素不会违反页面的错误</p>
+<p>更具体地说，给定一个段，页面的总大小为|s| + 2*x(|s|为该段中的位置数,数据被放置在新页面的中间)，在页面的开始和结束处产生x个空位置。在插入过程中如果所有的空白都被填满，那么就需要重新执行分割算法</p>
+<h3 id="Delta-Insert-Algorithm"><a href="#Delta-Insert-Algorithm" class="headerlink" title="Delta Insert Algorithm"></a>Delta Insert Algorithm</h3><ul>
+<li>就地插入策略的成本可能很高</li>
+<li>为了减小插入时页面内数据移动的开销，每个segment包含一个额外的固定大小的缓冲区，此缓冲区保持排序，以实现有效的搜索和合并操作，一旦缓冲区达到预定的大小(buff)，它与段中的数据进行合并，再次执行分割算法</li>
+<li>另外，由于为每个段添加缓冲区可能违反FITing-Tree的max-error，我们透明地将缓冲区地大小合并到分割过程地错误阐述中，即分割过程中地错误阈值为(error -buff)<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/9.png" alt="img"></li>
+</ul>
+<h2 id="COST-MODEL"><a href="#COST-MODEL" class="headerlink" title="COST MODEL"></a>COST MODEL</h2><p>由于指定的错误阈值error会影响查找和插入的性能以及索引的大小<br>提供cost model的目的就是帮助DBA在不同的工作负载下选择合适的错误阈值error</p>
+<h3 id="Latency-Guarantee"><a href="#Latency-Guarantee" class="headerlink" title="Latency Guarantee"></a>Latency Guarantee</h3><p>查找延迟保证</p>
+<p>由于查找需要找到相关的segment,然后搜索segment(数据+缓冲区)，并且error的值会影响创建的段的数量(即更小的error会产生更多的段),我们使用一个函数，它返回为给定数据集创建的segment数量和error值。我们使用Se来表示指定数据集在给定错误阈值e下生成的segment的数量。</p>
+<p>error值为e的总估计查找延迟可以用以下表达式来建模,其中b是tree的fanout,buff是segment的最大buffer大小<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/10.png" alt="img"></p>
+<p>满足给定延迟要求并且存储占用最小的索引由以下表达式给出,其中E表示一组可能的错误值<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/11.png" alt="img"></p>
+<h3 id="Space-Budget"><a href="#Space-Budget" class="headerlink" title="Space Budget"></a>Space Budget</h3><p>空间预算<br>可以用以下函数来估计给定的错误阈值e下的只读聚类索引的大小(byte)<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/12.png" alt="img"><br>因此满足给定存储预算的最小误差阈值由以下表达式给出<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/13.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>NFL-Robust-Learned-Index-via-Distribution-Transformation</title>
+    <url>/2023/12/05/NFL-Robust-Learned-Index-via-Distribution-Transformation/</url>
+    <content><![CDATA[<h2 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h2><ul>
+<li>只读负载</li>
+<li>读写负载，但是数据分布变化不大（即CDF随着key的插入删除变化较小）</li>
+</ul>
+<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>之前的学习索引通过设计更好的启发式方法来划分key空间，使得每一份被分割的sub key空间可以更好地被线性模型拟合。<br>缺点：</p>
+<ul>
+<li>为了达到这个目的，学习索引必须构建更深的层次结构，从而产生更多的遍历时间和预测数量<br>（类似于用一个分段线性函数去拟合数据分布CDF）。</li>
+</ul>
+<h2 id="难点和分析过程："><a href="#难点和分析过程：" class="headerlink" title="难点和分析过程："></a>难点和分析过程：</h2><p>本文提出了学习索引NFL（包括两个结构Normalizing Flow 和 Learned Index ）</p>
+<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg" alt="img"><br>思想： 先用分布转换模型将复杂key分布转换为近似均匀的分布，然后利用转换的key构建学习索引</p>
+<p><strong>难点</strong></p>
+<p>（1）Efficacy of Normalizing flow:</p>
+<ul>
+<li>由于key的数字数据特征有限，分布转换模型表现不佳</li>
+<li>均匀分布很难作为训练目标（我们设计了一个具有丰富特征空间的分布转换模型和一个易于操作的训练目标）</li>
+</ul>
+<p>（2）Efficiency of normalizing flow</p>
+<ul>
+<li>分布转化必须是高效的在线步骤，这样就限制了NF的复杂性。但是直接减少参数数量标准化流程可能会降低转换质量（这样会导致学习索引需要更深的层次结构和更多的模型来近似CDF），（我们设计了一套效率优化方案，并且保证NF的功效）</li>
+</ul>
+<p>（3）Lack of proper indexes for transformed keys：</p>
+<ul>
+<li>numerica NF的转换使线性模型拟合地更好，学习索引应该以新的视角重新思考。（我们提出了After-Flow Learned Index（AFLI），充分利用转换后的key）</li>
+</ul>
+<p><strong>方法</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg" alt="img"><br>以下两个是评价模型转换质量的指标<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/2.jpg" alt="img"></p>
+<p>Tail conflict degree：</p>
+<p>Numerical Normalizing Flow:<br>Feature Space Expansion:现有的NF大多用在cv和nlp领域，用于处理高纬的图片和文本，这些数据都有丰富的特征。然而keys都是数值数据，含有的特征较少。<br>使用Algorithm 3.1分布转换算法（对keys的数值特征进行扩展）<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/3.jpg" alt="img"></p>
+<p>特征扩展的时间复杂度为O（n x d）</p>
+<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/4.png" alt="img"></p>
+<p>Structure of AFLI：<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/5.jpg" alt="img"></p>
+<p><strong>Model node:</strong><br>Empty Slot：unused slot<br>Data Slot：key payload<br>Bucket Pointer: 指向一个bucket<br>Node Pointer：指向一个model node或者dense node<br><strong>Bucket:</strong><br>a short data array.它的size由tail conflict degree决定，但将保持在预设阈值范围内。我们提供两种桶，线性桶（默认）和有序桶</p>
+<p><strong>Dense node：</strong><br>Also a data array，比bucket大一点，但是比Model node小很多，是一个ordered and gapped array, gap的最大值由tail conflict degree</p>
+<p><strong>Analysis:</strong><br>当索引无法建立模型节点时，因为节点中的所有键都太近（即拟合线性模型的斜率为0），索引会分配一个dense array</p>
+<p><strong>Queries:</strong><br>（1）从root node开始查找，如果是model node，先用linear model预测position，判断它的类型，如果是empty slot，表示不存在；如果是data slot，比较是否是相同的key；如果是bucket pointer，在bucket中查找；如果是node pointer，递归操作<br>（2）如果node是dense node，使用二分查找查找这个结果。</p>
+<p><strong>Insertions:</strong><br>（1）如果key-payload pair被插入model node，先用linear model预测position</p>
+<ul>
+<li>如果是empty slot，直接存储key-payload</li>
+<li>如果是data slot，表明发生冲突，创建一个bucket来存储这两个key</li>
+<li>如果是bucket pointer或者node pointer，插入key-payload到bucket或者child node中<br>（2）插入到bucket中时，将key-payload会直接被加到sorted data的末尾；如果bucket是一个ordered mode，将会执行一次插入排序。<br>（3）插入到dense node中时，先在array上执行二分查找，如果那个position是一个empty slot，我们会直接插入key-payload pair；，否则会移动到最近的empty slot再插入。</li>
+</ul>
+<p>如果bucket或者dense node没有empty slots，我们尽量通过一个modeling operation将它转换为model node<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/6.jpg" alt="img"></p>
+<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/7.jpg" alt="img"><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/8.jpg" alt="img"></p>
+<p>我们首先一个使用线性回归创建线性模型（Line 1）<br>如果slope 为0（所有key被映射到一个相同的position），我们为创建一个dense node（Line 2 - 4）<br>否则如果我们成功创建一个linear model，就计算model node所有位置的conflict degree（Line 6）<br>然后我们遍历所有预测的位置，决定每个pos的entry type。如果conflict degree为1，我们直接在data slot存储该key；如果conflict degree大于1但是比bucket的tail confict degree小，存储在一个bucket中（Line 14 - 17）；<br>否则，如果某个position的confict degree比bucket的tail conflict degree大，找到下一个conflict degree也大于tail conflict degree的position或者到末尾，并将经过的position的key都收集起来，并分配一个新的节点来处理它们（第18 - 21行）<br>BulkLoad：首先计算tail conflict degree. The returned result is the root node.<br>Update: lookup + in-place update<br>Delete</p>
+<h2 id="结果："><a href="#结果：" class="headerlink" title="结果："></a>结果：</h2><p><strong>数据集：</strong><br>选取了7个不同的数据集进行评估<br>（Key的类型为double     payload的类型是int64）</p>
+<p>对每种类型的数据集构建了四种类型的工作负载</p>
+<p>每种工作负载包括 批量加载和运行阶段<br>我们使用批量加载操作来加载数据集的50%的key；在运行阶段，根据不同的操作比率生成请求</p>
+<ul>
+<li>只读</li>
+<li>读80% 写20%</li>
+<li>写 20% 读80%</li>
+<li>只写</li>
+</ul>
+<p>将NFL与LIPP、ALEX、PGM-index、B-Tree、an efficient B-Tree对比</p>
+<p><strong>平均吞吐量</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/9.jpg" alt="img"></p>
+<ul>
+<li>只读：NFL与LIPP、ALEX、PGM、B-Tree相比，平均吞吐量分别提高了2.34倍、2.46倍、3.82倍、7.45倍；对于具有大冲突程度的工作负载（即LLT和FB），可以分别实现比LIPP、ALEX高2.41x和3.70x的吞吐量。</li>
+<li>重读：与LIPP、ALEX、PGM、B-Tree相比，NFL在吞吐量上分别提高72.22%、101.05%、611.48%、389.45%</li>
+<li>重写：与LIPP、ALEX、PGM、B-Tree相比，NFL在吞吐量上分别提高29.10%、39.28%、50.88%、162.92%</li>
+<li>只写：与LIPP、ALEX、B-Tree相比，NFL在吞吐量上分别提高22.65%、28.30%和131.58%</li>
+</ul>
+<p><strong>延迟</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/10.jpg" alt="img"></p>
+<ul>
+<li>只读：与LIPP、ALEX、PGM index、B-Tree相比，NFL可以将延迟分别降低58.68%、32.89%、62.73%和80.77%</li>
+<li>读写：与LIPP、ALEX、PGM index和B-Tree相比，NFL可以将延迟分别降低26.64%、45.05%、59.49%、65.31%</li>
+<li>只写：与LIPP、ALEX、B-Tree相比，NFL可以将延迟减少2.26%、27.92%、50.48%</li>
+</ul>
+<p><strong>批量加载时间</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/11.jpg" alt="img"></p>
+<p>与LIPP、ALEX、B-Tree相比，NFL需要2.25倍、0.86倍、2.81倍的大容量加载时间，其中77%的时间是用来转换key的</p>
+<p><strong>索引大小：</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/12.jpg" alt="img"><br>NFL的指数大小分别是ALEX和PGM的2.26倍和3.1倍；然而，NFL的大小仅为LIPP大小的0.51</p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models</title>
+    <url>/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/</url>
+    <content><![CDATA[<p>SALI: A Scalable Adaptive Learned Index Framework based on<br>Probability Models<br>一个基于概率模型的可进化学习索引框架</p>
+<h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><p>LI：只读<br>可写：<br>1.基于缓冲区的策略（插入时放入缓冲区，到达一个阈值后进行合并操作）<br>XIndex、FINEdex<br>2.基于模型的策略（就地插入）<br>ALEX（在插入冲突中，映射的slot已经被占用，通过移动来尝试重新组织节点）、<br>LIPP（利用链接方案，为相应的时隙创建一个新节点，将最后一英里问题转化为子树遍历问题）</p>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/1.png" alt="img"><br>上述的索引结构都不能以高并发性进行扩展</p>
+<p>并发数较少的时候，与基于模型的策略（ALEX+、LIPP+）相比，基于缓冲区策略（XIndex、FINEdex）的索引表现出较差的基本性能和较差的扩展性；并且随着并发数的提高，“最后一英里问题”搜索会迅速饱和内存带宽，从而成为系统的瓶颈（ALEX+必须为此操作获取粗粒度写锁，线程数量增加时，越来越多的线程被阻塞）</p>
+<p>LIPP+没有最后一英里问题，但是它需要在每个节点中维护统计信息，如访问计数和冲突计数（以触发节点再训练，防止性能下降）。这些节点计数器在线程之间造成高争用。</p>
+<h2 id="难点与分析过程"><a href="#难点与分析过程" class="headerlink" title="难点与分析过程"></a>难点与分析过程</h2><p>我们需要设计一个满足如下要求的可扩展学习索引<br>1.Efficient Concurrency高效并发：<br>为了实现高效的插入性能，索引必须跟踪统计信息，这些信息反映了由于新的插入而导致的索引结构随时间的退化（这些信息对于触发节点再训练至关重要），但是节点计数器在线程之间会造成高争用，需要一种轻量级方法<br>2.Adaptive ability适应能力<br>与均匀工作负载相比，学习索引在倾斜插入工作负载下表现出次优性能。因此，学习索引需要有自适应能力以保证其在并发场景的鲁棒性。此外，学习的索引缺乏用于查找操作的优化策略。在偏斜的工作负载下，学习索引尚未充分利用显著降低索引空间成本的机会。</p>
+<p>3.Low overheads of basic performance基本性能的低开销<br>(1)Efficient lookup<br>实现高查找性能，通常取决于最大限度地减少查找的预测错误<br>(2)Efficient insert<br>采用基于模型的策略，而不是基于缓冲区的策略，通过在每个节点中保留间隙，可以显著提高学习索引的插入性能</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>提出SALI<br>1.利用LIPP+结构（使用细粒度锁）<br>2.除了模型重训练以外定义一组节点进化策略，以允许学习到的索引自适应于不同的工作负载倾斜（建议对具有不同读写热度的节点应用不同的进化策略）<br>3.用轻量级概率模型取代了现有学习索引中的每个节点的统计信息，以消除统计信息维护的可扩展性瓶颈</p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/2.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/3.png" alt="img"></p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/4.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/5.png" alt="img"></p>
+<p>进化策略：<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/6.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/7.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/8.png" alt="img"></p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/9.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/10.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/11.png" alt="img"></p>
+<p>概率模型：<br>为了确保最佳性能，学习索引必须监控退化统计信息，以便在必要时启动调整；另外，进化策略需要额外的统计信息。<br>基本概念：模拟信息积累时利用概率</p>
+<p>例子：<br>1.当模拟指定时间段内插入key的累积数量时，我们设计一个基于插入率和插入时间的概率模型<br>2.几何分布可以用来模拟信息的累计（插入冲突等）</p>
+<p>触发insert evolution的条件</p>
+<p>Condition1：评估一个节点及其子树中新key插入的频率<br>该节点容纳足够数量的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/12.png" alt="img"></p>
+<p>n.current_num:是指在当前插入操作结束时节点中包含的key的数量<br>n.build_num:是指上一次执行完进化策略后节点中的key的数量<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/13.png" alt="img"></p>
+<p>Condition2：节点内冲突的升级（判断节点是否恶化）<br>Node必须由足够的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/14.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/15.png" alt="img"></p>
+<p><strong>先计算Pconflict是否被触发，如果触发，再判断Pacc是否被触发，如果两个条件都被触发，执行进化策略</strong></p>
+<p>触发lookup evolution的条件<br>Phl<br>还需要考虑以下两个条件<br>Condition1:<br>再很长的一段时间内，节点上的查找操作没有触发进化策略</p>
+<p>Condition2:<br>节点累计数据的速率并不慢</p>
+<p>For condition1：如果一个节点的最后一次进化操作是由hot lookup触发的，这意味着自那以后没有插入操作触发该节点进化，即该节点没有严重恶化，并且新插入key的数量可能很少，可以将Phl调整到一个更小的值</p>
+<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/16.png" alt="img"></p>
+<p>For condition2：引入Pacc，如果自上次进化操作以来插入了大量新的key，则表明可能需要进行新一轮的进化操作</p>
+<p>每个线程维护一个skip_counter，每次查找操作，skip_counter加1，10次查找操作后，执行一次伯努利实验来判断Phl是否被触发。如果Phl被触发，判断Pacc是否也被触发，如果触发，执行进化策略。</p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds</title>
+    <url>/2023/10/05/The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds/</url>
+    <content><![CDATA[<h2 id="INTRODUCTION"><a href="#INTRODUCTION" class="headerlink" title="INTRODUCTION"></a>INTRODUCTION</h2><p>PGM &#x3D;&#x3D; PieceWise Geometric Model 分段几何模型<br>关键词：dynamic(表示PGM-index除了支持查询还支持插入和删除)、compressed(表示还对模型进行了压缩，达到更好的空间效率)</p>
+<p>本文的注意力集中在解决所谓的全动态可索引字典问题。这个问题要求存储多重集S，以便有效支持以下查询和更新操作</p>
+<ol>
+<li>member (x) &#x3D; true if x ∈ S, false otherwise;</li>
+<li>lookup(x) returns the satellite data of x ∈ S (if any), nil otherwise;</li>
+<li>predecessor (x) &#x3D; max{y ∈ S | y &lt; x};</li>
+<li>range(x, y) &#x3D; S ∩ [x, y];</li>
+<li>insert(x) adds x to S, i.e. S ← S ∪ {x};</li>
+<li>delete(x) removes x from S, i.e. S ← S \ {x}.</li>
+</ol>
+<ul>
+<li>member(x)，判断关键字x是否属于多重集S</li>
+<li>lookup(x)，给定一个key，若该key已被插入，则返回其value</li>
+<li>predecessor(x)，翻译软件叫“前任”，返回所有小于x的数据中最大的那个，其实可以简单理解为排好序的数组中，x的前一个数据</li>
+<li>range(x, y)，范围查询，给出[x, y]关键字x和y之间的所有对应的value</li>
+<li>insert和delete很好理解，插入和删除对应的（K, V）</li>
+</ul>
+<p>本文将 member,lookup,predecessor称为点查询，range称为范围查询<br>对于点查询和范围查询只要实现rank(x)<br>member(x) &lt;–&gt; A[rank(x)] &#x3D;&#x3D; x<br>predecessor(x) &lt;–&gt;A[rank(x) - 1]<br>range(x, y) &lt;–&gt; 从rank(x)对应的A数组的位置开始向后查找直到key大于y为止</p>
+<p>现存的解决上述问题的经典索引数据结构：（1）哈希索引（2）B树（3）位图索引（4）字典树trie索引<br>哈希索引不支持predecesor和range，位图索引维护成本过高，字典树空间消耗过大，主流数据库还是使用B树及其变种作为存储引擎</p>
+<p>本文提出的PGM-Index不像RMI和FITing-Tree那样混合了传统的索引和学习型索引。(RMI的最后一个stage中的模型若error超过阈值，则将模型替换为B+树，FITing-Tree在确定segment时也是查找B+树)</p>
+<h2 id="PGM-Index"><a href="#PGM-Index" class="headerlink" title="PGM-Index"></a>PGM-Index</h2><p>两个关键点：</p>
+<blockquote>
+<p>1.PLA-Model(Piecewise Linear Approximation model, 分段线性近似模型)</p>
+</blockquote>
+<p>这里使用了多个线性模型(segment, FITing-Tree中的分段线性模型)组成了一个PLA-Model(PGM-Index中的一层)，一个segment包含了三部分(start key, slope, intercept)</p>
+<blockquote>
+<p>2.recursive index structure (递归索引结构)</p>
+</blockquote>
+<p>为了适应key的分布，PGM-Index使用了多层PLA-Model，我们先使用所有的key来构建最底层的PLA-Model，然后提取Segment中的key形成新的集合，然后对该集合再次构建PLA-Model，如此递归直到最高层的PLA-Model只有一个segment</p>
+<p>下图包含了PGM-Index的构建伪代码，查找伪代码和查找示意图<br><img src="/../images/The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds/1.png" alt="img"></p>
+<h3 id="Optimal-PLA-model"><a href="#Optimal-PLA-model" class="headerlink" title="Optimal PLA-model"></a>Optimal PLA-model</h3><p>找到最优的PLA-model的方法是动态规划，但它所需要的O(n^3)是禁止的。FITing-Tree的作者通过收缩锥的方式来在线性时间内解决这个问题但无法保证是最优的PLA-model</p>
+<p>然而我们发现这个问题在时间序列的有损压缩和相似性搜索中得到了广泛的研究，并且它允许采用O(n)最优时间和空间的流媒体算法。这类方法的关键思想是将分段线性近似问题简化为构造一组点的凸包在我们的情况下，这是集合{(ki，rank(ki))}为i &#x3D; 0，…，n−1。只要凸包可以被封闭在一个高度不超过2ε的（可能是旋转的）矩形中，索引i就会递增，集合就会被扩展。一旦包围凸壳的矩形高于2ε，我们就停止构造，通过取将矩形分成两个等尺寸的半的线来确定pla模型的一部分。然后，清空当前的处理元素集，算法从其余的输入点重新启动。这种贪婪方法可以被证明在pla模型的大小上是最优的，并且具有线性的时间和空间复杂度。</p>
+<h2 id="DYNAMIC-PGM-INDEX"><a href="#DYNAMIC-PGM-INDEX" class="headerlink" title="DYNAMIC PGM-INDEX"></a>DYNAMIC PGM-INDEX</h2><p>插入和删除操作</p>
+<p>现有学习型索引插入操作的实现方案是，将元素按序插入到相应段的缓存中，当缓存满了，将缓存与主索引合并，合并需要重新训练。这个方案在key非常多时，效率较低。本文提出两个插入策略：（1）面向时序数据（2）面向一般数据</p>
+<ul>
+<li>如果是时间序列的数据，插入的数据肯定是在数组A的最后面，那么如果最后一个段能够存放这个数据，且满足ε的条件，就直接放在最后一个段；否则新建一个段，然后向上层一层一层更新Segment。在这种策略下，每层更新最多只涉及到一个Segment的添加，因此需要的I&#x2F;O少。</li>
+<li>如果是一般的数据，即插入的位置可以是任意的。这里则采用LSM-Tree更新数据的思想。</li>
+</ul>
+<p><img src="/../images/The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds/2.png" alt="img"></p>
+<h2 id="COMPRESSED-PGM-INDEX"><a href="#COMPRESSED-PGM-INDEX" class="headerlink" title="COMPRESSED PGM-INDEX"></a>COMPRESSED PGM-INDEX</h2>]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Updatable-Learned-Index-with-Precise-Positions</title>
+    <url>/2023/10/10/Updatable-Learned-Index-with-Precise-Positions/</url>
+    <content><![CDATA[<h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><p>读写负载</p>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>Learned Index：只能在只读数据集上查找，无法处理索引结构中必不可少的更新操作<br>ALEX和PGM：它们对更新的支持是以查找操作的额外搜索为代价的；并且这些索引的更新操作也会导致大量元素的移动</p>
+<p>需要一种索引可以解决“最后一英里问题”</p>
+<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>每个Node包含一个model、一个entries array、一个bit数组，<br>每个bit表示array中一个entry的类型，<br>类型有<br>NULL（空entry），<br>DATA(entry包含一个键值对，如果键值对太大，保存一个指向payload的指针)，<br>NODE（该entry指向下一层中的一个子节点，将一个新元素插入DATA entry时，创建一个子节点保存这两个entry，该entry指向这个新的节点）</p>
+<p>三种类型的entry的大小都为16byte，其中DATA类型的entry由8byte的key和8byte的payload组成<br>对于第i个entry，bit数组的第2<em>i位表示该entry是不是NULL,第2</em>i + 1位表示entry的type</p>
+<p>LIPP不区分leaf node和internal node<br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/1.jpg" alt="img"><br>各种操作的算法：<br>FMCD算法：</p>
+<blockquote>
+<p>给定一组key和数组长度L，计算最小的冲突度T及相应的linear model</p>
+</blockquote>
+<p><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/2.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/3.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/4.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/5.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/6.jpg" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>cmake-generator-error-under-windows-system</title>
+    <url>/2023/12/07/cmake-generator-error-under-windows-system/</url>
+    <content><![CDATA[<p>1.安装windows版本cmake（配置环境变量）<br>2.安装windows版本mingw（配置环境变量）<br>3.创建工程目录<br>执行以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir build</span><br><span class="line">cd build</span><br><span class="line">cmake -G &quot;MinGW Makefiles&quot; -D &quot;CMAKE_MAKE_PROGRAM:PATH=your path to make.exe&quot;</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<p>参考：<br><a href="https://blog.csdn.net/dcrmg/article/details/103918543">https://blog.csdn.net/dcrmg/article/details/103918543</a><br><a href="https://codeantenna.com/a/ELzh11ElWs">https://codeantenna.com/a/ELzh11ElWs</a></p>
+]]></content>
+      <categories>
+        <category>cmake</category>
+      </categories>
+      <tags>
+        <tag>cmake</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>cmu15445-project0</title>
+    <url>/2024/02/22/cmu15445-project0/</url>
+    <content><![CDATA[<h2 id="TASK-1-Copy-On-Write-Trie"><a href="#TASK-1-Copy-On-Write-Trie" class="headerlink" title="TASK 1 Copy-On-Write Trie"></a>TASK 1 Copy-On-Write Trie</h2><p>COW Trie在每次插入和删除时不会改变原有节点，而是对该节点的副本进行修改后，依次为其父节点创建修改后的副本，最后返回一个新的根节点。<br>此外，删除操作中，如果回溯路径上的某节点无值，且不存在子节点，还需要删除该节点</p>
+<hr>
+<p>插入(“ad”, 2),创建了一个新的Node2<br><img src="/../images/cmu15445-project0/2.png" alt="img"></p>
+<hr>
+<p>插入(“b”, 3)<br><img src="/../images/cmu15445-project0/1.png" alt="img"></p>
+<hr>
+<p>插入(“a”, “abc”) 删除(“ab”, 1)<br><br>注意删除操作后需要清除所有不需要的节点</p>
+<p><img src="/../images/cmu15445-project0/3.png" alt="img"></p>
+<p>Get函数实现</p>
+<blockquote>
+<p>从root节点遍历Tire树，<br>如果key不存在返回nullptr，<br>如果key存在，但是对应的Node无value或者value的类型不匹配，返回nullptr<br>其它情况，返回value</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Get the value associated with the given key.</span></span><br><span class="line"><span class="comment">// 1. If the key is not in the trie, return nullptr.</span></span><br><span class="line"><span class="comment">// 2. If the key is in the trie but the type is mismatched, return nullptr.</span></span><br><span class="line"><span class="comment">// 3. Otherwise, return the value.</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">Trie::Get</span><span class="params">(std::string_view key)</span> <span class="type">const</span> -&gt; <span class="type">const</span> T * </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!root_) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function">std::shared_ptr&lt;<span class="type">const</span> TrieNode&gt; <span class="title">ptr</span><span class="params">(root_)</span></span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">char</span> ch : key) &#123;</span><br><span class="line">    <span class="keyword">if</span> (ptr-&gt;children_.<span class="built_in">count</span>(ch) == <span class="number">0</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ptr = ptr-&gt;children_.<span class="built_in">at</span>(ch);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!ptr-&gt;is_value_node_) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> p = std::dynamic_pointer_cast&lt;<span class="type">const</span> TrieNodeWithValue&lt;T&gt;&gt;(ptr);</span><br><span class="line">  <span class="keyword">if</span> (!p) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> p-&gt;value_.<span class="built_in">get</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">Trie::Put</span><span class="params">(std::string_view key, T value)</span> <span class="type">const</span> -&gt; Trie </span>&#123;</span><br><span class="line">  <span class="comment">// Note that `T` might be a non-copyable type. Always use `std::move` when creating `shared_ptr` on that value.</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// You should walk through the trie and create new nodes if necessary. If the node corresponding to the key already</span></span><br><span class="line">  <span class="comment">// exists, you should create a new `TrieNodeWithValue`.</span></span><br><span class="line">  <span class="function">std::shared_ptr&lt;<span class="type">const</span> TrieNode&gt; <span class="title">new_root</span><span class="params">(<span class="literal">nullptr</span>)</span></span>;</span><br><span class="line">  std::map&lt;<span class="type">char</span>, std::shared_ptr&lt;<span class="type">const</span> TrieNode&gt;&gt; children;</span><br><span class="line">  <span class="keyword">if</span> (key.<span class="built_in">length</span>() == <span class="number">0</span>) &#123;<span class="comment">//key长度为0，表示在root节点put value</span></span><br><span class="line">    <span class="keyword">if</span> (root_) &#123;</span><br><span class="line">      children = root_-&gt;children_;</span><br><span class="line">    &#125;</span><br><span class="line">    new_root = std::make_shared&lt;<span class="type">const</span> TrieNodeWithValue&lt;T&gt;&gt;(children, std::<span class="built_in">make_shared</span>&lt;T&gt;(std::<span class="built_in">move</span>(value)));<span class="comment">//创建一个新的root节点</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Trie</span>(new_root);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  std::vector&lt;std::unique_ptr&lt;TrieNode&gt;&gt; stack;</span><br><span class="line">  <span class="keyword">if</span> (root_) &#123;</span><br><span class="line">    stack.<span class="built_in">push_back</span>(root_-&gt;<span class="built_in">Clone</span>());</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    stack.<span class="built_in">push_back</span>(std::<span class="built_in">make_unique</span>&lt;TrieNode&gt;());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">auto</span> <span class="title">ptr</span><span class="params">(root_)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int64_t</span> i = <span class="number">0</span>; i &lt; <span class="built_in">static_cast</span>&lt;<span class="type">int64_t</span>&gt;(key.<span class="built_in">length</span>() - <span class="number">1</span>); ++i) &#123;</span><br><span class="line">    <span class="function">std::unique_ptr&lt;TrieNode&gt; <span class="title">tmp_ptr</span><span class="params">(<span class="literal">nullptr</span>)</span></span>;</span><br><span class="line">    <span class="keyword">if</span> (ptr &amp;&amp; ptr-&gt;children_.<span class="built_in">count</span>(key[i]) == <span class="number">1</span>) &#123;</span><br><span class="line">      ptr = ptr-&gt;children_.<span class="built_in">at</span>(key[i]);</span><br><span class="line">      tmp_ptr = ptr-&gt;<span class="built_in">Clone</span>();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      tmp_ptr = std::<span class="built_in">make_unique</span>&lt;TrieNode&gt;();</span><br><span class="line">      ptr = <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    stack.<span class="built_in">push_back</span>(std::<span class="built_in">move</span>(tmp_ptr));</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> value_ptr = std::<span class="built_in">make_shared</span>&lt;T&gt;(std::<span class="built_in">move</span>(value));</span><br><span class="line">  <span class="keyword">if</span> (ptr &amp;&amp; ptr-&gt;children_.<span class="built_in">count</span>(key.<span class="built_in">back</span>())) &#123;</span><br><span class="line">    ptr = ptr-&gt;children_.<span class="built_in">at</span>(key.<span class="built_in">back</span>());</span><br><span class="line">    children = ptr-&gt;children_;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> value_node = std::make_unique&lt;TrieNodeWithValue&lt;T&gt;&gt;(children, std::<span class="built_in">move</span>(value_ptr));</span><br><span class="line">  stack.<span class="built_in">push_back</span>(std::<span class="built_in">move</span>(value_node));</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int64_t</span> i = key.<span class="built_in">length</span>() - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">    <span class="keyword">auto</span> tmp_ptr = std::<span class="built_in">move</span>(stack.<span class="built_in">back</span>());</span><br><span class="line">    stack.<span class="built_in">pop_back</span>();</span><br><span class="line">    stack.<span class="built_in">back</span>()-&gt;children_[key[i]] = std::<span class="built_in">move</span>(tmp_ptr);</span><br><span class="line">  &#125;</span><br><span class="line">  new_root = std::<span class="built_in">move</span>(stack.<span class="built_in">back</span>());</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Trie</span>(new_root);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="TASK-2-Concurrent-Key-Value-Store"><a href="#TASK-2-Concurrent-Key-Value-Store" class="headerlink" title="TASK 2 Concurrent Key-Value Store"></a>TASK 2 Concurrent Key-Value Store</h2><blockquote>
+<p>concurrent Key-Value store需要支持 <strong>多个读者和一个写者</strong> 工作的情况<br>也就是当一个写者在创建一个新的root的时候，读者可以在old root进行读操作<br>Tire_store.cpp文件<br></p>
+</blockquote>
+<p>读操作</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">TrieStore::Get</span><span class="params">(std::string_view key)</span> -&gt; std::optional&lt;ValueGuard&lt;T&gt;&gt; </span>&#123;</span><br><span class="line">  <span class="comment">// Pseudo-code:</span></span><br><span class="line">  <span class="comment">// (1) Take the root lock, get the root, and release the root lock. Don&#x27;t lookup the value in the</span></span><br><span class="line">  <span class="comment">//     trie while holding the root lock.</span></span><br><span class="line">  <span class="comment">// (2) Lookup the value in the trie.</span></span><br><span class="line">  <span class="comment">// (3) If the value is found, return a ValueGuard object that holds a reference to the value and the</span></span><br><span class="line">  <span class="comment">//     root. Otherwise, return std::nullopt.</span></span><br><span class="line">  Trie root;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(root_lock_)</span></span>;</span><br><span class="line">    root = root_;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">const</span> T *val = root.<span class="built_in">Get</span>&lt;T&gt;(key);</span><br><span class="line">  <span class="keyword">if</span> (!val) &#123;</span><br><span class="line">    <span class="keyword">return</span> std::<span class="literal">nullopt</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">ValueGuard</span>&lt;T&gt;(root, *val);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>写操作</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">TrieStore::Put</span><span class="params">(std::string_view key, T value)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// You will need to ensure there is only one writer at a time. Think of how you can achieve this.</span></span><br><span class="line">  <span class="comment">// The logic should be somehow similar to `TrieStore::Get`.</span></span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(write_lock_)</span></span>;</span><br><span class="line">  Trie root;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard1</span><span class="params">(root_lock_)</span></span>;</span><br><span class="line">    root = root_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Trie new_root = root.<span class="built_in">Put</span>&lt;T&gt;(key, std::<span class="built_in">move</span>(value));</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard1</span><span class="params">(root_lock_)</span></span>;</span><br><span class="line">    root_ = new_root;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">TrieStore::Remove</span><span class="params">(std::string_view key)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// You will need to ensure there is only one writer at a time. Think of how you can achieve this.</span></span><br><span class="line">  <span class="comment">// The logic should be somehow similar to `TrieStore::Get`.</span></span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(write_lock_)</span></span>;</span><br><span class="line">  Trie root;</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard1</span><span class="params">(root_lock_)</span></span>;</span><br><span class="line">    root = root_;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Trie new_root = root.<span class="built_in">Remove</span>(key);</span><br><span class="line"></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard1</span><span class="params">(root_lock_)</span></span>;</span><br><span class="line">    root_ = new_root;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="TASK-3-Debugging"><a href="#TASK-3-Debugging" class="headerlink" title="TASK 3 Debugging"></a>TASK 3 Debugging</h2><p>skip…….</p>
+<h2 id="TASK-4-SQL-String-Functions"><a href="#TASK-4-SQL-String-Functions" class="headerlink" title="TASK 4 SQL String Functions"></a>TASK 4 SQL String Functions</h2><p>实现Upper方法和Lower方法<br>src&#x2F;include&#x2F;execution&#x2F;string_expression.h</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">Compute</span><span class="params">(<span class="type">const</span> std::string &amp;val)</span> <span class="type">const</span> -&gt; std::string </span>&#123;</span><br><span class="line">    <span class="comment">// TODO(student): implement upper / lower.</span></span><br><span class="line">    std::string res;</span><br><span class="line">    res.<span class="built_in">resize</span>(val.<span class="built_in">length</span>());</span><br><span class="line">    <span class="keyword">switch</span> (expr_type_) &#123;</span><br><span class="line">      <span class="keyword">case</span> StringExpressionType::Lower:</span><br><span class="line">        std::<span class="built_in">transform</span>(val.<span class="built_in">begin</span>(), val.<span class="built_in">end</span>(), res.<span class="built_in">begin</span>(), ::tolower);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> StringExpressionType::Upper:</span><br><span class="line">        std::<span class="built_in">transform</span>(val.<span class="built_in">begin</span>(), val.<span class="built_in">end</span>(), res.<span class="built_in">begin</span>(), ::toupper);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果如下:<br><br><img src="/../images/cmu15445-project0/4.png" alt="img"></p>
+<p>测试通过截图：<br><br><img src="/../images/cmu15445-project0/5.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>cmu15445-2023</category>
+      </categories>
+      <tags>
+        <tag>cmu15445—2023</tag>
+      </tags>
+  </entry>
+</search>

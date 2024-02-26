@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="ALEX：An Updatable Adaptive Learned Index 应用场景：在DBMS中代替传统的索引结构，类似于B树、B+树之类的变种 问题描述：ALEX索引需要实现点查找、范围查询、插入、删除和批量载入ALEX的目标是1.比B+树写数据更快2.比B+树和learned index读数据要更快3.索引大小要比B+树和learned Index要小 难点与分析过程： 写数据时：B+">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ALEX-An-Updatable-Adaptive-Learned-Index">
+<meta property="og:url" content="http://jingtao8a.github.io/2023/10/01/ALEX-An-Updatable-Adaptive-Learned-Index/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="ALEX：An Updatable Adaptive Learned Index 应用场景：在DBMS中代替传统的索引结构，类似于B树、B+树之类的变种 问题描述：ALEX索引需要实现点查找、范围查询、插入、删除和批量载入ALEX的目标是1.比B+树写数据更快2.比B+树和learned index读数据要更快3.索引大小要比B+树和learned Index要小 难点与分析过程： 写数据时：B+">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/1.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/2.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/3.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/4.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/5.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/6.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/7.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/8.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/9.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/10.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/11.png">
+<meta property="article:published_time" content="2023-10-02T04:47:41.000Z">
+<meta property="article:modified_time" content="2024-02-26T07:45:34.714Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="Learned Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/ALEX-An-Updatable-Adaptive-Learned-Index/1.png">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2023/10/01/ALEX-An-Updatable-Adaptive-Learned-Index/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>ALEX-An-Updatable-Adaptive-Learned-Index | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/10/01/ALEX-An-Updatable-Adaptive-Learned-Index/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          ALEX-An-Updatable-Adaptive-Learned-Index
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-01 21:47:41" itemprop="dateCreated datePublished" datetime="2023-10-01T21:47:41-07:00">2023-10-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>ALEX：An Updatable Adaptive Learned Index</p>
+<h2 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h2><p>在DBMS中代替传统的索引结构，类似于B树、B+树之类的变种</p>
+<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>ALEX索引需要实现点查找、范围查询、插入、删除和批量载入<br>ALEX的目标是<br>1.比B+树写数据更快<br>2.比B+树和learned index读数据要更快<br>3.索引大小要比B+树和learned Index要小</p>
+<h2 id="难点与分析过程："><a href="#难点与分析过程：" class="headerlink" title="难点与分析过程："></a>难点与分析过程：</h2><ul>
+<li>写数据时：B+树插入到数据节点时需要进行大量的移位操作，对于一个dense Array 它的插入时间复杂度为O(n)</li>
+<li>写数据时：B+树插入到数据节点时，根据节点是否已满的条件来将数据节点分裂，分裂到根节点会导致树高的增加</li>
+<li>读数据时：B+树遍历到数据节点后，使用二分查找确定带查找的key的position，它的时间复杂度为O（log2n)</li>
+<li>读数据时：最初的Learned Index是先将数据排序好之后，再在该数据上创建模型，这样用最后的数据节点来预测key的位置时会有较大出错的概率，并且还需要存储Error Bound</li>
+</ul>
+<h2 id="方法："><a href="#方法：" class="headerlink" title="方法："></a>方法：</h2><ul>
+<li><strong>写数据时</strong>：ALEX使用一个gap array（间隙数组），这样在插入过程中需要更少的移位操作，它的时间复杂度近似于O（log2n）</li>
+<li><strong>写数据时</strong>：插入已满数据节点时，使用一个intra-node cost model模型来决定将数据节点扩展（如果没有）或者是分裂<br>Intra-node cost model根据每个数据节点存储的两个信息（1.<strong>平均每次操作指数搜索的迭代次数</strong> 2.<strong>平均每次插入时的移位操作次数</strong>）计算经验成本，再和数据节点的预期成本（节点创建时预期的成本）比较<br>如果经验成本与预期成本没有较大的偏离（超过50%）则执行节点扩展（不会超过节点最大大小限制），否则执行节点分裂</li>
+<li><strong>读数据时</strong>：ALEX使用指数查找，先用数据节点的线性模型预测一个position，再判断该position上的key是否大于或者小于待查找的key，以此判断指数查找的方向</li>
+</ul>
+<p><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/1.png" alt="img"><br>指数查找的时间复杂度分析如下<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/2.png" alt="img"><br>并且使用指数查找算法后，也不需要在数据节点模型中存储error bound。</p>
+<ul>
+<li><strong>读数据时</strong>：ALEX在创建数据节点时使用基于模型的插入，先训练好模型之后，再将模型尽量插入预测的位置，这样可以大大减少预测错误的概率</li>
+</ul>
+<p><strong>ALEX的节点：</strong><br><strong>Internal node：</strong><br>线性模型（slope intercept）、point array<br><strong>Leaf node：</strong><br>线性模型（slope intercept）、gap array 、bitmap</p>
+<p><strong>查找：</strong><br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/3.png" alt="img"></p>
+<p><strong>插入：</strong><br><strong>未满节点:</strong> 按照查找逻辑找到应该插入的数据节点，有必要的情况下用指数查找来找到正确的位置。<br><strong>已满节点：</strong> 已满节点的定义（有一个上下限密度dl du）<br>节点扩展机制：<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/4.png" alt="img"><br>节点分裂机制：<br>a.有冗余指针指向数据节点，可以用它分别指向另外两个数据节点<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/5.png" alt="img"></p>
+<p>b.如果父节点满了，像B+树那样进行拆分，分类一直可以传播到根节点<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/6.png" alt="img"></p>
+<p><strong>删除：</strong><br>简单删除key和payload，如果Data Node由于删除而达到密度下限dl，那么我们将收缩Data Node避免低空间利用率（思考：是否可以引入合并操作）</p>
+<p><strong>更新：</strong><br>Delete和Insert操作结合</p>
+<p><strong>界外插入：</strong><br>首先，当ALEX检测到现有key空间之外的插入时，将扩展root节点；如果此扩展将导致根节点超过最大节点大小，ALEX则会创建一个新的root节点，并为新root节点的每个其他指针槽创建一个新的数据节点。<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/7.png" alt="img"><br>其次，ALEX最右边的数据节点通过记录节点中的最大键的值和插入超过该最大值的计数器来检测插入行为。如果多次插入都超过该最大值，这意味着这是一个只追加行为，因此数据节点向右扩展，扩展的空间用来更多类似于追加的插入</p>
+<p><strong>批量加载</strong><br>RMI成本是通过TraverseToLeaf和intra-node cost model来计算的<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/8.png" alt="img"><br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/9.png" alt="img"><br>每个node为internal node或者leaf node由fanout tree决定，<br>决定每一个node的类型时都独自创建一棵fanout tree</p>
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><p>数据集选取：<br>使用某个数据集的8字节的key运行所有的实验，并随机生成固定大小的payload。<br>我们在4个数据集上评估了ALEX，其特征和CDF如下所示<br>经度数据集由Open Street Maps中世界各地的经度组成<br>Longlat数据集由复合键组成（k&#x3D;180*floor(longitude)+latitude, 经纬度也是来自Open Street Maps)<br>Lognormal数据集的值是根据对数正态分布N（0，4）生成的，并乘上10^9，再四舍五入到最接近的整数。<br>YCSB数据集表示根据YCSB基准生成的用户ID的值，这些值均匀分布在整个64位域中，并使用80字节的有效载荷<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/10.png" alt="img"><br>工作负载：我们评估ALEX的主要指标是平均吞吐量（指定时间内完成的插入或读取量），评估了5个工作负载的吞吐量<br>（1）只读工作负载 （2）具有95%的读取和5%插入的读取繁重的工作负载（3）具有50%的读取和50%的插入的写繁重的工作负载（4）具有95%读取和5%插入的读取的短范围查询的工作负载（5）只写工作负载<br><img src="/../images/ALEX-An-Updatable-Adaptive-Learned-Index/11.png" alt="img"><br>ALEX和learned Index；B+ Tree；模型增强B+ Tree；ART对比</p>
+<ul>
+<li>在只读工作负载上，ALEX比B+树、learned index、模型增强B+树和ART在吞吐量上高4.1x、2.2x、2.9x、3.0x和在索引大小上小800x、15x、160x、8000x</li>
+<li>在读写工作负载上，ALEX比B+树、模型增强B+树和ART在吞吐量上高4.0x、2.7x、2.7x，<br>在索引大小上小2000x、475x、36000x</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learned-Index/" rel="tag"># Learned Index</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/28/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" rel="prev" title="动态链接">
+      <i class="fa fa-chevron-left"></i> 动态链接
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/10/02/RadixSpline-A-Single-Pass-Learned-Index/" rel="next" title="RadixSpline-A-Single-Pass-Learned-Index">
+      RadixSpline-A-Single-Pass-Learned-Index <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">应用场景：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">问题描述：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9A%BE%E7%82%B9%E4%B8%8E%E5%88%86%E6%9E%90%E8%BF%87%E7%A8%8B%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">难点与分析过程：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">方法：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">5.</span> <span class="nav-text">结果</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">34</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
