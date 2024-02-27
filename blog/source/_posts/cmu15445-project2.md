@@ -690,7 +690,9 @@ Search
 
 Insert/Delete<br>
 从 root 往下，按照需要获取 write latch，一旦获取了 child 的 write latch，检查它是否安全，如果安全，则释放之前获取的所有 write latch。
-安全判断函数逻辑见函数IsSafePage
+安全判断函数逻辑见函数IsSafePage<br>
+
+[Bustub Tree printer](https://15445.courses.cs.cmu.edu/spring2023/bpt-printer/)<br>
 
 线上测试<br/>
 ![img](../images/cmu15445-project2/7.png)
