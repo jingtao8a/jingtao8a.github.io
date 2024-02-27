@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="project1的任务就是实现一个Buffer Pool ManagerDBMS启动时会从OS申请一片内存区域，即Buffer Pool，并将这块区域划分成大小相同的pages，为了与disk pages区别，通常称为frames，当DBMS请求一个disk page时，它首先需要被复制到Buffer Pool的一个frame中。当Buffer Pool空间不足时，需要采取某种replacemen">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cmu15445-project1">
+<meta property="og:url" content="http://jingtao8a.github.io/2024/02/26/cmu15445-project1/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="project1的任务就是实现一个Buffer Pool ManagerDBMS启动时会从OS申请一片内存区域，即Buffer Pool，并将这块区域划分成大小相同的pages，为了与disk pages区别，通常称为frames，当DBMS请求一个disk page时，它首先需要被复制到Buffer Pool的一个frame中。当Buffer Pool空间不足时，需要采取某种replacemen">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project1/1.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project1/2.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project1/3.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project1/5.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project1/6.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project1/7.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project1/4.png">
+<meta property="article:published_time" content="2024-02-26T11:58:49.000Z">
+<meta property="article:modified_time" content="2024-02-27T05:28:57.544Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="cmu15445—2023">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/cmu15445-project1/1.png">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2024/02/26/cmu15445-project1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>cmu15445-project1 | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/02/26/cmu15445-project1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          cmu15445-project1
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-02-26 03:58:49 / Modified: 21:28:57" itemprop="dateCreated datePublished" datetime="2024-02-26T03:58:49-08:00">2024-02-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/cmu15445-2023/" itemprop="url" rel="index"><span itemprop="name">cmu15445-2023</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="project1的任务就是实现一个Buffer-Pool-Manager"><a href="#project1的任务就是实现一个Buffer-Pool-Manager" class="headerlink" title="project1的任务就是实现一个Buffer Pool Manager"></a>project1的任务就是实现一个Buffer Pool Manager<br></h2><p>DBMS启动时会从OS申请一片内存区域，即Buffer Pool，并将这块区域划分成大小相同的pages，为了与disk pages区别，通常称为frames，当DBMS请求一个disk page时，它首先需要被复制到Buffer Pool的一个frame中。当Buffer Pool空间不足时，需要采取某种replacement policy，淘汰已有的page。<br><img src="/../images/cmu15445-project1/1.png" alt="img"></p>
+<p>question 1:<br>为什么不使用OS自带的磁盘管理模块，OS为开发者提供了mmap这样的调用，使开发者能够依赖OS自动管理数据在内外存之间的移动？</p>
+<blockquote>
+<p>DBMS比OS拥有更多、更充分的知识来决定数据移动的移动和数量，具体包括</p>
+<ol>
+<li>将dirty pages按正确的顺序写到磁盘</li>
+<li>根据具体情况预获取数据</li>
+<li>定制化缓存置换策略</li>
+</ol>
+</blockquote>
+<p>同时DBMS会维护一个page table，负责记录每个page在内存中的位置，以及是否被写过(Dirty Flag),是否被引用或引用计数(Pin&#x2F;Reference Counter)等元信息，如下图所示:</p>
+<p><img src="/../images/cmu15445-project1/2.png" alt="img"></p>
+<p>当page table中的某page被引用时，会记录引用数(pin&#x2F;reference),表示该page正在被使用，空间不够时不应该被移除；当被请求的page不再page table中时，DBMS会申请一个latch(lock的别名)，表示该entry被占用，然后从disk中读取相关page到buffer pool，释放latch</p>
+<p><img src="/../images/cmu15445-project1/3.png" alt="img"></p>
+<h2 id="Buffer-Replacement-Policies"><a href="#Buffer-Replacement-Policies" class="headerlink" title="Buffer Replacement Policies"></a>Buffer Replacement Policies</h2><h3 id="LRU"><a href="#LRU" class="headerlink" title="LRU"></a>LRU</h3><p>维护每个page上一次被访问的时间戳，每次移除时间戳最早的page</p>
+<h3 id="Clock"><a href="#Clock" class="headerlink" title="Clock"></a>Clock</h3><p>Clock是LRU的近似策略，它不需要每个page上次被访问的时间戳，而是为每个page保存一个reference</p>
+<ul>
+<li>每当page被访问时，reference bit设置为1</li>
+<li>每当需要移动page时，从上次访问的位置开始，按顺序轮询，每个page的reference bit，若该bit为1，则重置为0；若该bit为0，则移除该page</li>
+</ul>
+<h3 id="LRU-K"><a href="#LRU-K" class="headerlink" title="LRU-K"></a>LRU-K</h3><p>保存每个page的最后K次访问时间戳，利用这些时间戳来估计它们下次被访问的时间，通常K取1就能获得很好的效果。</p>
+<h2 id="Task-1-LRU-K-Replacement-Policy"><a href="#Task-1-LRU-K-Replacement-Policy" class="headerlink" title="Task#1 LRU-K Replacement Policy"></a>Task#1 LRU-K Replacement Policy</h2><p>实现LRUKReplacer<br>实现策略:</p>
+<blockquote>
+<p>LRU-K算法驱逐replacer的所有frame中backward k-distance最大的frame<br><br>backward k-distance计算方式:当前时间戳与之前k次访问的时间戳之间的时间差。<br><br>历史访问次数少于k的帧被赋予+inf作为其backward k-distance,当多个frame具有+inf backward k-distance时，replacer将驱逐具有最早总体时间戳的frame<br></p>
+</blockquote>
+<h3 id="代码实现："><a href="#代码实现：" class="headerlink" title="代码实现："></a>代码实现：<br></h3><p>一个LRUKNode对应一个frame</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">LRUKNode</span> &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="comment">/** History of last seen K timestamps of this page. Least recent timestamp stored in front. */</span></span><br><span class="line">  std::list&lt;<span class="type">size_t</span>&gt; history_;<span class="comment">//记录一批时间戳</span></span><br><span class="line">  <span class="type">frame_id_t</span> fid_;<span class="comment">//</span></span><br><span class="line">  <span class="type">bool</span> is_evictable_&#123;<span class="literal">false</span>&#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">LRUKReplacer</span> &#123;</span><br><span class="line">  std::unordered_map&lt;<span class="type">frame_id_t</span>, LRUKNode&gt; node_store_;<span class="comment">//frame LRUKNode couple</span></span><br><span class="line">  <span class="type">size_t</span> current_timestamp_&#123;<span class="number">0</span>&#125;;<span class="comment">//当前时间戳</span></span><br><span class="line">  <span class="comment">//replacer_size_ &gt;= curr_size</span></span><br><span class="line">  <span class="type">size_t</span> curr_size_&#123;<span class="number">0</span>&#125;;<span class="comment">//curr_size为当前is_evictable被标记为true的frame数量</span></span><br><span class="line">  <span class="type">size_t</span> replacer_size_;<span class="comment">//replacer_size == num_frames</span></span><br><span class="line">  <span class="type">size_t</span> k_;</span><br><span class="line">  std::mutex latch_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>Evict函数</p>
+<blockquote>
+<p>驱逐一个frame，驱逐成功返回true，否则返回false</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LRUKReplacer::Evict</span><span class="params">(<span class="type">frame_id_t</span> *frame_id)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  *frame_id = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> &amp;p : node_store_) &#123;</span><br><span class="line">    <span class="keyword">if</span> (p.second.is_evictable_) &#123;<span class="comment">//通过Judge函数选择backward k-distance中最大的frame</span></span><br><span class="line">      <span class="keyword">if</span> (*frame_id == <span class="number">-1</span> || <span class="built_in">Judge</span>(p.second, node_store_[*frame_id])) &#123;</span><br><span class="line">        *frame_id = p.second.fid_;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (*frame_id != <span class="number">-1</span>) &#123;</span><br><span class="line">    node_store_.<span class="built_in">erase</span>(*frame_id);</span><br><span class="line">    --curr_size_;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Judge函数实现如下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//lhs的backward k-distance大于rhs的backward k-distance 返回true 否则返回false</span></span><br><span class="line">  <span class="function"><span class="keyword">auto</span> <span class="title">Judge</span><span class="params">(<span class="type">const</span> LRUKNode &amp;lhs, <span class="type">const</span> LRUKNode &amp;rhs)</span> <span class="type">const</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (rhs.history_.<span class="built_in">size</span>() == k_ &amp;&amp; lhs.history_.<span class="built_in">size</span>() &lt; k_) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (rhs.history_.<span class="built_in">size</span>() &lt; k_ &amp;&amp; lhs.history_.<span class="built_in">size</span>() == k_) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//比较最早的时间戳,若lhs的时间戳更小，则返回true 否则返回false</span></span><br><span class="line">    <span class="keyword">return</span> lhs.history_.<span class="built_in">back</span>() &lt; rhs.history_.<span class="built_in">back</span>();</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>RecordAccess函数</p>
+<blockquote>
+<ol>
+<li>如果访问的frame_id大于等于replacer_size抛出异常</li>
+<li>否则，对该frame对应的LRUKNode添加时间戳，并且保证history_列表长度不超过k_</li>
+</ol>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">LRUKReplacer::RecordAccess</span><span class="params">(<span class="type">frame_id_t</span> frame_id, [[maybe_unused]] AccessType access_type)</span> </span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lock_guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (frame_id &gt;= <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(replacer_size_)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="built_in">Exception</span>(<span class="string">&quot;frame_id is larger than or equal to replacer_size_&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (node_store_.<span class="built_in">count</span>(frame_id) == <span class="number">0</span>) &#123;</span><br><span class="line">    node_store_[frame_id] = <span class="built_in">LRUKNode</span>();</span><br><span class="line">    node_store_[frame_id].fid_ = frame_id;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> &amp;node = node_store_[frame_id];</span><br><span class="line">  node.history_.<span class="built_in">push_front</span>(current_timestamp_++);</span><br><span class="line">  <span class="keyword">while</span> (node.history_.<span class="built_in">size</span>() &gt; k_) &#123;</span><br><span class="line">    node.history_.<span class="built_in">pop_back</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SetEvictable函数</p>
+<blockquote>
+<p>将某个frame的is_evictable标记为set_evictable,如果该frame未被占用，抛出异常<br>false-&gt;true   curr_size_++<br>true-&gt;false   curr_size_–</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">LRUKReplacer::SetEvictable</span><span class="params">(<span class="type">frame_id_t</span> frame_id, <span class="type">bool</span> set_evictable)</span> </span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lock_guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (node_store_.<span class="built_in">count</span>(frame_id) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="built_in">Exception</span>(<span class="string">&quot;frame_id should be used&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!node_store_[frame_id].is_evictable_ &amp;&amp; set_evictable) &#123;  <span class="comment">// false -&gt; true</span></span><br><span class="line">    curr_size_++;</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (node_store_[frame_id].is_evictable_ &amp;&amp; !set_evictable) &#123;  <span class="comment">// true -&gt; false</span></span><br><span class="line">    curr_size_--;</span><br><span class="line">  &#125;</span><br><span class="line">  node_store_[frame_id].is_evictable_ = set_evictable;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Remove函数</p>
+<blockquote>
+<p>如果删除的frame不存在直接返回<br>如果删除的frame的is_evictable_未被设置为true，抛出异常<br>删除frame，–curr_size_</p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">LRUKReplacer::Remove</span><span class="params">(<span class="type">frame_id_t</span> frame_id)</span> </span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lock_guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (node_store_.<span class="built_in">count</span>(frame_id) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!node_store_[frame_id].is_evictable_) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="built_in">Exception</span>(<span class="string">&quot;Remove a non-evictable frame&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  node_store_.<span class="built_in">erase</span>(frame_id);</span><br><span class="line">  --curr_size_;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>task1本地测试：<br><img src="/../images/cmu15445-project1/5.png" alt="img"></p>
+<h2 id="Task-2-Buffer-Pool-Manager"><a href="#Task-2-Buffer-Pool-Manager" class="headerlink" title="Task#2 -Buffer Pool Manager"></a>Task#2 -Buffer Pool Manager</h2><p>完成LRU-K替换策略之后，接下来需要实现Buffer Pool的基本功能。对于DBMS来说，Buffer Pool可以隐藏内存和磁盘交互的细节，包括脏页面写回磁盘的过程。</p>
+<p>Page</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Page</span> &#123;</span><br><span class="line">  <span class="type">char</span> *data_;<span class="comment">//4096字节</span></span><br><span class="line">  <span class="type">page_id_t</span> page_id;<span class="comment">//physical page id</span></span><br><span class="line">  <span class="type">int</span> pin_count_;<span class="comment">//该Page对象的引用计数</span></span><br><span class="line">  <span class="type">bool</span> is_dirty_;<span class="comment">//脏位</span></span><br><span class="line">  ReaderWriterLatch rwlatch_;<span class="comment">//读写锁</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>BufferPoolManager</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">BufferPoolManager</span> &#123;</span><br><span class="line">    <span class="comment">/** Number of pages in the buffer pool. */</span></span><br><span class="line">  <span class="type">const</span> <span class="type">size_t</span> pool_size_;</span><br><span class="line">  <span class="comment">/** The next page id to be allocated  */</span></span><br><span class="line">  std::atomic&lt;<span class="type">page_id_t</span>&gt; next_page_id_ = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/** Array of buffer pool pages. */</span></span><br><span class="line">  Page *pages_;</span><br><span class="line">  <span class="comment">/** Pointer to the disk manager. */</span></span><br><span class="line">  DiskManager *disk_manager_ __attribute__((__unused__));</span><br><span class="line">  <span class="comment">/** Pointer to the log manager. Please ignore this for P1. */</span></span><br><span class="line">  LogManager *log_manager_ __attribute__((__unused__));</span><br><span class="line">  <span class="comment">/** Page table for keeping track of buffer pool pages. */</span></span><br><span class="line">  std::unordered_map&lt;<span class="type">page_id_t</span>, <span class="type">frame_id_t</span>&gt; page_table_;</span><br><span class="line">  <span class="comment">/** Replacer to find unpinned pages for replacement. */</span></span><br><span class="line">  std::unique_ptr&lt;LRUKReplacer&gt; replacer_;</span><br><span class="line">  <span class="comment">/** List of free frames that don&#x27;t have any pages on them. */</span></span><br><span class="line">  std::list&lt;<span class="type">frame_id_t</span>&gt; free_list_;</span><br><span class="line">  <span class="comment">/** This latch protects shared data structures. We recommend updating this comment to describe what it protects. */</span></span><br><span class="line">  std::mutex latch_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>BufferPoolManager初始化时，分配pool_size_个Page对象，LRUKReplacer的num_frame也设置为pool_size_</p>
+<h3 id="代码实现：-1"><a href="#代码实现：-1" class="headerlink" title="代码实现："></a>代码实现：<br></h3><p>NewPage函数实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::NewPage</span><span class="params">(<span class="type">page_id_t</span> *page_id)</span> -&gt; Page * </span>&#123;</span><br><span class="line">  <span class="type">frame_id_t</span> free_frame_id = <span class="number">-1</span>;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="comment">//获取一个空闲的frame</span></span><br><span class="line">  <span class="keyword">if</span> (!free_list_.<span class="built_in">empty</span>()) &#123;<span class="comment">//存在空的frame</span></span><br><span class="line">    free_frame_id = free_list_.<span class="built_in">front</span>();</span><br><span class="line">    free_list_.<span class="built_in">pop_front</span>();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;<span class="comment">//不存在空的frame</span></span><br><span class="line">    <span class="keyword">if</span> (!replacer_-&gt;<span class="built_in">Evict</span>(&amp;free_frame_id)) &#123;<span class="comment">//通过LRUKReplacer得到一个空闲的frame</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pages_[free_frame_id].<span class="built_in">IsDirty</span>()) &#123;<span class="comment">//如果被驱逐的frame对应的page为脏页，需要进行写回操作</span></span><br><span class="line">      disk_manager_-&gt;<span class="built_in">WritePage</span>(pages_[free_frame_id].page_id_, pages_[free_frame_id].data_);</span><br><span class="line">    &#125;</span><br><span class="line">    page_table_.<span class="built_in">erase</span>(pages_[free_frame_id].page_id_);<span class="comment">//将page_table_中该frame对应的page_id_删除</span></span><br><span class="line">    pages_[free_frame_id].<span class="built_in">ResetMemory</span>();<span class="comment">//重置该改frame对应的内存</span></span><br><span class="line">  &#125;</span><br><span class="line">  *page_id = <span class="built_in">AllocatePage</span>();</span><br><span class="line">  pages_[free_frame_id].page_id_ = *page_id;</span><br><span class="line">  pages_[free_frame_id].pin_count_ = <span class="number">1</span>;</span><br><span class="line">  pages_[free_frame_id].is_dirty_ = <span class="literal">false</span>;</span><br><span class="line">  page_table_[*page_id] = free_frame_id;</span><br><span class="line"></span><br><span class="line">  replacer_-&gt;<span class="built_in">RecordAccess</span>(free_frame_id);</span><br><span class="line">  replacer_-&gt;<span class="built_in">SetEvictable</span>(free_frame_id, <span class="literal">false</span>);  <span class="comment">// no use</span></span><br><span class="line">  <span class="keyword">return</span> pages_ + free_frame_id;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FetchPage函数实现:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::FetchPage</span><span class="params">(<span class="type">page_id_t</span> page_id, [[maybe_unused]] AccessType access_type)</span> -&gt; Page * </span>&#123;</span><br><span class="line">  <span class="built_in">BUSTUB_ASSERT</span>(page_id != INVALID_PAGE_ID, <span class="string">&quot;page_id is equal to INVALID_PAGE_ID&quot;</span>);</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (page_table_.<span class="built_in">count</span>(page_id) != <span class="number">0</span>) &#123;<span class="comment">//如果page_table_中存在该page_id</span></span><br><span class="line">    pages_[page_table_[page_id]].pin_count_++;<span class="comment">//该page的引用计数增加</span></span><br><span class="line">    replacer_-&gt;<span class="built_in">RecordAccess</span>(page_table_[page_id]);<span class="comment">//增加该page对应的frame的访问时间戳</span></span><br><span class="line">    replacer_-&gt;<span class="built_in">SetEvictable</span>(page_table_[page_id], <span class="literal">false</span>);</span><br><span class="line">    <span class="keyword">return</span> pages_ + page_table_[page_id];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="type">frame_id_t</span> free_frame_id = <span class="number">-1</span>;</span><br><span class="line">  <span class="comment">//获取一个空闲的frame</span></span><br><span class="line">  <span class="keyword">if</span> (!free_list_.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">    free_frame_id = free_list_.<span class="built_in">front</span>();</span><br><span class="line">    free_list_.<span class="built_in">pop_front</span>();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!replacer_-&gt;<span class="built_in">Evict</span>(&amp;free_frame_id)) &#123;<span class="comment">//通过LRUKReplacer得到一个空闲的frame</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pages_[free_frame_id].<span class="built_in">IsDirty</span>()) &#123;<span class="comment">//如果被驱逐的frame对应的page为脏页，需要进行写回操作</span></span><br><span class="line">      disk_manager_-&gt;<span class="built_in">WritePage</span>(pages_[free_frame_id].page_id_, pages_[free_frame_id].data_);</span><br><span class="line">    &#125;</span><br><span class="line">    page_table_.<span class="built_in">erase</span>(pages_[free_frame_id].page_id_);<span class="comment">//将page_table_中该frame对应的page_id_删除</span></span><br><span class="line">    pages_[free_frame_id].<span class="built_in">ResetMemory</span>();<span class="comment">//重置该改frame对应的内存</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  pages_[free_frame_id].page_id_ = page_id;</span><br><span class="line">  pages_[free_frame_id].pin_count_ = <span class="number">1</span>;</span><br><span class="line">  pages_[free_frame_id].is_dirty_ = <span class="literal">false</span>;</span><br><span class="line">  page_table_[page_id] = free_frame_id;</span><br><span class="line">  disk_manager_-&gt;<span class="built_in">ReadPage</span>(page_id, pages_[free_frame_id].data_);<span class="comment">//读取该page_id对应的物理页</span></span><br><span class="line"></span><br><span class="line">  replacer_-&gt;<span class="built_in">RecordAccess</span>(free_frame_id);<span class="comment">//增加该frame的访问时间戳</span></span><br><span class="line">  replacer_-&gt;<span class="built_in">SetEvictable</span>(free_frame_id, <span class="literal">false</span>);  <span class="comment">// no use</span></span><br><span class="line">  <span class="keyword">return</span> pages_ + free_frame_id;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>UnpinPage函数实现：<br><br>需要注意的是入参is_dirty不能破坏已经置为脏的状态，这里用 | 运算符来实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::UnpinPage</span><span class="params">(<span class="type">page_id_t</span> page_id, <span class="type">bool</span> is_dirty, [[maybe_unused]] AccessType access_type)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (page_table_.<span class="built_in">count</span>(page_id) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">frame_id_t</span> frame_id = page_table_[page_id];</span><br><span class="line">  <span class="keyword">if</span> (pages_[frame_id].pin_count_ == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (--pages_[frame_id].pin_count_ == <span class="number">0</span>) &#123;<span class="comment">//引用计数减为0时，将该frame设置为evictable</span></span><br><span class="line">    replacer_-&gt;<span class="built_in">SetEvictable</span>(frame_id, <span class="literal">true</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  pages_[frame_id].is_dirty_ |= is_dirty;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FlushPage函数实现:<br><br>强制将page_id对应的Page的内容写回磁盘，并将该Page对应脏位置为false</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::FlushPage</span><span class="params">(<span class="type">page_id_t</span> page_id)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (page_table_.<span class="built_in">count</span>(page_id) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">frame_id_t</span> frame_id = page_table_[page_id];</span><br><span class="line">  disk_manager_-&gt;<span class="built_in">WritePage</span>(page_id, pages_[frame_id].data_);</span><br><span class="line">  pages_[frame_id].is_dirty_ = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FlushAllPages函数实现:<br>写回所有在内存中的Page</p>
+<p>DeletePage函数实现：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::DeletePage</span><span class="params">(<span class="type">page_id_t</span> page_id)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">guard</span><span class="params">(latch_)</span></span>;</span><br><span class="line">  <span class="keyword">if</span> (page_table_.<span class="built_in">count</span>(page_id) &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="type">frame_id_t</span> frame_id = page_table_[page_id];</span><br><span class="line">  <span class="keyword">if</span> (pages_[frame_id].pin_count_ != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//只有当该page_id对应的Page的引用计数为0时可以进行删除</span></span><br><span class="line">  page_table_.<span class="built_in">erase</span>(page_id);<span class="comment">//page_table_删除该page_id</span></span><br><span class="line">  replacer_-&gt;<span class="built_in">SetEvictable</span>(frame_id, <span class="literal">true</span>);<span class="comment">//replacer驱逐该frame</span></span><br><span class="line">  replacer_-&gt;<span class="built_in">Remove</span>(frame_id);</span><br><span class="line">  free_list_.<span class="built_in">push_back</span>(frame_id);<span class="comment">//将该frame加入free_list</span></span><br><span class="line">  <span class="comment">//该Page初始化</span></span><br><span class="line">  pages_[frame_id].is_dirty_ = <span class="literal">false</span>;</span><br><span class="line">  pages_[frame_id].page_id_ = INVALID_PAGE_ID;</span><br><span class="line">  pages_[frame_id].<span class="built_in">ResetMemory</span>();</span><br><span class="line">  <span class="built_in">DeallocatePage</span>(page_id);</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>task2本地测试:<br><img src="/../images/cmu15445-project1/6.png" alt="img"></p>
+<h2 id="Task-3-Read-Write-Page-Guards"><a href="#Task-3-Read-Write-Page-Guards" class="headerlink" title="Task#3 Read&#x2F;Write Page Guards"></a>Task#3 Read&#x2F;Write Page Guards</h2><p>FetchPage和NewPage函数返回指向pages的指针，并且pages已经被pinned，并且当一个page不再需要时，要调用UnpinPage。另一方面，如果忘记调用UnPinPage，该Page将永远不会被evict。于是PageGuard就派上用场了</p>
+<p>BasicPageGuard<br>思路：BasicPageGuard析构时调用Page的UnpinPage函数，并且BasicPageGuard中保存变量is_dirty_,调用AsMut或GetDataMut函数时将is_dirty_设置为true</p>
+<p>WritePageGuard和ReadPageGuard<br>思路：与BasicPageGuard思路相似，析构函数调用UnpinPage多了一步释放Page的写锁和读锁</p>
+<p>FetchPageBasic、FetchPageRead、FetchPageWrite和NewPageGuarded的实现代码如下:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::FetchPageBasic</span><span class="params">(<span class="type">page_id_t</span> page_id)</span> -&gt; BasicPageGuard </span>&#123; <span class="keyword">return</span> &#123;<span class="keyword">this</span>, <span class="built_in">FetchPage</span>(page_id)&#125;; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::FetchPageRead</span><span class="params">(<span class="type">page_id_t</span> page_id)</span> -&gt; ReadPageGuard </span>&#123;</span><br><span class="line">  Page *page = <span class="built_in">FetchPage</span>(page_id);</span><br><span class="line">  <span class="keyword">if</span> (page != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">    page-&gt;<span class="built_in">RLatch</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> &#123;<span class="keyword">this</span>, page&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::FetchPageWrite</span><span class="params">(<span class="type">page_id_t</span> page_id)</span> -&gt; WritePageGuard </span>&#123;</span><br><span class="line">  Page *page = <span class="built_in">FetchPage</span>(page_id);</span><br><span class="line">  <span class="keyword">if</span> (page != <span class="literal">nullptr</span>) &#123;</span><br><span class="line">    page-&gt;<span class="built_in">WLatch</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> &#123;<span class="keyword">this</span>, page&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BufferPoolManager::NewPageGuarded</span><span class="params">(<span class="type">page_id_t</span> *page_id)</span> -&gt; BasicPageGuard </span>&#123; <span class="keyword">return</span> &#123;<span class="keyword">this</span>, <span class="built_in">NewPage</span>(page_id)&#125;; &#125;</span><br></pre></td></tr></table></figure>
+<p>task3本地测试：<br><img src="/../images/cmu15445-project1/7.png" alt="img"></p>
+<p>测试通过截图：<br><img src="/../images/cmu15445-project1/4.png" alt="img"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/cmu15445%E2%80%942023/" rel="tag"># cmu15445—2023</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/02/22/cmu15445-project0/" rel="prev" title="cmu15445-project0">
+      <i class="fa fa-chevron-left"></i> cmu15445-project0
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#project1%E7%9A%84%E4%BB%BB%E5%8A%A1%E5%B0%B1%E6%98%AF%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AABuffer-Pool-Manager"><span class="nav-number">1.</span> <span class="nav-text">project1的任务就是实现一个Buffer Pool Manager</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Buffer-Replacement-Policies"><span class="nav-number">2.</span> <span class="nav-text">Buffer Replacement Policies</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LRU"><span class="nav-number">2.1.</span> <span class="nav-text">LRU</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Clock"><span class="nav-number">2.2.</span> <span class="nav-text">Clock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LRU-K"><span class="nav-number">2.3.</span> <span class="nav-text">LRU-K</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-1-LRU-K-Replacement-Policy"><span class="nav-number">3.</span> <span class="nav-text">Task#1 LRU-K Replacement Policy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%EF%BC%9A"><span class="nav-number">3.1.</span> <span class="nav-text">代码实现：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-2-Buffer-Pool-Manager"><span class="nav-number">4.</span> <span class="nav-text">Task#2 -Buffer Pool Manager</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%EF%BC%9A-1"><span class="nav-number">4.1.</span> <span class="nav-text">代码实现：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-3-Read-Write-Page-Guards"><span class="nav-number">5.</span> <span class="nav-text">Task#3 Read&#x2F;Write Page Guards</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
