@@ -190,6 +190,115 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/6-InnoDB%E6%95%B0%E6%8D%AE%E9%A1%B5%E7%BB%93%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/6-InnoDB%E6%95%B0%E6%8D%AE%E9%A1%B5%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">6.InnoDB数据页结构</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 11:18:38" itemprop="dateCreated datePublished" datetime="2023-05-27T11:18:38-07:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2023-09-30 19:55:45" itemprop="dateModified" datetime="2023-09-30T19:55:45-07:00">2023-09-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="数据页结构图"><a href="#数据页结构图" class="headerlink" title="数据页结构图"></a>数据页结构图</h2><p><img src="/images/6_1.jpg" alt="QQ截图20221212140703.png"></p>
+<blockquote>
+<p>每当我们插入一条记录，都会从Free Space部分，也就是尚未使用的存储空间中申请一个记录大小的空间划分到User Records部分，当Free Space部分的空间全部被User Records部分替代掉之后，也就意味着这个页使用完了，如果还有新的记录插入的话，就需要去申请新的页了</p>
+</blockquote>
+<blockquote>
+<p>为了更好的管理在User Records中的这些记录，行格式中的记录头信息至关重要，以下为compact行格式中的记录头信息</p>
+</blockquote>
+<p><img src="/images/6_2.jpg" alt="QQ截图20221216113033.png"></p>
+<h2 id="页目录（Page-Directory"><a href="#页目录（Page-Directory" class="headerlink" title="页目录（Page Directory)"></a>页目录（Page Directory)</h2><p>1.将所有正常的记录（包括最大和最小记录，不包括标记为已删除的记录）划分为几个组。<br>2.每个组的最后一条记录（也就是组内最大的那条记录）的头信息中的n_owned属性表示该记录拥有多少条记录，也就是该组内共有几条记录。<br>3.将每个组的最后一条记录的地址偏移量单独提取出来按顺序存储到靠近页的尾部的地方，这个地方就是所谓的Page Directory，也就是页目录（此时应该返回头看看页面各个部分的图）。页面目录中的这些地址偏移量被称为槽（英文名：Slot），所以这个页面目录就是由槽组成的。</p>
+<p><img src="/images/6_3.jpg" alt="QQ截图20221216113857.png"></p>
+<blockquote>
+<p>对于最小记录所在的分组只能有 1 条记录，最大记录所在的分组拥有的记录条数只能在 1<del>8 条之间，剩下的分组中记录的条数范围只能在是 4</del>8 条之间。所以分组是按照下面的步骤进行的：</p>
+</blockquote>
+<ul>
+<li>初始情况下一个数据页里只有最小记录和最大记录两条记录，它们分属于两个分组。</li>
+<li>之后每插入一条记录，都会从页目录中找到主键值比本记录的主键值大并且差值最小的槽，然后把该槽对应的记录的n_owned值加1，表示本组内又添加了一条记录，直到该组中的记录数等于8个</li>
+<li>在一个组中的记录数等于8个后再插入一条记录时，会将组中的记录拆分成两个组，一个组中4条记录，另一个5条记录。这个过程会在页目录中新增一个槽来记录这个新增分组中最大的那条记录的偏移量。</li>
+</ul>
+<p>在一个数据页中查找指定主键值的记录的过程分为两步：<br>1.通过二分法确定该记录所在的槽，并找到该槽中主键值最小的那条记录。<br>2.通过记录的next_record属性遍历该槽所在的组中的各个记录。</p>
+<h2 id="页面头部-Page-Header"><a href="#页面头部-Page-Header" class="headerlink" title="页面头部(Page Header)"></a>页面头部(Page Header)</h2><p><img src="/images/6_4.jpg" alt="QQ截图20221216114601.png"></p>
+<h2 id="文件头部（File-Header"><a href="#文件头部（File-Header" class="headerlink" title="文件头部（File Header)"></a>文件头部（File Header)</h2><p><img src="/images/6_5.jpg" alt="QQ截图20221216114854.png"></p>
+<ul>
+<li>FIL_PAGE_TYPE 页的类型<br><img src="/images/6_6.jpg" alt="QQ截图20221216115011.png"></li>
+<li>FIL_PAGE_PREV和FIL_PAGE_NEXT<br>InnoDB都是以页为单位存放数据的，有时候我们存放某种类型的数据占用的空间非常大（比方说一张表中可以有成千上万条记录），InnoDB可能不可以一次性为这么多数据分配一个非常大的存储空间，如果分散到多个不连续的页中存储的话需要把这些页关联起来，FIL_PAGE_PREV和FIL_PAGE_NEXT就分别代表本页的上一个和下一个页的页号。</li>
+</ul>
+<h2 id="FILE-TAILER"><a href="#FILE-TAILER" class="headerlink" title="FILE TAILER"></a>FILE TAILER</h2><p>InnoDB会把数据存储到磁盘上，操作数据时，需要以页为单位将数据移动到内存中，如果该页中的数据在内存中被修改了，那么在修改后的某个时间需要把数据同步到磁盘中。但是在同步了一半的时候中断电了咋办?</p>
+<ul>
+<li>前4个字节代表页的校验和<blockquote>
+<p>这个部分是和File Header中的校验和相对应的。每当一个页面在内存中修改了，在同步之前就要把它的校验和算出来，因为File Header在页面的前面，所以校验和会被首先同步到磁盘，当完全写完时，校验和也会被写到页的尾部，如果完全同步成功，则页的首部和尾部的校验和应该是一致的。如果写了一半儿断电了，那么在File Header中的校验和就代表着已经修改过的页，而在File Trialer中的校验和代表着原先的页，二者不同则意味着同步中间出了错。</p>
+</blockquote>
+</li>
+<li>后4个字节代表页面被最后修改时对应的日志序列位置（LSN）<blockquote>
+<p>这个部分也是为了校验页的完整性的，只不过我们目前还没说LSN是个什么意思，所以大家可以先不用管这个属性。这个File Trailer与File Header类似，都是所有类型的页通用的。</p>
+</blockquote>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/5-InnoDB%E8%AE%B0%E5%BD%95%E8%A1%8C%E6%A0%BC%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -762,7 +871,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-count">36</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
