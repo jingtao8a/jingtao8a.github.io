@@ -190,6 +190,218 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/10/10/Bounding-the-Last-Mile-Efficient-Learned-String-Indexing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/10/10/Bounding-the-Last-Mile-Efficient-Learned-String-Indexing/" class="post-title-link" itemprop="url">Bounding-the-Last-Mile-Efficient-Learned-String-Indexing</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-10 03:47:58" itemprop="dateCreated datePublished" datetime="2023-10-10T03:47:58-07:00">2023-10-10</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="INTRODUCTION"><a href="#INTRODUCTION" class="headerlink" title="INTRODUCTION"></a>INTRODUCTION</h2><p>ReadOnly<br>对字符串的学习索引最重要的问题是 last-mile-search,并且这种搜索在字符串场景中特别昂贵。</p>
+<p>两个原因</p>
+<blockquote>
+<ol>
+<li>由于难以建模真实世界的数据（许多真实世界的数据集具有很长的共同前缀以及每个字节相对较低的鉴别内容，CDF似乎是循序渐近的，这样传统的学习模型很难准确捕获和预测），这些场景的平均模型误差往往很高</li>
+<li>最后一英里的搜索是很慢的，每次比较是昂贵的，字符串的大尺寸减少了适合在缓存中的键的数量</li>
+</ol>
+</blockquote>
+<p>这项研究的基础： Bounded Error（这样就可以使用二分查找代替指数搜索）</p>
+<h2 id="SPLING-STRINGS"><a href="#SPLING-STRINGS" class="headerlink" title="SPLING STRINGS"></a>SPLING STRINGS</h2><p>问题描述：对于字符串而言，需要满足两种操作</p>
+<ol>
+<li>确定性查找，找到完全匹配的字符</li>
+<li>模糊匹配，找到第一个满足匹配条件的元素（下届）</li>
+</ol>
+<h3 id="RADIX-STRING-SPLINE"><a href="#RADIX-STRING-SPLINE" class="headerlink" title="RADIX STRING SPLINE"></a>RADIX STRING SPLINE</h3><p>RSS是一棵树，每个节点包含三个部分：<br><img src="/../imgaes/../images/Bounding-the-Last-Mile-Efficient-Learned-String-Indexing/2.png" alt="img"></p>
+<ul>
+<li>bounds: 可操作的数据下标范围</li>
+<li>重定向map(指针):包含并指向了一些key，这些key因为不满足当前节点的error bound，因而被分配到了其他节点</li>
+<li>一个使用K个byte作为前缀，错误范围为E的RadixSpline模型</li>
+</ul>
+<h4 id="如何构建？"><a href="#如何构建？" class="headerlink" title="如何构建？"></a>如何构建？</h4><ol>
+<li>首先，对数据集中所有字符串构建一个RadixSpline(使用前k个字节)。然后，遍历所有唯一的k字节前缀，并检查估计的位置是否在前缀的第一次出现和最后一次出现时都在规定的误差范围内。</li>
+<li>对于每个测试失败的前缀，我们将其添加到重定向表中，并在有问题前缀的所有字符串中构建一个新的RSS，从字节k开始而不是0</li>
+<li>这个过程递归地继续进行，直到每个key都得到满足为止。</li>
+</ol>
+<h4 id="如何查询"><a href="#如何查询" class="headerlink" title="如何查询"></a>如何查询</h4><p><img src="/../images/Bounding-the-Last-Mile-Efficient-Learned-String-Indexing/1.png" alt="img"><br>首先提取字符串的前k个字节，然后对重定向器进行二分查找，如果找到重定向新的RSS节点，就重新开始对下一个k字节进行操作；如果没有找到，那么就在当前节点使用适当的字符串前缀查找并返回结果。</p>
+<h2 id="HASH-CORRECTOR"><a href="#HASH-CORRECTOR" class="headerlink" title="HASH CORRECTOR"></a>HASH CORRECTOR</h2><p>待更新</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/10/05/The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/10/05/The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds/" class="post-title-link" itemprop="url">The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-05 02:06:39" itemprop="dateCreated datePublished" datetime="2023-10-05T02:06:39-07:00">2023-10-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="INTRODUCTION"><a href="#INTRODUCTION" class="headerlink" title="INTRODUCTION"></a>INTRODUCTION</h2><p>PGM &#x3D;&#x3D; PieceWise Geometric Model 分段几何模型<br>关键词：dynamic(表示PGM-index除了支持查询还支持插入和删除)、compressed(表示还对模型进行了压缩，达到更好的空间效率)</p>
+<p>本文的注意力集中在解决所谓的全动态可索引字典问题。这个问题要求存储多重集S，以便有效支持以下查询和更新操作</p>
+<ol>
+<li>member (x) &#x3D; true if x ∈ S, false otherwise;</li>
+<li>lookup(x) returns the satellite data of x ∈ S (if any), nil otherwise;</li>
+<li>predecessor (x) &#x3D; max{y ∈ S | y &lt; x};</li>
+<li>range(x, y) &#x3D; S ∩ [x, y];</li>
+<li>insert(x) adds x to S, i.e. S ← S ∪ {x};</li>
+<li>delete(x) removes x from S, i.e. S ← S \ {x}.</li>
+</ol>
+<ul>
+<li>member(x)，判断关键字x是否属于多重集S</li>
+<li>lookup(x)，给定一个key，若该key已被插入，则返回其value</li>
+<li>predecessor(x)，翻译软件叫“前任”，返回所有小于x的数据中最大的那个，其实可以简单理解为排好序的数组中，x的前一个数据</li>
+<li>range(x, y)，范围查询，给出[x, y]关键字x和y之间的所有对应的value</li>
+<li>insert和delete很好理解，插入和删除对应的（K, V）</li>
+</ul>
+<p>本文将 member,lookup,predecessor称为点查询，range称为范围查询<br>对于点查询和范围查询只要实现rank(x)<br>member(x) &lt;–&gt; A[rank(x)] &#x3D;&#x3D; x<br>predecessor(x) &lt;–&gt;A[rank(x) - 1]<br>range(x, y) &lt;–&gt; 从rank(x)对应的A数组的位置开始向后查找直到key大于y为止</p>
+<p>现存的解决上述问题的经典索引数据结构：（1）哈希索引（2）B树（3）位图索引（4）字典树trie索引<br>哈希索引不支持predecesor和range，位图索引维护成本过高，字典树空间消耗过大，主流数据库还是使用B树及其变种作为存储引擎</p>
+<p>本文提出的PGM-Index不像RMI和FITing-Tree那样混合了传统的索引和学习型索引。(RMI的最后一个stage中的模型若error超过阈值，则将模型替换为B+树，FITing-Tree在确定segment时也是查找B+树)</p>
+<h2 id="PGM-Index"><a href="#PGM-Index" class="headerlink" title="PGM-Index"></a>PGM-Index</h2><p>两个关键点：</p>
+<blockquote>
+<p>1.PLA-Model(Piecewise Linear Approximation model, 分段线性近似模型)</p>
+</blockquote>
+<p>这里使用了多个线性模型(segment, FITing-Tree中的分段线性模型)组成了一个PLA-Model(PGM-Index中的一层)，一个segment包含了三部分(start key, slope, intercept)</p>
+<blockquote>
+<p>2.recursive index structure (递归索引结构)</p>
+</blockquote>
+<p>为了适应key的分布，PGM-Index使用了多层PLA-Model，我们先使用所有的key来构建最底层的PLA-Model，然后提取Segment中的key形成新的集合，然后对该集合再次构建PLA-Model，如此递归直到最高层的PLA-Model只有一个segment</p>
+<p>下图包含了PGM-Index的构建伪代码，查找伪代码和查找示意图<br><img src="/../images/The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds/1.png" alt="img"></p>
+<h3 id="Optimal-PLA-model"><a href="#Optimal-PLA-model" class="headerlink" title="Optimal PLA-model"></a>Optimal PLA-model</h3><p>找到最优的PLA-model的方法是动态规划，但它所需要的O(n^3)是禁止的。FITing-Tree的作者通过收缩锥的方式来在线性时间内解决这个问题但无法保证是最优的PLA-model</p>
+<p>然而我们发现这个问题在时间序列的有损压缩和相似性搜索中得到了广泛的研究，并且它允许采用O(n)最优时间和空间的流媒体算法。这类方法的关键思想是将分段线性近似问题简化为构造一组点的凸包在我们的情况下，这是集合{(ki，rank(ki))}为i &#x3D; 0，…，n−1。只要凸包可以被封闭在一个高度不超过2ε的（可能是旋转的）矩形中，索引i就会递增，集合就会被扩展。一旦包围凸壳的矩形高于2ε，我们就停止构造，通过取将矩形分成两个等尺寸的半的线来确定pla模型的一部分。然后，清空当前的处理元素集，算法从其余的输入点重新启动。这种贪婪方法可以被证明在pla模型的大小上是最优的，并且具有线性的时间和空间复杂度。</p>
+<h2 id="DYNAMIC-PGM-INDEX"><a href="#DYNAMIC-PGM-INDEX" class="headerlink" title="DYNAMIC PGM-INDEX"></a>DYNAMIC PGM-INDEX</h2><p>插入和删除操作</p>
+<p>现有学习型索引插入操作的实现方案是，将元素按序插入到相应段的缓存中，当缓存满了，将缓存与主索引合并，合并需要重新训练。这个方案在key非常多时，效率较低。本文提出两个插入策略：（1）面向时序数据（2）面向一般数据</p>
+<ul>
+<li>如果是时间序列的数据，插入的数据肯定是在数组A的最后面，那么如果最后一个段能够存放这个数据，且满足ε的条件，就直接放在最后一个段；否则新建一个段，然后向上层一层一层更新Segment。在这种策略下，每层更新最多只涉及到一个Segment的添加，因此需要的I&#x2F;O少。</li>
+<li>如果是一般的数据，即插入的位置可以是任意的。这里则采用LSM-Tree更新数据的思想。</li>
+</ul>
+<p><img src="/../images/The-PGM-index-a-fully-dynamic-compressed-learned-index-with-provable-worst-case-bounds/2.png" alt="img"></p>
+<h2 id="COMPRESSED-PGM-INDEX"><a href="#COMPRESSED-PGM-INDEX" class="headerlink" title="COMPRESSED PGM-INDEX"></a>COMPRESSED PGM-INDEX</h2>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/10/03/FiTing-Tree-A-Data-aware-Index-Structure/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -901,165 +1113,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">linux下目录各个文件夹详解</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-28 07:58:33" itemprop="dateCreated datePublished" datetime="2023-05-28T07:58:33-07:00">2023-05-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-09-30 19:55:45" itemprop="dateModified" datetime="2023-09-30T19:55:45-07:00">2023-09-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39652397/article/details/123794887">参考</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/" class="post-title-link" itemprop="url">linux文件权限和属性</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-28 07:56:48" itemprop="dateCreated datePublished" datetime="2023-05-28T07:56:48-07:00">2023-05-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2023-09-30 19:55:45" itemprop="dateModified" datetime="2023-09-30T19:55:45-07:00">2023-09-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>如果一个文件被设置了SUID或SGID位，会分别表现在所有者或同组用户的权限的可执行位上。例如：</p>
-<p>1、-rwsr-xr-x 表示SUID和所有者权限中可执行位被设置</p>
-<p>2、-rwSr–r– 表示SUID被设置，但所有者权限中可执行位没有被设置</p>
-<p>3、-rwxr-sr-x 表示SGID和同组用户权限中可执行位被设置</p>
-<p>4、-rw-r-Sr– 表示SGID被设置，但同组用户权限中可执行位没有被设置</p>
-<p>给文件加SUID和SUID的命令如下：</p>
-<p>chmod u+s filename 设置SUID位</p>
-<p>chmod u-s filename 去掉SUID设置</p>
-<p>chmod g+s filename 设置SGID位</p>
-<p>chmod g-s filename 去掉SGID设置</p>
-<p>SUID属性<br>例如&#x2F;usr&#x2F;bin&#x2F;passwd  带有SUID属性 属于root用户 root用户主<br>其它用户只有&#x2F;usr&#x2F;bin&#x2F;passwd的可执行权限，在执行这个命令时会暂时获取root权限</p>
-<p>SGID属性<br>和SUID属性十分相似<br>不同的是其它用户在执行有SGID属性的命令时，会暂时获取该程序群组的支持</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1131,7 +1184,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">38</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1144,7 +1197,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

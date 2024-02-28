@@ -38,9 +38,13 @@
 <meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/10.png">
 <meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/11.png">
 <meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/12.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/13.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/14.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/15.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/16.png">
 <meta property="og:image" content="http://jingtao8a.github.io/images/cmu15445-project2/7.png">
 <meta property="article:published_time" content="2024-02-27T06:16:24.000Z">
-<meta property="article:modified_time" content="2024-02-27T11:08:56.759Z">
+<meta property="article:modified_time" content="2024-02-28T03:25:45.481Z">
 <meta property="article:author" content="jingtao8a">
 <meta property="article:tag" content="cmu15445—2023">
 <meta name="twitter:card" content="summary">
@@ -237,7 +241,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-27 03:08:56" itemprop="dateModified" datetime="2024-02-27T03:08:56-08:00">2024-02-27</time>
+                <time title="Modified: 2024-02-27 19:25:45" itemprop="dateModified" datetime="2024-02-27T19:25:45-08:00">2024-02-27</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -352,7 +356,7 @@
 <p>BplusTree实现Begin和End函数</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BPLUSTREE_TYPE::Begin</span><span class="params">()</span> -&gt; INDEXITERATOR_TYPE </span>&#123;</span><br><span class="line">  Context ctx;</span><br><span class="line">  <span class="keyword">auto</span> header_page_guard = bpm_-&gt;<span class="built_in">FetchPageRead</span>(header_page_id_);</span><br><span class="line">  <span class="keyword">auto</span> header_page = header_page_guard.<span class="built_in">As</span>&lt;BPlusTreeHeaderPage&gt;();</span><br><span class="line">  <span class="keyword">if</span> (header_page-&gt;root_page_id_ == INVALID_PAGE_ID) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  ctx.root_page_id_ = header_page-&gt;root_page_id_;</span><br><span class="line">  ctx.read_set_.<span class="built_in">push_back</span>(bpm_-&gt;<span class="built_in">FetchPageRead</span>(ctx.root_page_id_));</span><br><span class="line">  header_page_guard.<span class="built_in">Drop</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">auto</span> page = ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;BPlusTreePage&gt;();</span><br><span class="line">  <span class="keyword">while</span> (!page-&gt;<span class="built_in">IsLeafPage</span>()) &#123;</span><br><span class="line">    <span class="keyword">auto</span> internal = ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;InternalPage&gt;();</span><br><span class="line">    <span class="type">page_id_t</span> id = internal-&gt;<span class="built_in">ValueAt</span>(<span class="number">0</span>);</span><br><span class="line">    ctx.read_set_.<span class="built_in">push_back</span>(bpm_-&gt;<span class="built_in">FetchPageRead</span>(id));</span><br><span class="line">    ctx.read_set_.<span class="built_in">pop_front</span>();</span><br><span class="line">    page = ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;BPlusTreePage&gt;();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>(bpm_, std::<span class="built_in">move</span>(ctx.read_set_.<span class="built_in">back</span>()));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BPLUSTREE_TYPE::Begin</span><span class="params">(<span class="type">const</span> KeyType &amp;key)</span> -&gt; INDEXITERATOR_TYPE </span>&#123;</span><br><span class="line">  Context ctx;</span><br><span class="line">  <span class="keyword">auto</span> header_page_guard = bpm_-&gt;<span class="built_in">FetchPageRead</span>(header_page_id_);</span><br><span class="line">  <span class="keyword">auto</span> header_page = header_page_guard.<span class="built_in">As</span>&lt;BPlusTreeHeaderPage&gt;();</span><br><span class="line">  <span class="keyword">if</span> (header_page-&gt;root_page_id_ == INVALID_PAGE_ID) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  ctx.root_page_id_ = header_page-&gt;root_page_id_;</span><br><span class="line">  ctx.read_set_.<span class="built_in">push_back</span>(bpm_-&gt;<span class="built_in">FetchPageRead</span>(ctx.root_page_id_));</span><br><span class="line">  header_page_guard.<span class="built_in">Drop</span>();</span><br><span class="line">  <span class="built_in">FindLeafPage</span>(key, Operation::Search, ctx);</span><br><span class="line">  <span class="type">int</span> pos = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">if</span> (!ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;LeafPage&gt;()-&gt;<span class="built_in">KeyIndex</span>(key, comparator_, pos)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="built_in">Exception</span>(<span class="string">&quot;key not exist&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>(bpm_, std::<span class="built_in">move</span>(ctx.read_set_.<span class="built_in">back</span>()), pos);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BPLUSTREE_TYPE::End</span><span class="params">()</span> -&gt; INDEXITERATOR_TYPE </span>&#123; <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>(); &#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="Task-4-Concurrency-Control"><a href="#Task-4-Concurrency-Control" class="headerlink" title="Task #4 Concurrency Control"></a>Task #4 Concurrency Control</h2><p>Latch Crabbing&#x2F;Coupling<br><br>Latch Crabbing 的基本思想如下：<br></p>
+<h2 id="Task-4-Concurrency-Control"><a href="#Task-4-Concurrency-Control" class="headerlink" title="Task #4 Concurrency Control"></a>Task #4 Concurrency Control</h2><h3 id="Latch-Crabbing-Coupling"><a href="#Latch-Crabbing-Coupling" class="headerlink" title="Latch Crabbing&#x2F;Coupling"></a>Latch Crabbing&#x2F;Coupling<br></h3><p>Latch Crabbing 的基本思想如下：<br></p>
 <ol>
 <li>获取 parent 的 latch<br></li>
 <li>获取 child 的 latch<br></li>
@@ -370,8 +374,18 @@
 </ul>
 <p><img src="/../images/cmu15445-project2/8.png" alt="img"><br><img src="/../images/cmu15445-project2/9.png" alt="img"><br><img src="/../images/cmu15445-project2/10.png" alt="img"><br><img src="/../images/cmu15445-project2/11.png" alt="img"><br><img src="/../images/cmu15445-project2/12.png" alt="img"></p>
 <p>Insert&#x2F;Delete<br><br>从 root 往下，按照需要获取 write latch，一旦获取了 child 的 write latch，检查它是否安全，如果安全，则释放之前获取的所有 write latch。<br>安全判断函数逻辑见函数IsSafePage<br></p>
+<h3 id="Better-Latching-Algorithm"><a href="#Better-Latching-Algorithm" class="headerlink" title="Better Latching Algorithm"></a>Better Latching Algorithm<br></h3><ul>
+<li>Search：与 Latch Crabbing 相同<br></li>
+<li>Insert&#x2F;Delete:<br><ul>
+<li>使用与 Search 相同的方式在查询路径上获取、释放 latch，在 leaf node 上获取 write latch<br></li>
+<li>如果 leaf node 不安全，可能会引起其它节点的变动，则使用 Latch Crabbing 的策略再执行一遍<br></li>
+</ul>
+</li>
+</ul>
+<p>该方法乐观地假设整个操作只会引起 leaf node 的变化，若假设错误，则使用 Latch Crabbing 的原始方案。<br></p>
+<p>CheckPoint#2本地测试<br><br><img src="/../images/cmu15445-project2/13.png" alt="img"><br><img src="/../images/cmu15445-project2/14.png" alt="img"><br><img src="/../images/cmu15445-project2/15.png" alt="img"><br><img src="/../images/cmu15445-project2/16.png" alt="img"></p>
 <p><a target="_blank" rel="noopener" href="https://15445.courses.cs.cmu.edu/spring2023/bpt-printer/">Bustub Tree printer</a><br></p>
-<p>线上测试<br><br><img src="/../images/cmu15445-project2/7.png" alt="img"></p>
+<p>CheckPoint#2线上测试<br><br><img src="/../images/cmu15445-project2/7.png" alt="img"></p>
 
     </div>
 
@@ -393,7 +407,10 @@
     <a href="/2024/02/26/cmu15445-project1/" rel="prev" title="cmu15445-project1">
       <i class="fa fa-chevron-left"></i> cmu15445-project1
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2024/02/27/cmu15445-project3/" rel="next" title="cmu15445-project3">
+      cmu15445-project3 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -452,7 +469,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#B-Tree"><span class="nav-number">1.</span> <span class="nav-text">B+ Tree</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#B-Tree-Operations"><span class="nav-number">2.</span> <span class="nav-text">B+ Tree Operations</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CheckPoint-1"><span class="nav-number">3.</span> <span class="nav-text">CheckPoint#1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-1-B-Tree-Pages"><span class="nav-number">3.1.</span> <span class="nav-text">Task #1 B+ Tree Pages</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#class-BPlusTreePage%E7%9A%843%E4%B8%AA%E7%B1%BB%E6%88%90%E5%91%98"><span class="nav-number">3.1.1.</span> <span class="nav-text">class BPlusTreePage的3个类成员</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#class-BPlusTreeInternalPage-public-BPlusTreePage"><span class="nav-number">3.1.2.</span> <span class="nav-text">class BPlusTreeInternalPage : public BPlusTreePage </span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#class-BPlusTreeLeafPage-public-BPlusTreePage"><span class="nav-number">3.1.3.</span> <span class="nav-text">class BPlusTreeLeafPage : public BPlusTreePage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Class-BplusTreeHeaderPage"><span class="nav-number">3.1.4.</span> <span class="nav-text">Class BplusTreeHeaderPage</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-2a-B-Tree-Data-Structure-Insertion-Point-Search"><span class="nav-number">3.2.</span> <span class="nav-text">Task #2a B+ Tree Data Structure(Insertion, Point Search)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CheckPoint-2"><span class="nav-number">4.</span> <span class="nav-text">CheckPoint#2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-2b-B-Tree-Data-Structure-Deletion"><span class="nav-number">4.1.</span> <span class="nav-text">Task #2b B+ Tree Data Structure(Deletion)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-3-Index-Iterator"><span class="nav-number">4.2.</span> <span class="nav-text">Task #3 Index Iterator</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-4-Concurrency-Control"><span class="nav-number">4.3.</span> <span class="nav-text">Task #4 Concurrency Control</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#B-Tree"><span class="nav-number">1.</span> <span class="nav-text">B+ Tree</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#B-Tree-Operations"><span class="nav-number">2.</span> <span class="nav-text">B+ Tree Operations</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CheckPoint-1"><span class="nav-number">3.</span> <span class="nav-text">CheckPoint#1</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-1-B-Tree-Pages"><span class="nav-number">3.1.</span> <span class="nav-text">Task #1 B+ Tree Pages</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#class-BPlusTreePage%E7%9A%843%E4%B8%AA%E7%B1%BB%E6%88%90%E5%91%98"><span class="nav-number">3.1.1.</span> <span class="nav-text">class BPlusTreePage的3个类成员</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#class-BPlusTreeInternalPage-public-BPlusTreePage"><span class="nav-number">3.1.2.</span> <span class="nav-text">class BPlusTreeInternalPage : public BPlusTreePage </span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#class-BPlusTreeLeafPage-public-BPlusTreePage"><span class="nav-number">3.1.3.</span> <span class="nav-text">class BPlusTreeLeafPage : public BPlusTreePage</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Class-BplusTreeHeaderPage"><span class="nav-number">3.1.4.</span> <span class="nav-text">Class BplusTreeHeaderPage</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-2a-B-Tree-Data-Structure-Insertion-Point-Search"><span class="nav-number">3.2.</span> <span class="nav-text">Task #2a B+ Tree Data Structure(Insertion, Point Search)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CheckPoint-2"><span class="nav-number">4.</span> <span class="nav-text">CheckPoint#2</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-2b-B-Tree-Data-Structure-Deletion"><span class="nav-number">4.1.</span> <span class="nav-text">Task #2b B+ Tree Data Structure(Deletion)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-3-Index-Iterator"><span class="nav-number">4.2.</span> <span class="nav-text">Task #3 Index Iterator</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Task-4-Concurrency-Control"><span class="nav-number">4.3.</span> <span class="nav-text">Task #4 Concurrency Control</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Latch-Crabbing-Coupling"><span class="nav-number">4.3.1.</span> <span class="nav-text">Latch Crabbing&#x2F;Coupling</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Better-Latching-Algorithm"><span class="nav-number">4.3.2.</span> <span class="nav-text">Better Latching Algorithm</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -468,7 +485,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">38</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -481,7 +498,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">12</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

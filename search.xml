@@ -1264,7 +1264,7 @@
 <p>BplusTree实现Begin和End函数</p>
 <figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BPLUSTREE_TYPE::Begin</span><span class="params">()</span> -&gt; INDEXITERATOR_TYPE </span>&#123;</span><br><span class="line">  Context ctx;</span><br><span class="line">  <span class="keyword">auto</span> header_page_guard = bpm_-&gt;<span class="built_in">FetchPageRead</span>(header_page_id_);</span><br><span class="line">  <span class="keyword">auto</span> header_page = header_page_guard.<span class="built_in">As</span>&lt;BPlusTreeHeaderPage&gt;();</span><br><span class="line">  <span class="keyword">if</span> (header_page-&gt;root_page_id_ == INVALID_PAGE_ID) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  ctx.root_page_id_ = header_page-&gt;root_page_id_;</span><br><span class="line">  ctx.read_set_.<span class="built_in">push_back</span>(bpm_-&gt;<span class="built_in">FetchPageRead</span>(ctx.root_page_id_));</span><br><span class="line">  header_page_guard.<span class="built_in">Drop</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">auto</span> page = ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;BPlusTreePage&gt;();</span><br><span class="line">  <span class="keyword">while</span> (!page-&gt;<span class="built_in">IsLeafPage</span>()) &#123;</span><br><span class="line">    <span class="keyword">auto</span> internal = ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;InternalPage&gt;();</span><br><span class="line">    <span class="type">page_id_t</span> id = internal-&gt;<span class="built_in">ValueAt</span>(<span class="number">0</span>);</span><br><span class="line">    ctx.read_set_.<span class="built_in">push_back</span>(bpm_-&gt;<span class="built_in">FetchPageRead</span>(id));</span><br><span class="line">    ctx.read_set_.<span class="built_in">pop_front</span>();</span><br><span class="line">    page = ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;BPlusTreePage&gt;();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>(bpm_, std::<span class="built_in">move</span>(ctx.read_set_.<span class="built_in">back</span>()));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BPLUSTREE_TYPE::Begin</span><span class="params">(<span class="type">const</span> KeyType &amp;key)</span> -&gt; INDEXITERATOR_TYPE </span>&#123;</span><br><span class="line">  Context ctx;</span><br><span class="line">  <span class="keyword">auto</span> header_page_guard = bpm_-&gt;<span class="built_in">FetchPageRead</span>(header_page_id_);</span><br><span class="line">  <span class="keyword">auto</span> header_page = header_page_guard.<span class="built_in">As</span>&lt;BPlusTreeHeaderPage&gt;();</span><br><span class="line">  <span class="keyword">if</span> (header_page-&gt;root_page_id_ == INVALID_PAGE_ID) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>();</span><br><span class="line">  &#125;</span><br><span class="line">  ctx.root_page_id_ = header_page-&gt;root_page_id_;</span><br><span class="line">  ctx.read_set_.<span class="built_in">push_back</span>(bpm_-&gt;<span class="built_in">FetchPageRead</span>(ctx.root_page_id_));</span><br><span class="line">  header_page_guard.<span class="built_in">Drop</span>();</span><br><span class="line">  <span class="built_in">FindLeafPage</span>(key, Operation::Search, ctx);</span><br><span class="line">  <span class="type">int</span> pos = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">if</span> (!ctx.read_set_.<span class="built_in">back</span>().<span class="built_in">As</span>&lt;LeafPage&gt;()-&gt;<span class="built_in">KeyIndex</span>(key, comparator_, pos)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="built_in">Exception</span>(<span class="string">&quot;key not exist&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>(bpm_, std::<span class="built_in">move</span>(ctx.read_set_.<span class="built_in">back</span>()), pos);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">INDEX_TEMPLATE_ARGUMENTS</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">BPLUSTREE_TYPE::End</span><span class="params">()</span> -&gt; INDEXITERATOR_TYPE </span>&#123; <span class="keyword">return</span> <span class="built_in">INDEXITERATOR_TYPE</span>(); &#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="Task-4-Concurrency-Control"><a href="#Task-4-Concurrency-Control" class="headerlink" title="Task #4 Concurrency Control"></a>Task #4 Concurrency Control</h2><p>Latch Crabbing&#x2F;Coupling<br><br>Latch Crabbing 的基本思想如下：<br></p>
+<h2 id="Task-4-Concurrency-Control"><a href="#Task-4-Concurrency-Control" class="headerlink" title="Task #4 Concurrency Control"></a>Task #4 Concurrency Control</h2><h3 id="Latch-Crabbing-Coupling"><a href="#Latch-Crabbing-Coupling" class="headerlink" title="Latch Crabbing&#x2F;Coupling"></a>Latch Crabbing&#x2F;Coupling<br></h3><p>Latch Crabbing 的基本思想如下：<br></p>
 <ol>
 <li>获取 parent 的 latch<br></li>
 <li>获取 child 的 latch<br></li>
@@ -1282,14 +1282,119 @@
 </ul>
 <p><img src="/../images/cmu15445-project2/8.png" alt="img"><br><img src="/../images/cmu15445-project2/9.png" alt="img"><br><img src="/../images/cmu15445-project2/10.png" alt="img"><br><img src="/../images/cmu15445-project2/11.png" alt="img"><br><img src="/../images/cmu15445-project2/12.png" alt="img"></p>
 <p>Insert&#x2F;Delete<br><br>从 root 往下，按照需要获取 write latch，一旦获取了 child 的 write latch，检查它是否安全，如果安全，则释放之前获取的所有 write latch。<br>安全判断函数逻辑见函数IsSafePage<br></p>
+<h3 id="Better-Latching-Algorithm"><a href="#Better-Latching-Algorithm" class="headerlink" title="Better Latching Algorithm"></a>Better Latching Algorithm<br></h3><ul>
+<li>Search：与 Latch Crabbing 相同<br></li>
+<li>Insert&#x2F;Delete:<br><ul>
+<li>使用与 Search 相同的方式在查询路径上获取、释放 latch，在 leaf node 上获取 write latch<br></li>
+<li>如果 leaf node 不安全，可能会引起其它节点的变动，则使用 Latch Crabbing 的策略再执行一遍<br></li>
+</ul>
+</li>
+</ul>
+<p>该方法乐观地假设整个操作只会引起 leaf node 的变化，若假设错误，则使用 Latch Crabbing 的原始方案。<br></p>
+<p>CheckPoint#2本地测试<br><br><img src="/../images/cmu15445-project2/13.png" alt="img"><br><img src="/../images/cmu15445-project2/14.png" alt="img"><br><img src="/../images/cmu15445-project2/15.png" alt="img"><br><img src="/../images/cmu15445-project2/16.png" alt="img"></p>
 <p><a href="https://15445.courses.cs.cmu.edu/spring2023/bpt-printer/">Bustub Tree printer</a><br></p>
-<p>线上测试<br><br><img src="/../images/cmu15445-project2/7.png" alt="img"></p>
+<p>CheckPoint#2线上测试<br><br><img src="/../images/cmu15445-project2/7.png" alt="img"></p>
 ]]></content>
       <categories>
         <category>cmu15445-2023</category>
       </categories>
       <tags>
         <tag>cmu15445—2023</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>cmu15445-project3</title>
+    <url>/2024/02/27/cmu15445-project3/</url>
+    <content><![CDATA[<h2 id="Query-Processing-Model"><a href="#Query-Processing-Model" class="headerlink" title="Query Processing Model"></a>Query Processing Model</h2><p>OLAP与OLTP数据库</p>
+<ul>
+<li>OLAP数据库架构将数据读取优先于数据写入操作。可以快速地对大量数据执行复杂的查询</li>
+<li>OLTP数据库架构将数据写入优先于数据读取操作。它针对写入密集型工作负载进行了优化</li>
+</ul>
+<p>example:<br><br>以一家大型零售公司为例。该公司有一个庞大的数据库，用于跟踪销售、库存、客户数据等</p>
+<ul>
+<li>使用OLTP数据库实时处理交易、更新库存水平和管理客户账户</li>
+<li>使用OLAP数据库来分析有关销售趋势、库存水平、客户人口统计等</li>
+</ul>
+<hr>
+<p>DBMS的Processing Model定义了系统如何执行一个query plan,目前主要有三种模型</p>
+<ul>
+<li>Iterator Model</li>
+<li>Materialization Model</li>
+<li>Vectorized&#x2F;Batch Model</li>
+</ul>
+<h3 id="Iterator-Model"><a href="#Iterator-Model" class="headerlink" title="Iterator Model"></a>Iterator Model</h3><p>query plan 中的每步 operator 都实现一个 next 函数，每次调用时，operator 返回一个 tuple 或者 null，后者表示数据已经遍历完毕。operator 本身实现一个循环，每次调用其 child operators 的 next 函数，从它们那边获取下一条数据供自己操作，这样整个 query plan 就被从上至下地串联起来，它也称为 Volcano&#x2F;Pipeline Model：<br><img src="/../images/cmu15445-project3/1.png" alt="img"><br>Iterator 几乎被用在每个 DBMS 中，包括 sqlite、MySQL、PostgreSQL 等等，其它需要注意的是:</p>
+<ul>
+<li>有些 operators 会等待 children 返回所有 tuples 后才执行，如 Joins, Subqueries 和 Order By</li>
+<li>Output Control 在 Iterator Model 中比较容易，如 Limit，只按需调用 next 即可</li>
+</ul>
+<h3 id="Materialization-Model"><a href="#Materialization-Model" class="headerlink" title="Materialization Model"></a>Materialization Model</h3><p>每个 operator 处理完所有输入后，将所有结果一次性输出，DBMS 会将一些参数传递到 operator 中防止处理过多的数据，这是一种从下至上的思路，示意如下：<br><img src="/../images/cmu15445-project3/2.png" alt="img"><br>materialization model：</p>
+<ul>
+<li>更适合 OLTP 场景，因为后者通常指需要处理少量的 tuples，这样能减少不必要的执行、调度成本</li>
+<li>不太适合会产生大量中间结果的 OLAP 查询</li>
+</ul>
+<h3 id="Vectorization-Model"><a href="#Vectorization-Model" class="headerlink" title="Vectorization Model"></a>Vectorization Model</h3><p>Vectorization Model 是 Iterator 与 Materialization Model 折衷的一种模型：</p>
+<ul>
+<li>每个 operator 实现一个 next 函数，但每次 next 调用返回一批 tuples，而不是单个 tuple</li>
+<li>operator 内部的循环每次也是一批一批 tuples 地处理</li>
+<li>batch 的大小可以根据需要改变（hardware、query properties)<br><br><img src="/../images/cmu15445-project3/3.png" alt="img"></li>
+</ul>
+<p>vectorization model 是 OLAP 查询的理想模型:</p>
+<ul>
+<li>极大地减少每个 operator 的调用次数</li>
+<li>允许 operators 使用 vectorized instructions (SIMD) 来批量处理 tuples</li>
+</ul>
+<h2 id="BACKGROUND：QUERY-PROCESSING"><a href="#BACKGROUND：QUERY-PROCESSING" class="headerlink" title="BACKGROUND：QUERY PROCESSING"></a>BACKGROUND：QUERY PROCESSING</h2><p>BusTub架构如下<br><img src="/../images/cmu15445-project3/4.png" alt="img"></p>
+<h3 id="note"><a href="#note" class="headerlink" title="note:"></a>note:</h3><ul>
+<li>BusTub只支持SQL的一个小子集，可以通过tests&#x2F;sql中的SQLLogicTest文件来查看它所支持的SQL语句</li>
+<li>如果你使用Clion来运行Bustub shell，添加–disable-tty参数</li>
+<li>SQL语句使用;结尾</li>
+<li>BusTub只支持INT和VARCHAR(n)类型，字符串使用单引号</li>
+<li>Bustub使用Iterator Porcessing Model</li>
+</ul>
+<h3 id="Inspecting-SQL-query-plans"><a href="#Inspecting-SQL-query-plans" class="headerlink" title="Inspecting SQL query plans"></a>Inspecting SQL query plans</h3><p>BusTub支持EXPLAIN来打印SQL查询计划<br><img src="/../images/cmu15445-project3/5.png" alt="img"><br>EXPLAIN会展示query processing这一层的转换过程 Parser -&gt; Binder -&gt; Planner -&gt; Optimizer<br><br>Parser解析SQL语句生成Binder AST语法树，接着生成query plan，然后由Optimizer优化query plan生成executor树</p>
+<h2 id="Task-1-Access-Method-Executors"><a href="#Task-1-Access-Method-Executors" class="headerlink" title="Task#1 Access Method Executors"></a>Task#1 Access Method Executors</h2><p>我们并不需要关心query plan是如何创建的；但有必要理解query plan的组成结构:这是棵树，每个plan节点都对应具体的算子，Bustub采用iterator procesing model，也就是Top-to-Bottom的火山模型，因此query plan的执行就是从根节点开始，将plan节点转换为对应的算子</p>
+<p>Plan节点的类型如下<br><img src="/../images/cmu15445-project3/6.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>cmu15445-2023</category>
+      </categories>
+      <tags>
+        <tag>cmu15445—2023</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssh免密登录失败</title>
+    <url>/2024/02/28/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5/</url>
+    <content><![CDATA[<h2 id="SSH免密码失败原因定位分析"><a href="#SSH免密码失败原因定位分析" class="headerlink" title="SSH免密码失败原因定位分析"></a>SSH免密码失败原因定位分析</h2><ol>
+<li>服务器B上.ssh目录的权限必须是700</li>
+<li>服务器B上.authorized_keys文件权限必须是600或者644</li>
+<li>服务器B上用户家目录文件权限必须是700，比如用户名是aischang，则&#x2F;home&#x2F;aischang这个目录权限必须是700</li>
+</ol>
+<p>如果不是700，在服务器A上查看&#x2F;var&#x2F;log&#x2F;secure文件会报错</p>
+<h2 id="原因："><a href="#原因：" class="headerlink" title="原因："></a>原因：</h2><p>sshd为了安全，对属主的目录和文件权限有所要求。如果权限不对，则ssh的免密码登陆不生效。</p>
+<blockquote>
+<ol>
+<li>服务器B上SELinux关闭为disabled，可以使用命令修改setenforce 0 ，查看状态的命令为getenforce或者 查看&#x2F;etc&#x2F;selinux&#x2F;config 文件中是否是disabled</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>有可能是StrictModes问题<br><br> 编辑 vi &#x2F;etc&#x2F;ssh&#x2F;sshd_config<br><br> 找到#StrictModes yes改成StrictModes no</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>有可能是PubkeyAuthentication问题<br><br> 编辑 vi &#x2F;etc&#x2F;ssh&#x2F;sshd_config<br><br> 找到PubkeyAuthentication改成yes</li>
+</ol>
+</blockquote>
+<p>如果还不行，可以在服务器A上用ssh -vvv 机器B的ip 查看详情，根据输出内容具体问题具体分析了</p>
+<p>参考链接: <a href="https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0">https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>ssh</tag>
       </tags>
   </entry>
 </search>
