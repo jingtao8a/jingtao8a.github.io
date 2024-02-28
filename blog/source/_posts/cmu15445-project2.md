@@ -665,7 +665,7 @@ auto BPLUSTREE_TYPE::End() -> INDEXITERATOR_TYPE { return INDEXITERATOR_TYPE(); 
 ```
 
 ## Task #4 Concurrency Control
-Latch Crabbing/Coupling<br>
+### Latch Crabbing/Coupling<br>
 Latch Crabbing 的基本思想如下：<br>
 1. 获取 parent 的 latch<br>
 2. 获取 child 的 latch<br>
@@ -692,7 +692,21 @@ Insert/Delete<br>
 从 root 往下，按照需要获取 write latch，一旦获取了 child 的 write latch，检查它是否安全，如果安全，则释放之前获取的所有 write latch。
 安全判断函数逻辑见函数IsSafePage<br>
 
+### Better Latching Algorithm<br>
+- Search：与 Latch Crabbing 相同<br>
+- Insert/Delete:<br>
+  - 使用与 Search 相同的方式在查询路径上获取、释放 latch，在 leaf node 上获取 write latch<br>
+  - 如果 leaf node 不安全，可能会引起其它节点的变动，则使用 Latch Crabbing 的策略再执行一遍<br>
+
+该方法乐观地假设整个操作只会引起 leaf node 的变化，若假设错误，则使用 Latch Crabbing 的原始方案。<br>
+
+CheckPoint#2本地测试<br/>
+![img](../images/cmu15445-project2/13.png)
+![img](../images/cmu15445-project2/14.png)
+![img](../images/cmu15445-project2/15.png)
+![img](../images/cmu15445-project2/16.png)
+
 [Bustub Tree printer](https://15445.courses.cs.cmu.edu/spring2023/bpt-printer/)<br>
 
-线上测试<br/>
+CheckPoint#2线上测试<br/>
 ![img](../images/cmu15445-project2/7.png)
