@@ -26,3 +26,4 @@ sshd为了安全，对属主的目录和文件权限有所要求。如果权限�
 如果还不行，可以在服务器A上用ssh -vvv 机器B的ip 查看详情，根据输出内容具体问题具体分析了
 
 参考链接: [https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0](https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0)
+
