@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="下载官网地址:https:&#x2F;&#x2F;github.com&#x2F;jingtao8a&#x2F;GRE 软件环境Ubuntu 20.04.6 LTSgcc 9.4.0cmake 3.16.3 Dependenciesintel-mkl 2018.4.274这里安装2024的版本也可以进入官网 https:&#x2F;&#x2F;www.intel.com&#x2F;content&#x2F;www&#x2F;us&#x2F;en&#x2F;developer&#x2F;tools&#x2F;oneapi&#x2F;on">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GRE使用手册">
+<meta property="og:url" content="http://jingtao8a.github.io/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="下载官网地址:https:&#x2F;&#x2F;github.com&#x2F;jingtao8a&#x2F;GRE 软件环境Ubuntu 20.04.6 LTSgcc 9.4.0cmake 3.16.3 Dependenciesintel-mkl 2018.4.274这里安装2024的版本也可以进入官网 https:&#x2F;&#x2F;www.intel.com&#x2F;content&#x2F;www&#x2F;us&#x2F;en&#x2F;developer&#x2F;tools&#x2F;oneapi&#x2F;on">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/3.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/1.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/2.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/4.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/5.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/6.png">
+<meta property="article:published_time" content="2024-03-04T14:02:31.000Z">
+<meta property="article:modified_time" content="2024-03-04T15:12:51.676Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="Learned Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/3.png">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>GRE使用手册 | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          GRE使用手册
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-03-04 06:02:31 / Modified: 07:12:51" itemprop="dateCreated datePublished" datetime="2024-03-04T06:02:31-08:00">2024-03-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="下载官网地址"><a href="#下载官网地址" class="headerlink" title="下载官网地址:"></a>下载官网地址:<br></h2><p><a target="_blank" rel="noopener" href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
+<h2 id="软件环境"><a href="#软件环境" class="headerlink" title="软件环境"></a>软件环境</h2><p>Ubuntu 20.04.6 LTS<br><br>gcc 9.4.0<br><br>cmake 3.16.3</p>
+<h2 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h2><h3 id="intel-mkl-2018-4-274"><a href="#intel-mkl-2018-4-274" class="headerlink" title="intel-mkl 2018.4.274"></a>intel-mkl 2018.4.274<br></h3><p>这里安装2024的版本也可以<br><br>进入官网 <a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html">https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html</a><br></p>
+<p>选择Linux 和 APT Package Manager<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/3.png" alt="img"><br>依次输入命令<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/1.png" alt="img"><br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/2.png" alt="img"></p>
+<p>默认安装路径如下：<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/4.png" alt="img"></p>
+<p>使用mkl库需要配置环境变量：<br></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">对所有用户生效，需要重启系统</span><br><span class="line">vim /etc/profile</span><br></pre></td></tr></table></figure>
+<p><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/5.png" alt="img"></p>
+<h3 id="intel-tbb-2020-3"><a href="#intel-tbb-2020-3" class="headerlink" title="intel-tbb 2020.3"></a>intel-tbb 2020.3<br></h3><p>tbb库的版本必须使用2020.3<br><br>下载地址<a target="_blank" rel="noopener" href="https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3">https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3</a></p>
+<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">解压</span></span><br><span class="line">tar -zxvf oneTBB-2020_U3.tar.gz</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">因为要使用 gcc-9 进行编译，所以需要编辑成 gcc-9 形式</span></span><br><span class="line">cp build/linux.gcc.inc build/linux.gcc-9.inc </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编辑 linux.gcc-9.inc 文件：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">第15、16行原来是</span></span><br><span class="line">CPLUS ?= g++</span><br><span class="line">CONLY ?= gcc</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为</span></span><br><span class="line">CPLUS ?= g++-9</span><br><span class="line">CONLY ?= gcc-9</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">然后在文件夹 oneTBB-2020_U3/ 中编译</span></span><br><span class="line">cd oneTBB-2020_U3</span><br><span class="line">make compiler=gcc-9 stdver=c++17 tbb_build_prefix=my_tbb_build</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译完成后，在 builld/ 文件夹下会看到编译生成的文件夹 my_tbb_build_release/</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir /usr/local/tbb-2020_U3</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/include /usr/local/tbb-2020_U3/include</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/include/tbb /usr/local/include/tbb</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/build/my_tbb_build_release /usr/local/tbb-2020_U3/lib</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so2</span><br></pre></td></tr></table></figure>
+
+<p>然后把 库文件的路径写入到 ~&#x2F;.bashrc：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export LD_LIBRARY_PATH=/usr/local/tbb-2020_U3/lib:$LD_LIBRARY_PATH&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>参考链接: <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39779233/article/details/126284595">https://blog.csdn.net/qq_39779233&#x2F;article&#x2F;details&#x2F;126284595</a></p>
+<h3 id="jemalloc"><a href="#jemalloc" class="headerlink" title="jemalloc"></a>jemalloc</h3><p>下载地址: <a target="_blank" rel="noopener" href="https://github.com/jemalloc/jemalloc/releases">https://github.com/jemalloc/jemalloc/releases</a></p>
+<h4 id="编译与安装"><a href="#编译与安装" class="headerlink" title="编译与安装"></a>编译与安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 1</span></span><br><span class="line">./autogen.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 2</span></span><br><span class="line">make</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 3</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>参考链接: <a target="_blank" rel="noopener" href="https://blog.csdn.net/SweeNeil/article/details/94648313">https://blog.csdn.net/SweeNeil/article/details/94648313</a></p>
+<h2 id="USAGE"><a href="#USAGE" class="headerlink" title="USAGE"></a>USAGE</h2><h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --init # only for the first time</span><br><span class="line">mkdir -p build</span><br><span class="line">cd build</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release .. &amp;&amp; make</span><br></pre></td></tr></table></figure>
+<h3 id="RUN"><a href="#RUN" class="headerlink" title="RUN"></a>RUN</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">./build/microbench \</span><br><span class="line">--keys_file=./data/dataset \  // 数据地址</span><br><span class="line">--keys_file_type=&#123;binary,text&#125; \  // 二进制 或者 文本</span><br><span class="line">--read=0.5 --insert=0.5 \ </span><br><span class="line">--operations_num=800000000 \ </span><br><span class="line">--table_size=-1 \ // 所使用的数据的size</span><br><span class="line">--init_table_ratio=0.5 \ //bulk_load所使用的数据的百分比</span><br><span class="line">--thread_num=24 \</span><br><span class="line">--index=index_name \ //测试的索引名称</span><br></pre></td></tr></table></figure>
+
+<p>其它参数见官网:<br><a target="_blank" rel="noopener" href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
+<h3 id="如果要测试新的索引结构"><a href="#如果要测试新的索引结构" class="headerlink" title="如果要测试新的索引结构"></a>如果要测试新的索引结构</h3><h4 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h4><p>src&#x2F;competitor&#x2F;competitor.h<br>get_index函数中添加对应的index_type<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/6.png" alt="img"></p>
+<h4 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h4><p>在 src&#x2F;competitor 下放置源代码 new_index_name&#x2F;src<br>编写接口文件 src&#x2F;competitor&#x2F;new_index_name.h</p>
+<p>以lipp的接口文件为例：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;./src/src/core/lipp.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;../indexInterface.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LIPPInterface</span> : <span class="keyword">public</span> indexInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt; &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">init</span><span class="params">(Param *param = <span class="literal">nullptr</span>)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">bulk_load</span><span class="params">(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">put</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">update</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">remove</span><span class="params">(KEY_TYPE key, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">scan</span><span class="params">(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num, std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span></span></span><br><span class="line"><span class="params"><span class="function">                Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">long</span> <span class="type">long</span> <span class="title">memory_consumption</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> lipp.<span class="built_in">total_size</span>(); &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    LIPP &lt;KEY_TYPE, PAYLOAD_TYPE&gt; lipp;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">void</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">bulk_load</span>(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num,</span><br><span class="line">                                                      Param *param) &#123;</span><br><span class="line">    lipp.<span class="built_in">bulk_load</span>(key_value, <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(num));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">get</span>(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param) &#123;</span><br><span class="line">    <span class="type">bool</span> exist;</span><br><span class="line">    val = lipp.<span class="built_in">at</span>(key, <span class="literal">false</span>, exist);</span><br><span class="line">    <span class="keyword">return</span> exist;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">put</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">insert</span>(key, value);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">update</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">update</span>(key, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">remove</span>(KEY_TYPE key, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">remove</span>(key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">size_t</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">scan</span>(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num,</span><br><span class="line">                                                   std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span><br><span class="line">                                                   Param *param) &#123;</span><br><span class="line">    <span class="keyword">if</span>(!result) &#123;</span><br><span class="line">        result = <span class="keyword">new</span> std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt;[key_num];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">range_query_len</span>(result, key_low_bound, key_num);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learned-Index/" rel="tag"># Learned Index</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/02/29/cmu15445-project4/" rel="prev" title="cmu15445-project4">
+      <i class="fa fa-chevron-left"></i> cmu15445-project4
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%AE%98%E7%BD%91%E5%9C%B0%E5%9D%80"><span class="nav-number">1.</span> <span class="nav-text">下载官网地址:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BD%AF%E4%BB%B6%E7%8E%AF%E5%A2%83"><span class="nav-number">2.</span> <span class="nav-text">软件环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Dependencies"><span class="nav-number">3.</span> <span class="nav-text">Dependencies</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#intel-mkl-2018-4-274"><span class="nav-number">3.1.</span> <span class="nav-text">intel-mkl 2018.4.274</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#intel-tbb-2020-3"><span class="nav-number">3.2.</span> <span class="nav-text">intel-tbb 2020.3</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91"><span class="nav-number">3.2.1.</span> <span class="nav-text">编译</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">3.2.2.</span> <span class="nav-text">安装</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#jemalloc"><span class="nav-number">3.3.</span> <span class="nav-text">jemalloc</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E4%B8%8E%E5%AE%89%E8%A3%85"><span class="nav-number">3.3.1.</span> <span class="nav-text">编译与安装</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#USAGE"><span class="nav-number">4.</span> <span class="nav-text">USAGE</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Build"><span class="nav-number">4.1.</span> <span class="nav-text">Build</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#RUN"><span class="nav-number">4.2.</span> <span class="nav-text">RUN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E6%9E%9C%E8%A6%81%E6%B5%8B%E8%AF%95%E6%96%B0%E7%9A%84%E7%B4%A2%E5%BC%95%E7%BB%93%E6%9E%84"><span class="nav-number">4.3.</span> <span class="nav-text">如果要测试新的索引结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#step1"><span class="nav-number">4.3.1.</span> <span class="nav-text">step1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#step2"><span class="nav-number">4.3.2.</span> <span class="nav-text">step2</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
