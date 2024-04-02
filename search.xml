@@ -1736,4 +1736,77 @@
         <tag>Learned Index</tag>
       </tags>
   </entry>
+  <entry>
+    <title>布隆过滤器</title>
+    <url>/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/</url>
+    <content><![CDATA[<h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>查找时，过滤掉一定不存在的key，提高查找效率</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在数组或者列表中搜索相应值的时候，你必须遍历已有的集合。若集合中存在大量的数据，就会影响查找的效率</p>
+<p>针对这个问题，可以考虑使用哈希表，利用哈希表来对”值”进行哈希处理来获得该值对应的索引值，然后将该”值”存放到列表中对应的索引位置。<br>这意味着判断列表中是否存在该值时，只需要对值进行哈希处理并在相应的索引位置进行搜索即可，这时的搜索速度是非常快的。</p>
+<p><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.png" alt="img"></p>
+<p>Bloom Filter本质上是由长度为m的位向量（仅包含0或者1）组成，最初所有值均设置为0，如下图所示：<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.png" alt="img"></p>
+<p>为了将数据项添加到布隆过滤器中，使用k个不同的哈希函数对其进行哈希，并将结果位置上对应位置为1</p>
+<h3 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h3><p>输入”semlinker”，预设的3个哈希函数将输出2、4、6,我们把相应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.png" alt="img"><br>再输入”kakuqo”，哈希函数输出3、4、7,把对应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.png" alt="img"><br>再输入”fullstack”,哈希函数输出2、3、7，这时发现相应的索引位都已经置为了1，这意味着我们可以说”fullstack”可能已经插入到集合中。这是一种误判情况<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.png" alt="img"></p>
+<p>布隆过滤器有一个可预测的误判率(FPP):<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/6.png" alt="img"></p>
+<ul>
+<li>n是已经添加元素的数量</li>
+<li>k是哈希的次数</li>
+<li>m为布隆过滤器的长度(如比特数组的大小)</li>
+</ul>
+<p>实际情况中，布隆过滤器的长度m可以根据误判率(FFP)的和期望添加的元素个数n的通过如下公式计算:<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/7.png" alt="img"></p>
+<blockquote>
+<p>因此，我们得出一个结论，当我们搜索一个值的时候，若该值经过k个哈希函数运算后任何一个索引位为0，那么该值肯定不在集合中。但如果所有哈希索引值均为1，则只能说该搜索的值可能存在集合中</p>
+</blockquote>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>在实际工作中，布隆过滤器常见的应用场景如下：</p>
+<ul>
+<li>网页爬虫对 URL 去重，避免爬取相同的 URL 地址；</li>
+<li>反垃圾邮件，从数十亿个垃圾邮件列表中判断某邮箱是否垃圾邮箱；</li>
+<li>Google Chrome 使用布隆过滤器识别恶意 URL；</li>
+<li>Medium 使用布隆过滤器避免推荐给用户已经读过的文章；</li>
+<li>Google BigTable，Apache HBbase 和 Apache Cassandra 使用布隆过滤器减少对不存在的行和列的查找</li>
+</ul>
+]]></content>
+      <categories>
+        <category>布隆过滤器</category>
+      </categories>
+      <tags>
+        <tag>布隆过滤器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>DILI论文重点部分</title>
+    <url>/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/</url>
+    <content><![CDATA[<h2 id="DILI：A-Distribution-driven-Learned-Index"><a href="#DILI：A-Distribution-driven-Learned-Index" class="headerlink" title="DILI：A Distribution-driven Learned Index"></a>DILI：A Distribution-driven Learned Index</h2><p>摘要：<br><br>DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测key的位置的。</p>
+<p>为了构建DILI，首先构建一颗bottom-up tree,然后使用这个bottom-up tree，自顶向下构建一个DILI树。DILI在the number of leaf nodes和tree height之间有一个很好的平衡（the number of leaf nodes 和 tree height是影响key搜索时间的关键因素）。设计了灵活的插入和删除算法，并在必要时调整树形结构。</p>
+<p>实验结果表明DILI比其它baseline在不同的workloads上要表现的更好。</p>
+<h3 id="1-INTRODUCTION"><a href="#1-INTRODUCTION" class="headerlink" title="1.INTRODUCTION"></a>1.INTRODUCTION<br></h3><p>RMI：仅支持查找<br><br>ALEX：扩展RMI，在leaf node中使用 gapped array，使用 cost model初始化RMI结构和动态更新RMI结构。存在last-mile问题<br><br>LIPP：解决last-mile问题，但是没有利用data distribution<br><br>DILI-LO：未解决last-mile问题，利用data distribution<br><br>DILI：解决last-mile问题，利用data distribution<br></p>
+<p>构建DILI的目的是实现最好的搜索性能 —&gt; 搜索的开销取决于(1)leaf node的深度(2)leaf  node中的linear model预测的accuracy —&gt; 这两个factors都应该在DILI的构建中被考虑</p>
+<p>因此，提出了一个two-phase bulk loading 方法<br><br><strong>Phase1</strong> -&gt; 使用greedy merging algorithm（考虑到了上面的两个factors） 构建一棵BU-tree（BU-tree的internal node’srange并不是被它的child nodes均分的，因此在BU-tree进行key搜索时，确定child node需要额外的开销）</p>
+<p><strong>Phase2</strong> -&gt;  借鉴BU-tree的结构构建DILI</p>
+<h4 id="Contribution"><a href="#Contribution" class="headerlink" title="Contribution"></a>Contribution</h4><ul>
+<li>提出DILI，algorithms 和它的cost analysis</li>
+<li>构建DILI的two-phase bulk loading 方法</li>
+<li>对DILI的leaf node的local optimization，解决last-mile问题</li>
+<li>对于DILI的insertion和deletion操作提出相应的algorithm来维持查找性能</li>
+<li>在synthetic data和real data上证实DILI的性能</li>
+</ul>
+<h3 id="2-OVERVIEW-OF-DILI"><a href="#2-OVERVIEW-OF-DILI" class="headerlink" title="2.OVERVIEW OF DILI"></a>2.OVERVIEW OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png" alt="img"><br>DILI的结构如Figure 1所示<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/2.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/3.png" alt="img"><br>DILI在没有使用local Optimization的时候SEARCH算法如下，查找key时，锁定了leaf node后需要再进行指数查找来确定position。<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/4.png" alt="img"></p>
+<h4 id="Local-Optimization-strategy"><a href="#Local-Optimization-strategy" class="headerlink" title="Local Optimization strategy"></a>Local Optimization strategy</h4><p>在leaf node中，先用线性模型预测key的position，之后直接将key放到预测的position上，如果发生冲突，就创建一个新的node，对应的entry设置为指向新node的指针</p>
+<h4 id="Updates"><a href="#Updates" class="headerlink" title="Updates"></a>Updates</h4><p>当对DILI插入数据时，如果发生conflict，会创建新的Node，当创建的新Node过多并且退化了查找性能时，需要进行调整策略（在section6会详细描述）</p>
+<h3 id="3-SEARCH-COST-ANALYSIS"><a href="#3-SEARCH-COST-ANALYSIS" class="headerlink" title="3.SEARCH COST ANALYSIS"></a>3.SEARCH COST ANALYSIS</h3><p>Cost Analysis:<br>未使用local optimization strategy<br>Algorithm1由两步组成(1)找到包含search key的leaf node (2)leaf node中的local search<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/5.png" alt="img"></p>
+<h3 id="4-CONSTRUCTION-OF-DILI"><a href="#4-CONSTRUCTION-OF-DILI" class="headerlink" title="4.CONSTRUCTION OF DILI"></a>4.CONSTRUCTION OF DILI</h3><h4 id="4-1Motivation-and-Overall-Idea-of-BU-Tree"><a href="#4-1Motivation-and-Overall-Idea-of-BU-Tree" class="headerlink" title="4.1Motivation and Overall Idea of BU-Tree"></a>4.1Motivation and Overall Idea of BU-Tree</h4><p>DILI的internal node的线性模型有着完美的准确性，因为internal node被它的child nodes均分。—-&gt; 现在有一个问题，如何确定DILI的fanout</p>
+<p>大致思路：<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/6.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/7.png" alt="img"></p>
+<h4 id="4-2-Building-BU-Tree"><a href="#4-2-Building-BU-Tree" class="headerlink" title="4.2 Building BU-Tree"></a>4.2 Building BU-Tree</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/8.png" alt="img"></p>
+<h5 id="4-2-1-Bottom-up-Node-and-Model-Creation"><a href="#4-2-1-Bottom-up-Node-and-Model-Creation" class="headerlink" title="4.2.1 Bottom-up Node and Model Creation"></a>4.2.1 Bottom-up Node and Model Creation</h5><p>构建第0层的leaf node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/9.png" alt="img"><br>已知h - 1层的internal node,构建第h层的internal node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/10.png" alt="img"></p>
+<h5 id="4-2-2-Determining-Node-Layout-at-A-Height"><a href="#4-2-2-Determining-Node-Layout-at-A-Height" class="headerlink" title="4.2.2 Determining Node Layout at A Height"></a>4.2.2 Determining Node Layout at A Height</h5><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/11.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/12.png" alt="img"></p>
+<p>但是BU-Tree是从下往上创建的，即使创建了第h层的node，我们也不知道BU-Tree的高度</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png" alt="img"></p>
+<h4 id="4-3-BU-Tree-based-Bulk-loading-for-DILI"><a href="#4-3-BU-Tree-based-Bulk-loading-for-DILI" class="headerlink" title="4.3 BU-Tree based Bulk loading for DILI"></a>4.3 BU-Tree based Bulk loading for DILI</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png" alt="img"></p>
+<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4>]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
 </search>

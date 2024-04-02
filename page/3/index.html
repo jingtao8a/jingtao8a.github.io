@@ -190,6 +190,169 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/28/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/" class="post-title-link" itemprop="url">静态链接</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-28 11:07:37" itemprop="dateCreated datePublished" datetime="2023-05-28T11:07:37-07:00">2023-05-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p>连接器采用“两部链接”的方法，将链接过程分为两部：</p>
+</blockquote>
+<p>1.空间和地址分配：扫描所有的输入目标文件，获得各个节的长度、属性、位置并将它们合并，计算合并后各个段的长度与位置，建立映射关系。收集所有输入目标文件中符号表中所有的符号定义和符号引用，统一放到全局符号表中<br>2.符号解析与重定位：使用第一步中收集到的所有信息，读取输入文件中节的数据、重定位信息，并且进行符号解析与重定位、调整代码中的地址等。</p>
+<p><strong>重定位过程是链接过程的核心</strong></p>
+<h2 id="符号解析与重定位"><a href="#符号解析与重定位" class="headerlink" title="符号解析与重定位"></a>符号解析与重定位</h2><h4 id="符号解析"><a href="#符号解析" class="headerlink" title="符号解析"></a>符号解析</h4><blockquote>
+<p>重定位的过程伴随着符号解析过程，每个目标文件都可能定义一些符号，也可能引用到定义在其他目标文件的符号。重定位过程中，每个重定位的入口都是一个外部符号的引用，当链接器需要对某个符号的引用进行重定位时，他就要确定这个符号的目标地址。这时候链接器会去查找有所有输入目标文件的符号表组成的全局符号表，找到相应的符号后进行重定位，如果没有找到，就会报符号未定义的错误。</p>
+</blockquote>
+<h4 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h4><blockquote>
+<p>对于32位 x86平台下的ELF文件的重定位入口所修正的指令寻址方式只有两种：</p>
+</blockquote>
+<p>1.绝对近址32位寻址<br>2.相对近址32为寻址</p>
+<blockquote>
+<p>这两种重定位指令修正方式每个被修正的位置的长度都为32位，即4字节。而且都是近址寻址，不用考虑Intel的段间远址寻址。</p>
+</blockquote>
+<p>X86基本重定位类型：<br><img src="/images/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/1.jpg" alt="QQ截图20221203153333.png"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/configure%E5%91%BD%E4%BB%A4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/28/configure%E5%91%BD%E4%BB%A4/" class="post-title-link" itemprop="url">configure命令</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-28 11:06:04" itemprop="dateCreated datePublished" datetime="2023-05-28T11:06:04-07:00">2023-05-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_40941932/article/details/109992151">参考</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/cmake%E5%AD%A6%E4%B9%A0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -826,190 +989,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/12-%E4%BA%8B%E5%8A%A1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/12-%E4%BA%8B%E5%8A%A1/" class="post-title-link" itemprop="url">12.事务</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:21:58" itemprop="dateCreated datePublished" datetime="2023-05-27T14:21:58-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>1.原子性：要么全做，要么全不做<br>2.隔离性：保证其它的状态转换不会影响到本次的状态转换<br>3.一致性（符合所有现实世界的约束）：</p>
-<blockquote>
-<ul>
-<li>数据库本身能为我们保证一部分一致性需求,比如MySQL数据库可以为表建立主键、唯一索引、外键、声明某个列为NOT NULL来拒绝NULL值的插入。又比如对某个列建立了唯一索引时，如果插入某条记录时该列的值重复了，那么MySQL就会报错并且拒绝插入，MySQL还支持CHECK语法来自定义约束,但是实际上MySQL并不会去检查CHECK子句中的约束是否成立，但是我们还是可以通过定义触发器的方式来自定义一些约束条件以保证数据库中的一致性</li>
-<li>更多的一致性需求需要靠写业务代码的程序员自己保证，现实生活中复杂的一致性需求比比皆是，而由于性能问题把一致性需求交给数据库去解决这是不现实的，所以就把锅甩给了业务端程序员</li>
-</ul>
-</blockquote>
-<p>原子性和隔离性都会对一致性产生影响，数据库某些操作的原子性和隔离性都是保证一致性的一种手段，在操作执行完成后保证符合所有既定的约束则是一种结果</p>
-<p>4.持久性：状态转换后，这个转换的结果是永久保留的</p>
-<p>事务的定义：把需要保证原子性、隔离性、一致性、持久性的一个或多个数据库操作称之为一个事务</p>
-<p>事务的状态转换图如下<br><img src="/images/12_1.jpg" alt="微信截图_20230218105257.png"></p>
-<h3 id="隐式提交"><a href="#隐式提交" class="headerlink" title="隐式提交"></a>隐式提交</h3><p>当我们适用START TRANSACTION 或者BEGIN 语句开启了一个事务，或者把系统标量auto commit为OFF时，事务就不会进行自动提交，但是如果我们输入了某些语句之后就会悄悄的提交掉<br>1.定义或修改数据库对象的数据定义语言：所谓的数据库对象，指的就是数据库、表、视图、存储过程等，当我们使用CREATE、ALTER、DROP等语句去修改这些所谓的数据库对象时，就会隐式的提交前面语句所属的事务<br>2.隐式使用或修改数据库中的表：当我们使用ALTER USER、CREATE USER、DROP USER、GRANT、RENAME USER、REVOKE、SET PASSWORD等语句时也会隐式的提交前面语句所属于的事务<br>3.事务控制或关于锁定的语句：当我们在一个事务还没有提交或者回滚时就又使用START TRANSACTION 或者BEGIN语句开启了另一个事务，会隐式提交上一个事务<br>4.加载数据的语句：使用LOAD DATA等<br>5.关于MySQL复制的一些语句：使用START SLAVE、STOP SLAVE、RESET SLAVE、CHANGE MASTER TO等语句时也会隐式的提交前面语句所属的事务<br>6.其它的一些语句：使用ANALYZE TABLE、CACHE INDEX、CHECK TABLE、FLUSH、LOAD INDEX INTO CACHE、OPTIMIZE TABLE、REPAIR TABLE、RESET等语句</p>
-<h3 id="保存点"><a href="#保存点" class="headerlink" title="保存点"></a>保存点</h3><p>定义保存点的语法如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SAVEPOINT 保存点的名称</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ROLLBACK [WORK] TO [SAVEPOINT] 保存点名称</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/11-MySQL%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E4%BC%98%E5%8C%96/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/11-MySQL%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">11.MySQL基于规则的优化</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:21:17" itemprop="dateCreated datePublished" datetime="2023-05-27T14:21:17-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="条件简化"><a href="#条件简化" class="headerlink" title="条件简化"></a>条件简化</h2><p>1.移除不必要的括号<br>2.常量传递<br>3.等值传递<br>4.表达式计算<br>5.HAVING子句和WHERE子句的合并</p>
-<p>子查询的执行方式</p>
-<ul>
-<li>对于包含不相关的标量子查询或者行子查询的语句来说，MySQL会分别独立执行外层查询和子查询，就当作两个单表查询就行</li>
-<li>对于相关的标量子查询或者行子查询，它的执行方式如下：<br><img src="/images/11_1.jpg" alt="QQ截图20230217111828.png"></li>
-</ul>
-<p>IN子查询优化</p>
-<p>如果子查询的结果集中的记录条数很少，那么把子查询和外层查询分别看成两个单独的单表查询效率还是很高的，但是子查询的结果集太多的话会导致一下问题</p>
-<ul>
-<li>结果集太多，内存无法存下</li>
-<li>对于外层查询来说，如果子查询的结果集太多，就意味着IN子句中的参数很多，会导致（1.无法有效的使用索引，只能对外层查询进行全表扫描 2.在对外层查询执行全表扫描时，由于IN子句中的参数太多，这会导致检测一条记录是否符合和IN子句中的参数匹配花费的时间太长）<blockquote>
-<p>解决办法：不直接将不相关子查询的结果集当作外层查询的参数，而是将该结果写入一个临时表（1.该临时表的列就是子查询结果集中的列 2.写入临时表的记录会被去重 3.一般情况下子查询结果不会大的离谱，所以会为集合中的数据建立基于内存的存储引擎的临时表，并为该表建立哈希索引，如果子查询结果很大，会转而使用基于磁盘的存储引擎来保存结果集中的记录，索引类型也对应转变为B+树索引）</p>
-</blockquote>
-</li>
-</ul>
-<p>物化表转连接</p>
-<p>松散索引扫描</p>
-<p>如果IN子查询不满足转换为semi-join的条件，又不能转换为物化表或者转换为物化表的成本太大，那么它就会转换为EXISTS查询</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1077,20 +1060,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

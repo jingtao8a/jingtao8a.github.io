@@ -190,6 +190,197 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/" class="post-title-link" itemprop="url">DILI论文重点部分</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-04-02 05:08:10 / Modified: 05:28:42" itemprop="dateCreated datePublished" datetime="2024-04-02T05:08:10-07:00">2024-04-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="DILI：A-Distribution-driven-Learned-Index"><a href="#DILI：A-Distribution-driven-Learned-Index" class="headerlink" title="DILI：A Distribution-driven Learned Index"></a>DILI：A Distribution-driven Learned Index</h2><p>摘要：<br><br>DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测key的位置的。</p>
+<p>为了构建DILI，首先构建一颗bottom-up tree,然后使用这个bottom-up tree，自顶向下构建一个DILI树。DILI在the number of leaf nodes和tree height之间有一个很好的平衡（the number of leaf nodes 和 tree height是影响key搜索时间的关键因素）。设计了灵活的插入和删除算法，并在必要时调整树形结构。</p>
+<p>实验结果表明DILI比其它baseline在不同的workloads上要表现的更好。</p>
+<h3 id="1-INTRODUCTION"><a href="#1-INTRODUCTION" class="headerlink" title="1.INTRODUCTION"></a>1.INTRODUCTION<br></h3><p>RMI：仅支持查找<br><br>ALEX：扩展RMI，在leaf node中使用 gapped array，使用 cost model初始化RMI结构和动态更新RMI结构。存在last-mile问题<br><br>LIPP：解决last-mile问题，但是没有利用data distribution<br><br>DILI-LO：未解决last-mile问题，利用data distribution<br><br>DILI：解决last-mile问题，利用data distribution<br></p>
+<p>构建DILI的目的是实现最好的搜索性能 —&gt; 搜索的开销取决于(1)leaf node的深度(2)leaf  node中的linear model预测的accuracy —&gt; 这两个factors都应该在DILI的构建中被考虑</p>
+<p>因此，提出了一个two-phase bulk loading 方法<br><br><strong>Phase1</strong> -&gt; 使用greedy merging algorithm（考虑到了上面的两个factors） 构建一棵BU-tree（BU-tree的internal node’srange并不是被它的child nodes均分的，因此在BU-tree进行key搜索时，确定child node需要额外的开销）</p>
+<p><strong>Phase2</strong> -&gt;  借鉴BU-tree的结构构建DILI</p>
+<h4 id="Contribution"><a href="#Contribution" class="headerlink" title="Contribution"></a>Contribution</h4><ul>
+<li>提出DILI，algorithms 和它的cost analysis</li>
+<li>构建DILI的two-phase bulk loading 方法</li>
+<li>对DILI的leaf node的local optimization，解决last-mile问题</li>
+<li>对于DILI的insertion和deletion操作提出相应的algorithm来维持查找性能</li>
+<li>在synthetic data和real data上证实DILI的性能</li>
+</ul>
+<h3 id="2-OVERVIEW-OF-DILI"><a href="#2-OVERVIEW-OF-DILI" class="headerlink" title="2.OVERVIEW OF DILI"></a>2.OVERVIEW OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png" alt="img"><br>DILI的结构如Figure 1所示<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/2.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/3.png" alt="img"><br>DILI在没有使用local Optimization的时候SEARCH算法如下，查找key时，锁定了leaf node后需要再进行指数查找来确定position。<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/4.png" alt="img"></p>
+<h4 id="Local-Optimization-strategy"><a href="#Local-Optimization-strategy" class="headerlink" title="Local Optimization strategy"></a>Local Optimization strategy</h4><p>在leaf node中，先用线性模型预测key的position，之后直接将key放到预测的position上，如果发生冲突，就创建一个新的node，对应的entry设置为指向新node的指针</p>
+<h4 id="Updates"><a href="#Updates" class="headerlink" title="Updates"></a>Updates</h4><p>当对DILI插入数据时，如果发生conflict，会创建新的Node，当创建的新Node过多并且退化了查找性能时，需要进行调整策略（在section6会详细描述）</p>
+<h3 id="3-SEARCH-COST-ANALYSIS"><a href="#3-SEARCH-COST-ANALYSIS" class="headerlink" title="3.SEARCH COST ANALYSIS"></a>3.SEARCH COST ANALYSIS</h3><p>Cost Analysis:<br>未使用local optimization strategy<br>Algorithm1由两步组成(1)找到包含search key的leaf node (2)leaf node中的local search<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/5.png" alt="img"></p>
+<h3 id="4-CONSTRUCTION-OF-DILI"><a href="#4-CONSTRUCTION-OF-DILI" class="headerlink" title="4.CONSTRUCTION OF DILI"></a>4.CONSTRUCTION OF DILI</h3><h4 id="4-1Motivation-and-Overall-Idea-of-BU-Tree"><a href="#4-1Motivation-and-Overall-Idea-of-BU-Tree" class="headerlink" title="4.1Motivation and Overall Idea of BU-Tree"></a>4.1Motivation and Overall Idea of BU-Tree</h4><p>DILI的internal node的线性模型有着完美的准确性，因为internal node被它的child nodes均分。—-&gt; 现在有一个问题，如何确定DILI的fanout</p>
+<p>大致思路：<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/6.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/7.png" alt="img"></p>
+<h4 id="4-2-Building-BU-Tree"><a href="#4-2-Building-BU-Tree" class="headerlink" title="4.2 Building BU-Tree"></a>4.2 Building BU-Tree</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/8.png" alt="img"></p>
+<h5 id="4-2-1-Bottom-up-Node-and-Model-Creation"><a href="#4-2-1-Bottom-up-Node-and-Model-Creation" class="headerlink" title="4.2.1 Bottom-up Node and Model Creation"></a>4.2.1 Bottom-up Node and Model Creation</h5><p>构建第0层的leaf node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/9.png" alt="img"><br>已知h - 1层的internal node,构建第h层的internal node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/10.png" alt="img"></p>
+<h5 id="4-2-2-Determining-Node-Layout-at-A-Height"><a href="#4-2-2-Determining-Node-Layout-at-A-Height" class="headerlink" title="4.2.2 Determining Node Layout at A Height"></a>4.2.2 Determining Node Layout at A Height</h5><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/11.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/12.png" alt="img"></p>
+<p>但是BU-Tree是从下往上创建的，即使创建了第h层的node，我们也不知道BU-Tree的高度</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png" alt="img"></p>
+<h4 id="4-3-BU-Tree-based-Bulk-loading-for-DILI"><a href="#4-3-BU-Tree-based-Bulk-loading-for-DILI" class="headerlink" title="4.3 BU-Tree based Bulk loading for DILI"></a>4.3 BU-Tree based Bulk loading for DILI</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png" alt="img"></p>
+<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" class="post-title-link" itemprop="url">布隆过滤器</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-03-16 02:55:19" itemprop="dateCreated datePublished" datetime="2024-03-16T02:55:19-07:00">2024-03-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-02 05:03:05" itemprop="dateModified" datetime="2024-04-02T05:03:05-07:00">2024-04-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">布隆过滤器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>查找时，过滤掉一定不存在的key，提高查找效率</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在数组或者列表中搜索相应值的时候，你必须遍历已有的集合。若集合中存在大量的数据，就会影响查找的效率</p>
+<p>针对这个问题，可以考虑使用哈希表，利用哈希表来对”值”进行哈希处理来获得该值对应的索引值，然后将该”值”存放到列表中对应的索引位置。<br>这意味着判断列表中是否存在该值时，只需要对值进行哈希处理并在相应的索引位置进行搜索即可，这时的搜索速度是非常快的。</p>
+<p><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.png" alt="img"></p>
+<p>Bloom Filter本质上是由长度为m的位向量（仅包含0或者1）组成，最初所有值均设置为0，如下图所示：<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.png" alt="img"></p>
+<p>为了将数据项添加到布隆过滤器中，使用k个不同的哈希函数对其进行哈希，并将结果位置上对应位置为1</p>
+<h3 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h3><p>输入”semlinker”，预设的3个哈希函数将输出2、4、6,我们把相应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.png" alt="img"><br>再输入”kakuqo”，哈希函数输出3、4、7,把对应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.png" alt="img"><br>再输入”fullstack”,哈希函数输出2、3、7，这时发现相应的索引位都已经置为了1，这意味着我们可以说”fullstack”可能已经插入到集合中。这是一种误判情况<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.png" alt="img"></p>
+<p>布隆过滤器有一个可预测的误判率(FPP):<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/6.png" alt="img"></p>
+<ul>
+<li>n是已经添加元素的数量</li>
+<li>k是哈希的次数</li>
+<li>m为布隆过滤器的长度(如比特数组的大小)</li>
+</ul>
+<p>实际情况中，布隆过滤器的长度m可以根据误判率(FFP)的和期望添加的元素个数n的通过如下公式计算:<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/7.png" alt="img"></p>
+<blockquote>
+<p>因此，我们得出一个结论，当我们搜索一个值的时候，若该值经过k个哈希函数运算后任何一个索引位为0，那么该值肯定不在集合中。但如果所有哈希索引值均为1，则只能说该搜索的值可能存在集合中</p>
+</blockquote>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>在实际工作中，布隆过滤器常见的应用场景如下：</p>
+<ul>
+<li>网页爬虫对 URL 去重，避免爬取相同的 URL 地址；</li>
+<li>反垃圾邮件，从数十亿个垃圾邮件列表中判断某邮箱是否垃圾邮箱；</li>
+<li>Google Chrome 使用布隆过滤器识别恶意 URL；</li>
+<li>Medium 使用布隆过滤器避免推荐给用户已经读过的文章；</li>
+<li>Google BigTable，Apache HBbase 和 Apache Cassandra 使用布隆过滤器减少对不存在的行和列的查找</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1388,185 +1579,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/07/cmake-generator-error-under-windows-system/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/12/07/cmake-generator-error-under-windows-system/" class="post-title-link" itemprop="url">cmake-generator-error-under-windows-system</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-12-07 00:22:51" itemprop="dateCreated datePublished" datetime="2023-12-07T00:22:51-08:00">2023-12-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/cmake/" itemprop="url" rel="index"><span itemprop="name">cmake</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>1.安装windows版本cmake（配置环境变量）<br>2.安装windows版本mingw（配置环境变量）<br>3.创建工程目录<br>执行以下命令</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir build</span><br><span class="line">cd build</span><br><span class="line">cmake -G &quot;MinGW Makefiles&quot; -D &quot;CMAKE_MAKE_PROGRAM:PATH=your path to make.exe&quot;</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
-
-<p>参考：<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/dcrmg/article/details/103918543">https://blog.csdn.net/dcrmg/article/details/103918543</a><br><a target="_blank" rel="noopener" href="https://codeantenna.com/a/ELzh11ElWs">https://codeantenna.com/a/ELzh11ElWs</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/" class="post-title-link" itemprop="url">SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-12-05 22:02:09" itemprop="dateCreated datePublished" datetime="2023-12-05T22:02:09-08:00">2023-12-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>SALI: A Scalable Adaptive Learned Index Framework based on<br>Probability Models<br>一个基于概率模型的可进化学习索引框架</p>
-<h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><p>LI：只读<br>可写：<br>1.基于缓冲区的策略（插入时放入缓冲区，到达一个阈值后进行合并操作）<br>XIndex、FINEdex<br>2.基于模型的策略（就地插入）<br>ALEX（在插入冲突中，映射的slot已经被占用，通过移动来尝试重新组织节点）、<br>LIPP（利用链接方案，为相应的时隙创建一个新节点，将最后一英里问题转化为子树遍历问题）</p>
-<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/1.png" alt="img"><br>上述的索引结构都不能以高并发性进行扩展</p>
-<p>并发数较少的时候，与基于模型的策略（ALEX+、LIPP+）相比，基于缓冲区策略（XIndex、FINEdex）的索引表现出较差的基本性能和较差的扩展性；并且随着并发数的提高，“最后一英里问题”搜索会迅速饱和内存带宽，从而成为系统的瓶颈（ALEX+必须为此操作获取粗粒度写锁，线程数量增加时，越来越多的线程被阻塞）</p>
-<p>LIPP+没有最后一英里问题，但是它需要在每个节点中维护统计信息，如访问计数和冲突计数（以触发节点再训练，防止性能下降）。这些节点计数器在线程之间造成高争用。</p>
-<h2 id="难点与分析过程"><a href="#难点与分析过程" class="headerlink" title="难点与分析过程"></a>难点与分析过程</h2><p>我们需要设计一个满足如下要求的可扩展学习索引<br>1.Efficient Concurrency高效并发：<br>为了实现高效的插入性能，索引必须跟踪统计信息，这些信息反映了由于新的插入而导致的索引结构随时间的退化（这些信息对于触发节点再训练至关重要），但是节点计数器在线程之间会造成高争用，需要一种轻量级方法<br>2.Adaptive ability适应能力<br>与均匀工作负载相比，学习索引在倾斜插入工作负载下表现出次优性能。因此，学习索引需要有自适应能力以保证其在并发场景的鲁棒性。此外，学习的索引缺乏用于查找操作的优化策略。在偏斜的工作负载下，学习索引尚未充分利用显著降低索引空间成本的机会。</p>
-<p>3.Low overheads of basic performance基本性能的低开销<br>(1)Efficient lookup<br>实现高查找性能，通常取决于最大限度地减少查找的预测错误<br>(2)Efficient insert<br>采用基于模型的策略，而不是基于缓冲区的策略，通过在每个节点中保留间隙，可以显著提高学习索引的插入性能</p>
-<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>提出SALI<br>1.利用LIPP+结构（使用细粒度锁）<br>2.除了模型重训练以外定义一组节点进化策略，以允许学习到的索引自适应于不同的工作负载倾斜（建议对具有不同读写热度的节点应用不同的进化策略）<br>3.用轻量级概率模型取代了现有学习索引中的每个节点的统计信息，以消除统计信息维护的可扩展性瓶颈</p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/2.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/3.png" alt="img"></p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/4.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/5.png" alt="img"></p>
-<p>进化策略：<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/6.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/7.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/8.png" alt="img"></p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/9.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/10.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/11.png" alt="img"></p>
-<p>概率模型：<br>为了确保最佳性能，学习索引必须监控退化统计信息，以便在必要时启动调整；另外，进化策略需要额外的统计信息。<br>基本概念：模拟信息积累时利用概率</p>
-<p>例子：<br>1.当模拟指定时间段内插入key的累积数量时，我们设计一个基于插入率和插入时间的概率模型<br>2.几何分布可以用来模拟信息的累计（插入冲突等）</p>
-<p>触发insert evolution的条件</p>
-<p>Condition1：评估一个节点及其子树中新key插入的频率<br>该节点容纳足够数量的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/12.png" alt="img"></p>
-<p>n.current_num:是指在当前插入操作结束时节点中包含的key的数量<br>n.build_num:是指上一次执行完进化策略后节点中的key的数量<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/13.png" alt="img"></p>
-<p>Condition2：节点内冲突的升级（判断节点是否恶化）<br>Node必须由足够的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/14.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/15.png" alt="img"></p>
-<p><strong>先计算Pconflict是否被触发，如果触发，再判断Pacc是否被触发，如果两个条件都被触发，执行进化策略</strong></p>
-<p>触发lookup evolution的条件<br>Phl<br>还需要考虑以下两个条件<br>Condition1:<br>再很长的一段时间内，节点上的查找操作没有触发进化策略</p>
-<p>Condition2:<br>节点累计数据的速率并不慢</p>
-<p>For condition1：如果一个节点的最后一次进化操作是由hot lookup触发的，这意味着自那以后没有插入操作触发该节点进化，即该节点没有严重恶化，并且新插入key的数量可能很少，可以将Phl调整到一个更小的值</p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/16.png" alt="img"></p>
-<p>For condition2：引入Pacc，如果自上次进化操作以来插入了大量新的key，则表明可能需要进行新一轮的进化操作</p>
-<p>每个线程维护一个skip_counter，每次查找操作，skip_counter加1，10次查找操作后，执行一次伯努利实验来判断Phl是否被触发。如果Phl被触发，判断Pacc是否也被触发，如果触发，执行进化策略。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1634,20 +1650,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="DILI：A Distribution-driven Learned Index摘要：DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DILI论文重点部分">
+<meta property="og:url" content="http://jingtao8a.github.io/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="DILI：A Distribution-driven Learned Index摘要：DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/2.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/3.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/4.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/5.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/6.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/7.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/8.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/9.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/10.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/11.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/12.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png">
+<meta property="article:published_time" content="2024-04-02T12:08:10.000Z">
+<meta property="article:modified_time" content="2024-04-02T12:28:42.512Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="Learned Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>DILI论文重点部分 | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          DILI论文重点部分
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-04-02 05:08:10 / Modified: 05:28:42" itemprop="dateCreated datePublished" datetime="2024-04-02T05:08:10-07:00">2024-04-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="DILI：A-Distribution-driven-Learned-Index"><a href="#DILI：A-Distribution-driven-Learned-Index" class="headerlink" title="DILI：A Distribution-driven Learned Index"></a>DILI：A Distribution-driven Learned Index</h2><p>摘要：<br><br>DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测key的位置的。</p>
+<p>为了构建DILI，首先构建一颗bottom-up tree,然后使用这个bottom-up tree，自顶向下构建一个DILI树。DILI在the number of leaf nodes和tree height之间有一个很好的平衡（the number of leaf nodes 和 tree height是影响key搜索时间的关键因素）。设计了灵活的插入和删除算法，并在必要时调整树形结构。</p>
+<p>实验结果表明DILI比其它baseline在不同的workloads上要表现的更好。</p>
+<h3 id="1-INTRODUCTION"><a href="#1-INTRODUCTION" class="headerlink" title="1.INTRODUCTION"></a>1.INTRODUCTION<br></h3><p>RMI：仅支持查找<br><br>ALEX：扩展RMI，在leaf node中使用 gapped array，使用 cost model初始化RMI结构和动态更新RMI结构。存在last-mile问题<br><br>LIPP：解决last-mile问题，但是没有利用data distribution<br><br>DILI-LO：未解决last-mile问题，利用data distribution<br><br>DILI：解决last-mile问题，利用data distribution<br></p>
+<p>构建DILI的目的是实现最好的搜索性能 —&gt; 搜索的开销取决于(1)leaf node的深度(2)leaf  node中的linear model预测的accuracy —&gt; 这两个factors都应该在DILI的构建中被考虑</p>
+<p>因此，提出了一个two-phase bulk loading 方法<br><br><strong>Phase1</strong> -&gt; 使用greedy merging algorithm（考虑到了上面的两个factors） 构建一棵BU-tree（BU-tree的internal node’srange并不是被它的child nodes均分的，因此在BU-tree进行key搜索时，确定child node需要额外的开销）</p>
+<p><strong>Phase2</strong> -&gt;  借鉴BU-tree的结构构建DILI</p>
+<h4 id="Contribution"><a href="#Contribution" class="headerlink" title="Contribution"></a>Contribution</h4><ul>
+<li>提出DILI，algorithms 和它的cost analysis</li>
+<li>构建DILI的two-phase bulk loading 方法</li>
+<li>对DILI的leaf node的local optimization，解决last-mile问题</li>
+<li>对于DILI的insertion和deletion操作提出相应的algorithm来维持查找性能</li>
+<li>在synthetic data和real data上证实DILI的性能</li>
+</ul>
+<h3 id="2-OVERVIEW-OF-DILI"><a href="#2-OVERVIEW-OF-DILI" class="headerlink" title="2.OVERVIEW OF DILI"></a>2.OVERVIEW OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png" alt="img"><br>DILI的结构如Figure 1所示<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/2.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/3.png" alt="img"><br>DILI在没有使用local Optimization的时候SEARCH算法如下，查找key时，锁定了leaf node后需要再进行指数查找来确定position。<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/4.png" alt="img"></p>
+<h4 id="Local-Optimization-strategy"><a href="#Local-Optimization-strategy" class="headerlink" title="Local Optimization strategy"></a>Local Optimization strategy</h4><p>在leaf node中，先用线性模型预测key的position，之后直接将key放到预测的position上，如果发生冲突，就创建一个新的node，对应的entry设置为指向新node的指针</p>
+<h4 id="Updates"><a href="#Updates" class="headerlink" title="Updates"></a>Updates</h4><p>当对DILI插入数据时，如果发生conflict，会创建新的Node，当创建的新Node过多并且退化了查找性能时，需要进行调整策略（在section6会详细描述）</p>
+<h3 id="3-SEARCH-COST-ANALYSIS"><a href="#3-SEARCH-COST-ANALYSIS" class="headerlink" title="3.SEARCH COST ANALYSIS"></a>3.SEARCH COST ANALYSIS</h3><p>Cost Analysis:<br>未使用local optimization strategy<br>Algorithm1由两步组成(1)找到包含search key的leaf node (2)leaf node中的local search<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/5.png" alt="img"></p>
+<h3 id="4-CONSTRUCTION-OF-DILI"><a href="#4-CONSTRUCTION-OF-DILI" class="headerlink" title="4.CONSTRUCTION OF DILI"></a>4.CONSTRUCTION OF DILI</h3><h4 id="4-1Motivation-and-Overall-Idea-of-BU-Tree"><a href="#4-1Motivation-and-Overall-Idea-of-BU-Tree" class="headerlink" title="4.1Motivation and Overall Idea of BU-Tree"></a>4.1Motivation and Overall Idea of BU-Tree</h4><p>DILI的internal node的线性模型有着完美的准确性，因为internal node被它的child nodes均分。—-&gt; 现在有一个问题，如何确定DILI的fanout</p>
+<p>大致思路：<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/6.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/7.png" alt="img"></p>
+<h4 id="4-2-Building-BU-Tree"><a href="#4-2-Building-BU-Tree" class="headerlink" title="4.2 Building BU-Tree"></a>4.2 Building BU-Tree</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/8.png" alt="img"></p>
+<h5 id="4-2-1-Bottom-up-Node-and-Model-Creation"><a href="#4-2-1-Bottom-up-Node-and-Model-Creation" class="headerlink" title="4.2.1 Bottom-up Node and Model Creation"></a>4.2.1 Bottom-up Node and Model Creation</h5><p>构建第0层的leaf node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/9.png" alt="img"><br>已知h - 1层的internal node,构建第h层的internal node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/10.png" alt="img"></p>
+<h5 id="4-2-2-Determining-Node-Layout-at-A-Height"><a href="#4-2-2-Determining-Node-Layout-at-A-Height" class="headerlink" title="4.2.2 Determining Node Layout at A Height"></a>4.2.2 Determining Node Layout at A Height</h5><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/11.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/12.png" alt="img"></p>
+<p>但是BU-Tree是从下往上创建的，即使创建了第h层的node，我们也不知道BU-Tree的高度</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png" alt="img"></p>
+<h4 id="4-3-BU-Tree-based-Bulk-loading-for-DILI"><a href="#4-3-BU-Tree-based-Bulk-loading-for-DILI" class="headerlink" title="4.3 BU-Tree based Bulk loading for DILI"></a>4.3 BU-Tree based Bulk loading for DILI</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png" alt="img"></p>
+<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learned-Index/" rel="tag"># Learned Index</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" rel="prev" title="布隆过滤器">
+      <i class="fa fa-chevron-left"></i> 布隆过滤器
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#DILI%EF%BC%9AA-Distribution-driven-Learned-Index"><span class="nav-number">1.</span> <span class="nav-text">DILI：A Distribution-driven Learned Index</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-INTRODUCTION"><span class="nav-number">1.1.</span> <span class="nav-text">1.INTRODUCTION</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Contribution"><span class="nav-number">1.1.1.</span> <span class="nav-text">Contribution</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-OVERVIEW-OF-DILI"><span class="nav-number">1.2.</span> <span class="nav-text">2.OVERVIEW OF DILI</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Local-Optimization-strategy"><span class="nav-number">1.2.1.</span> <span class="nav-text">Local Optimization strategy</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Updates"><span class="nav-number">1.2.2.</span> <span class="nav-text">Updates</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-SEARCH-COST-ANALYSIS"><span class="nav-number">1.3.</span> <span class="nav-text">3.SEARCH COST ANALYSIS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-CONSTRUCTION-OF-DILI"><span class="nav-number">1.4.</span> <span class="nav-text">4.CONSTRUCTION OF DILI</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1Motivation-and-Overall-Idea-of-BU-Tree"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1Motivation and Overall Idea of BU-Tree</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-Building-BU-Tree"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 Building BU-Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#4-2-1-Bottom-up-Node-and-Model-Creation"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">4.2.1 Bottom-up Node and Model Creation</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#4-2-2-Determining-Node-Layout-at-A-Height"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">4.2.2 Determining Node Layout at A Height</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-BU-Tree-based-Bulk-loading-for-DILI"><span class="nav-number">1.4.3.</span> <span class="nav-text">4.3 BU-Tree based Bulk loading for DILI</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-4-Remarks"><span class="nav-number">1.4.4.</span> <span class="nav-text">4.4 Remarks</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">13</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
