@@ -1801,7 +1801,29 @@
 <p>但是BU-Tree是从下往上创建的，即使创建了第h层的node，我们也不知道BU-Tree的高度</p>
 <p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png" alt="img"></p>
 <h4 id="4-3-BU-Tree-based-Bulk-loading-for-DILI"><a href="#4-3-BU-Tree-based-Bulk-loading-for-DILI" class="headerlink" title="4.3 BU-Tree based Bulk loading for DILI"></a>4.3 BU-Tree based Bulk loading for DILI</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png" alt="img"></p>
-<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4>]]></content>
+<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4><p>Skip ……</p>
+<h3 id="5-LOCAL-OPTIMIZATION-OF-DILI"><a href="#5-LOCAL-OPTIMIZATION-OF-DILI" class="headerlink" title="5. LOCAL OPTIMIZATION OF DILI"></a>5. LOCAL OPTIMIZATION OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/16.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/17.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/18.png" alt="img"></p>
+<h3 id="6-DATA-UPDATES-IN-DILI"><a href="#6-DATA-UPDATES-IN-DILI" class="headerlink" title="6. DATA UPDATES IN DILI"></a>6. DATA UPDATES IN DILI</h3><h4 id="6-1-Insertions"><a href="#6-1-Insertions" class="headerlink" title="6.1 Insertions"></a>6.1 Insertions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/19.png" alt="img"><br>P exists标注的地方错误		应设置为notExist  &lt;—  False</p>
+<h4 id="6-2-Deletions"><a href="#6-2-Deletions" class="headerlink" title="6.2 Deletions"></a>6.2 Deletions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/20.png" alt="img"></p>
+<h3 id="7-EXPERIMENTAL-STUDIES"><a href="#7-EXPERIMENTAL-STUDIES" class="headerlink" title="7.EXPERIMENTAL STUDIES"></a>7.EXPERIMENTAL STUDIES</h3><h4 id="7-1-Experimental-Settings"><a href="#7-1-Experimental-Settings" class="headerlink" title="7.1 Experimental Settings"></a>7.1 Experimental Settings</h4><p>数据集：使用了SOSD benchmark中的4个真实数据集 和 1 个合成数据集</p>
+<ul>
+<li>FB : 200M Facebook 用户id</li>
+<li>WikiTS : 200M 维基百科网站日志条目的唯一请求时间戳</li>
+<li>OSM :  800M OpenStreetMap单元格的id</li>
+<li>Books : 800M Amazon的books的id</li>
+<li>Logn : 200M 从重尾采样的独特值 N(0， 1) 的对数正态分布</li>
+</ul>
+<p>比较的baselines:<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/21.png" alt="img"></p>
+<p>Table 2 总结了所有index的属性特点，更好的表现被加粗了<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/22.png" alt="img"></p>
+<p>Evaluation Metrics : <br><br>Lookup —&gt; 平均每次query所用的时间 <br><br>Throughtput —&gt; 平均每second执行的operations的次数（query、insertion、deletion）<br></p>
+<h4 id="7-2-Overall-Query-Performance"><a href="#7-2-Overall-Query-Performance" class="headerlink" title="7.2 Overall Query Performance"></a>7.2 Overall Query Performance</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/23.png" alt="img"></p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/24.png" alt="img"></p>
+<h4 id="7-3-Performance-on-Different-Workloads"><a href="#7-3-Performance-on-Different-Workloads" class="headerlink" title="7.3 Performance on Different Workloads"></a>7.3 Performance on Different Workloads</h4><p>(1)The Read-only workload: 100M point queries <br><br>(2)The Read-Heavy workload: 50M insertions and 100M point queries <br><br>(3)The Write-Heavy workload: 100M insertions and 50M point queries <br><br>(4)The Write-only workload: 100M insertions <br></p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/25.png" alt="img"></p>
+<h4 id="7-4-Effect-of-Many-Deletions"><a href="#7-4-Effect-of-Many-Deletions" class="headerlink" title="7.4 Effect of Many Deletions"></a>7.4 Effect of Many Deletions</h4><p>(1)Read-Heavy workload : 100M lookups and 50M deletions<br>DILI achieves up to 3.6X, 2.3X, 7.0X and 2.3X higher throughput than B+ Tree,PGM,MassTree and ALEX,respectively.</p>
+<p>(2)Deletion-Heavy workload : 100M deletions and 50M lookups<br>Only ALEX performs a little better than DILI on Logn dataset</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/26.png" alt="img"></p>
+]]></content>
       <categories>
         <category>Learned Index</category>
       </categories>
