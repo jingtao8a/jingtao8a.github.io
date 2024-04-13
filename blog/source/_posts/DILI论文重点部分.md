@@ -86,3 +86,61 @@ DILI的internal node的线性模型有着完美的准确性，因为internal nod
 ![img](../images/DILI论文重点部分/15.png)
 
 #### 4.4 Remarks
+Skip ......
+
+### 5. LOCAL OPTIMIZATION OF DILI
+![img](../images/DILI论文重点部分/16.png)
+![img](../images/DILI论文重点部分/17.png)
+![img](../images/DILI论文重点部分/18.png)
+
+### 6. DATA UPDATES IN DILI
+#### 6.1 Insertions
+![img](../images/DILI论文重点部分/19.png)
+P exists标注的地方错误		应设置为notExist  <---  False
+
+#### 6.2 Deletions
+![img](../images/DILI论文重点部分/20.png)
+
+### 7.EXPERIMENTAL STUDIES
+#### 7.1 Experimental Settings
+数据集：使用了SOSD benchmark中的4个真实数据集 和 1 个合成数据集
+- FB : 200M Facebook 用户id
+- WikiTS : 200M 维基百科网站日志条目的唯一请求时间戳
+- OSM :  800M OpenStreetMap单元格的id
+- Books : 800M Amazon的books的id
+- Logn : 200M 从重尾采样的独特值 N(0， 1) 的对数正态分布
+
+比较的baselines:
+![img](../images/DILI论文重点部分/21.png)
+
+Table 2 总结了所有index的属性特点，更好的表现被加粗了
+![img](../images/DILI论文重点部分/22.png)
+
+
+Evaluation Metrics : <br>
+Lookup ---> 平均每次query所用的时间 <br>
+Throughtput ---> 平均每second执行的operations的次数（query、insertion、deletion）<br>
+
+#### 7.2 Overall Query Performance
+![img](../images/DILI论文重点部分/23.png)
+
+![img](../images/DILI论文重点部分/24.png)
+
+
+#### 7.3 Performance on Different Workloads
+(1)The Read-only workload: 100M point queries <br>
+(2)The Read-Heavy workload: 50M insertions and 100M point queries <br>
+(3)The Write-Heavy workload: 100M insertions and 50M point queries <br>
+(4)The Write-only workload: 100M insertions <br>
+
+![img](../images/DILI论文重点部分/25.png)
+
+
+#### 7.4 Effect of Many Deletions
+(1)Read-Heavy workload : 100M lookups and 50M deletions
+DILI achieves up to 3.6X, 2.3X, 7.0X and 2.3X higher throughput than B+ Tree,PGM,MassTree and ALEX,respectively.
+
+(2)Deletion-Heavy workload : 100M deletions and 50M lookups
+Only ALEX performs a little better than DILI on Logn dataset
+
+![img](../images/DILI论文重点部分/26.png)
