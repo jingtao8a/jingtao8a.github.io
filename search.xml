@@ -1831,4 +1831,33 @@
         <tag>Learned Index</tag>
       </tags>
   </entry>
+  <entry>
+    <title>javascript基础语法</title>
+    <url>/2024/05/11/javascript%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/</url>
+    <content><![CDATA[<h3 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h3><p><strong>值类型(基本类型)</strong>  ：字符串（String）、数字(Number)、布尔(Boolean)、空（null）、未定义（Undefined）、Symbol。</p>
+<blockquote>
+<p>所有的值类型(基本类型), 除了null和undefined, 都可以被看做对象</p>
+</blockquote>
+<figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;abc&quot;</span>)</span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Number</span>(<span class="number">123</span>)</span><br><span class="line"><span class="keyword">new</span> <span class="title class_">Boolean</span>(<span class="literal">true</span>)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>js中一切皆对象</p>
+</blockquote>
+<p><strong>引用数据类型(对象类型)</strong> ： 对象(Object)、数组(Array)、函数(Function)、正则（RegExp）和日期（Date）</p>
+<p><img src="/../images/javascript%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/1.png" alt="img"></p>
+<blockquote>
+<p>ps: 定义变量得使用 var 或者 let<br>可以用typeof 来查看变量的类型</p>
+</blockquote>
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><figure class="highlight javascript"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="title function_">myFunction</span>(<span class="params">a, b</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> a * b;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="原型链"><a href="#原型链" class="headerlink" title="原型链"></a>原型链</h3><p>class关键字是原型系统上的一个语法糖，创造了一种基于类的语言的错觉。</p>
+<p><strong>proto</strong>, prototype, constructor的关系</p>
+<p><img src="/../images/javascript%E5%9F%BA%E7%A1%80%E8%AF%AD%E6%B3%95/3.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>javascript</category>
+      </categories>
+      <tags>
+        <tag>javascript</tag>
+      </tags>
+  </entry>
 </search>
