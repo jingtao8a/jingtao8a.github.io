@@ -190,6 +190,102 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/5-InnoDB%E8%AE%B0%E5%BD%95%E8%A1%8C%E6%A0%BC%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/5-InnoDB%E8%AE%B0%E5%BD%95%E8%A1%8C%E6%A0%BC%E5%BC%8F/" class="post-title-link" itemprop="url">5.InnoDB记录行格式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 14:17:56" itemprop="dateCreated datePublished" datetime="2023-05-27T14:17:56-07:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="InnoDB页简介"><a href="#InnoDB页简介" class="headerlink" title="InnoDB页简介"></a>InnoDB页简介</h1><blockquote>
+<p>InnoDB是一个将表中的数据存储到磁盘上的存储引擎。由于磁盘IO和内存IO速度差了几个量级，InnoDB采取的方式是：<strong>将数据划分为若干个页，以页作为磁盘和内存之间的交互的基本单位，InnoDB中页的大小一般为16KB</strong>。</p>
+</blockquote>
+<h1 id="InnoDB行格式"><a href="#InnoDB行格式" class="headerlink" title="InnoDB行格式"></a>InnoDB行格式</h1><blockquote>
+<p>我们平时是以记录为单位来向表中插入数据的，这些记录在磁盘上的存放方式也被称为<strong>行格式</strong>或者<strong>记录格式</strong></p>
+</blockquote>
+<h3 id="指定行格式的语法"><a href="#指定行格式的语法" class="headerlink" title="指定行格式的语法"></a>指定行格式的语法</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE 表名 (列的信息) ROW_FORMAT=行格式名称</span><br><span class="line">    </span><br><span class="line">ALTER TABLE 表名 ROW_FORMAT=行格式名称</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="COMPACT行格式"><a href="#COMPACT行格式" class="headerlink" title="COMPACT行格式"></a>COMPACT行格式</h3><p><img src="/images/5_1.jpg" alt="QQ截图20221205160357.png"></p>
+<p>一条完整的记录其实可以被分为记录的额外信息和记录的真实数据两大部分。</p>
+<ul>
+<li><p>记录的额外信息：服务器为了描述这条记录而不得不添加的一些信息，分为3类，变长字段长度列表、NULL值列表、记录头信息<br>1.变长字段长度列表：MySQL支持一些变长的数据类型，比如VARCHAR(M)、VARBINARY(M)、各种TEXT类型，各种BLOB类型，这些变长字段占用的存储空间分为两部分（真正的数据内容和占用的字节数），对于CHAR(M）类型的列来说，当列采用的是定长字符集时，该列占用的字节数不会被加到变长字段长度列表，而如果采用变长字符集时，该列占用的字节数也会被加到变长字段长度列表<br><strong>在COMPACT行格式中，把所有的变长字段的真实数据占用的字节长度都存放在记录的开头部位，从而形成一个变长字段长度列表，按逆序排放</strong><br>2.NULL值列表：处理过程是这样的，先统计表中哪些列允许存储NULL值(主键列、被NOT NULL修饰的列都是不可以存储NULL值的)，所以在统计的时候不会把这些列算进去，接着如果有的列可以存储NULL值，那么就需要NULL值列表，将每个允许存储NULL的列对应一个二进制位（为1代表该列值为NULL，为0代表不为NULL），其次MySQL规定NULL值列表必须用整数个字节的位表示，如果使用的二进制位个数不是整数个字节，则在字节的高位补0<br>3.记录头信息：它是由固定的5个字节组成，不同位代表不同意思<br><img src="/images/5_2.jpg" alt="QQ截图20221205161836.png"></p>
+</li>
+<li><p>记录的真实数据<br>MySQL会为每个记录默认的添加一些列（也称为隐藏列），具体的列如下：<br><img src="/images/5_3.jpg" alt="QQ截图20221205162406.png"><br>InnoDB表对主键的生成策略:优先使用用户自定义主键作为主键，如果用户没有定义主键，则选取一个Unique键作为主键，如果表中连Unique键都没有定义的化，则InnoDB会为表默认添加一个名为row_id的隐藏列作为主键</p>
+</li>
+</ul>
+<h3 id="Redundant行格式"><a href="#Redundant行格式" class="headerlink" title="Redundant行格式"></a>Redundant行格式</h3><p><img src="/images/5_4.jpg" alt="QQ截图20221207112201.png"></p>
+<ul>
+<li><p>记录的额外信息<br>1.字段长度偏移列表：与compact行格式相比，没有了变长两个字，多了偏移两个字，Redundant的行格式会把该条记录中所有（包括隐藏列）的长度信息都按照逆序存储到字段长度偏移列表。同时Redundant的行格式是按照两个相邻数值的差值来计算各个列值的长度。<br><img src="/images/5_5.jpg" alt="QQ截图20221207115628.png"></p>
+</li>
+<li><p>记录头信息<br><img src="/images/5_6.jpg" alt="QQ截图20221207113712.png"><br><img src="/images/5_7.jpg" alt="QQ截图20221207113735.png"></p>
+</li>
+</ul>
+<p>对于Compact和Reduntant行格式来说，如果某一列中的数据非常多的话，在本记录的真实数据处只会存储该列的前768个字节的数据和一个指向其它页的地址，然后把剩下的数据存放到其它页中，这个过程叫做<strong>行溢出，存储超出768字节的那些页也被称为溢出页</strong></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/4-%E5%AD%97%E7%AC%A6%E9%9B%86%E5%92%8C%E6%AF%94%E8%BE%83%E8%A7%84%E5%88%99/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -666,7 +762,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -679,7 +775,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

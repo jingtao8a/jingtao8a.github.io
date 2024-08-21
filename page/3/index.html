@@ -190,6 +190,99 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/10/03/RadixSpline-A-Single-Pass-Learned-Index/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/10/03/RadixSpline-A-Single-Pass-Learned-Index/" class="post-title-link" itemprop="url">RadixSpline-A-Single-Pass-Learned-Index</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-10-03 01:30:05" itemprop="dateCreated datePublished" datetime="2023-10-03T01:30:05-07:00">2023-10-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="RadixSpline"><a href="#RadixSpline" class="headerlink" title="RadixSpline"></a>RadixSpline</h2><h3 id="组成部分"><a href="#组成部分" class="headerlink" title="组成部分"></a>组成部分</h3><blockquote>
+<ol>
+<li>a set of spline points</li>
+<li>a radix table</li>
+</ol>
+</blockquote>
+<h3 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h3><blockquote>
+<ol>
+<li>Build Spline<blockquote>
+<p>首先建立一个Spline Model S<br>S(ki) &#x3D; pi +&#x2F;- e<br>(ki, pi)为要查找的key和真实的position e为error<br>模型的计算如下，其中(kleft,pleft)和(kright, pright)为两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/1.png" alt="img"></p>
+</blockquote>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>2.Build Radix Tablle</p>
+<blockquote>
+<p><strong>作用：</strong> 用于所定查找key的附近的两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/2.png" alt="img"><br><strong>过程：</strong> 确定使用的key的prefix的长度r，分配2^r长度的数组，遍历所有的spline points，碰到新的prefix，就插入该数组 </p>
+</blockquote>
+</blockquote>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/10/01/ALEX-An-Updatable-Adaptive-Learned-Index/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -952,82 +1045,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/15-%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/15-%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/" class="post-title-link" itemprop="url">15.事务的隔离级别</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:23:33" itemprop="dateCreated datePublished" datetime="2023-05-27T14:23:33-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>事务并发执行遇到的问题<br>1.脏写：<br>一个事务修改了另一个未提交事务修改过的数据<br>2.脏读<br>一个事务读到了另一个未提交事务修改过的数据<br>3.不可重复读<br>一个事务只能读到另一个已经提交的事务修改过的数据，并且其它事务每对该数据进行一次修改，并提交后都能查询得到最新值<br>4.幻读<br>一个事务先根据某些条件查询出一些记录，之后另一个事务又向表中插入了符合这些条件的记录，原先的事务再次按照该条件查询时，能把另一个事务插入的记录也读出来</p>
-<p>MySQL四种隔离级别<br><img src="/images/15_1.jpg" alt="微信截图_20230219113504.png"></p>
-<p>MVCC原理（多版本并发控制）<br>版本链<br>READ COMMITTED和REPEATABLE READ生成ReadView的时机不同</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1099,7 +1116,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">44</span>
+          <span class="site-state-item-count">45</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1112,7 +1129,7 @@
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">15</span>
+        <span class="site-state-item-count">16</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>
