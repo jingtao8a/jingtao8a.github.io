@@ -126,6 +126,31 @@
       </tags>
   </entry>
   <entry>
+    <title>13.redo日志</title>
+    <url>/2023/05/27/13-redo%E6%97%A5%E5%BF%97/</url>
+    <content><![CDATA[<p>与在事务提交时将所有修改过的内存中的页面刷新到磁盘中相比，只将该事务执行过程中产生的redo日志刷新到磁盘的好处如下<br>1.redo日志占用的空间非常小<br>2.redo日志是顺序写入磁盘的</p>
+<p>每条语句包含多个mtr，每个mtr包含一组redo log<br>一个mtr运行结束后，会将产生的一组redolog复制到log buffer中，在一些情况下它们会被刷新到磁盘里<br>1.log buffer空间不足时<br>2.事务提交时<br>3.后台线程不停地刷<br>4.正常关闭服务器<br>5.做checkpoint 时<br>6.其它情况</p>
+<p>redo日志文件前4个block</p>
+<ul>
+<li>log file header：描述该日志文件地一些整体属性</li>
+<li>checkpoint1</li>
+<li>无用</li>
+<li>checkpoint2</li>
+</ul>
+<p>Log Sequence Number（日志序列号）lsn<br>每一组由mtr生成地redo日志都有一个唯一的lsn值与其对应，lsn值越小，说明redo日志产生的越早</p>
+<p>在mtr结束时，还会将执行过程中可能修改过的页面加入到buffer pool 的flush链表</p>
+<p>checkpoint：<br>redo日志只是为了系统崩溃后恢复脏页用的，如果对应的脏页已经刷新到磁盘，就不需要对应的redo日志了，所以判断某些redo日志占用的磁盘空间是否可以覆盖的依据就是它对应的脏页是否已经刷新到磁盘里。</p>
+<p>做一次checkpoint其实可以分为两个步骤<br>1.计算一下当前系统中可以被覆盖的redo日志对应的lsn值最大是多少（有必要的话更新checkpoint_lsn）<br>2.将checkpoint_lsn和对应的redo日志文件组偏移量以及此次checkpoint的编号写到日志文件的管理信息（目前系统做了多少次checkpoint的变量checkpoint_no，每做一次checkpoint，该变量就加1）</p>
+]]></content>
+      <categories>
+        <category>数据库</category>
+      </categories>
+      <tags>
+        <tag>MySQL</tag>
+        <tag>MySQL是怎样运行的</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>14.undo日志</title>
     <url>/2023/05/27/14-undo%E6%97%A5%E5%BF%97/</url>
     <content><![CDATA[<h2 id="事务id"><a href="#事务id" class="headerlink" title="事务id"></a>事务id</h2><ul>
@@ -148,31 +173,6 @@
     <content><![CDATA[<p>事务并发执行遇到的问题<br>1.脏写：<br>一个事务修改了另一个未提交事务修改过的数据<br>2.脏读<br>一个事务读到了另一个未提交事务修改过的数据<br>3.不可重复读<br>一个事务只能读到另一个已经提交的事务修改过的数据，并且其它事务每对该数据进行一次修改，并提交后都能查询得到最新值<br>4.幻读<br>一个事务先根据某些条件查询出一些记录，之后另一个事务又向表中插入了符合这些条件的记录，原先的事务再次按照该条件查询时，能把另一个事务插入的记录也读出来</p>
 <p>MySQL四种隔离级别<br><img src="/images/15_1.jpg" alt="微信截图_20230219113504.png"></p>
 <p>MVCC原理（多版本并发控制）<br>版本链<br>READ COMMITTED和REPEATABLE READ生成ReadView的时机不同</p>
-]]></content>
-      <categories>
-        <category>数据库</category>
-      </categories>
-      <tags>
-        <tag>MySQL</tag>
-        <tag>MySQL是怎样运行的</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>13.redo日志</title>
-    <url>/2023/05/27/13-redo%E6%97%A5%E5%BF%97/</url>
-    <content><![CDATA[<p>与在事务提交时将所有修改过的内存中的页面刷新到磁盘中相比，只将该事务执行过程中产生的redo日志刷新到磁盘的好处如下<br>1.redo日志占用的空间非常小<br>2.redo日志是顺序写入磁盘的</p>
-<p>每条语句包含多个mtr，每个mtr包含一组redo log<br>一个mtr运行结束后，会将产生的一组redolog复制到log buffer中，在一些情况下它们会被刷新到磁盘里<br>1.log buffer空间不足时<br>2.事务提交时<br>3.后台线程不停地刷<br>4.正常关闭服务器<br>5.做checkpoint 时<br>6.其它情况</p>
-<p>redo日志文件前4个block</p>
-<ul>
-<li>log file header：描述该日志文件地一些整体属性</li>
-<li>checkpoint1</li>
-<li>无用</li>
-<li>checkpoint2</li>
-</ul>
-<p>Log Sequence Number（日志序列号）lsn<br>每一组由mtr生成地redo日志都有一个唯一的lsn值与其对应，lsn值越小，说明redo日志产生的越早</p>
-<p>在mtr结束时，还会将执行过程中可能修改过的页面加入到buffer pool 的flush链表</p>
-<p>checkpoint：<br>redo日志只是为了系统崩溃后恢复脏页用的，如果对应的脏页已经刷新到磁盘，就不需要对应的redo日志了，所以判断某些redo日志占用的磁盘空间是否可以覆盖的依据就是它对应的脏页是否已经刷新到磁盘里。</p>
-<p>做一次checkpoint其实可以分为两个步骤<br>1.计算一下当前系统中可以被覆盖的redo日志对应的lsn值最大是多少（有必要的话更新checkpoint_lsn）<br>2.将checkpoint_lsn和对应的redo日志文件组偏移量以及此次checkpoint的编号写到日志文件的管理信息（目前系统做了多少次checkpoint的变量checkpoint_no，每做一次checkpoint，该变量就加1）</p>
 ]]></content>
       <categories>
         <category>数据库</category>
@@ -588,6 +588,65 @@
       </tags>
   </entry>
   <entry>
+    <title>DILI论文重点部分</title>
+    <url>/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/</url>
+    <content><![CDATA[<h2 id="DILI：A-Distribution-driven-Learned-Index"><a href="#DILI：A-Distribution-driven-Learned-Index" class="headerlink" title="DILI：A Distribution-driven Learned Index"></a>DILI：A Distribution-driven Learned Index</h2><p>摘要：<br><br>DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测key的位置的。</p>
+<p>为了构建DILI，首先构建一颗bottom-up tree,然后使用这个bottom-up tree，自顶向下构建一个DILI树。DILI在the number of leaf nodes和tree height之间有一个很好的平衡（the number of leaf nodes 和 tree height是影响key搜索时间的关键因素）。设计了灵活的插入和删除算法，并在必要时调整树形结构。</p>
+<p>实验结果表明DILI比其它baseline在不同的workloads上要表现的更好。</p>
+<h3 id="1-INTRODUCTION"><a href="#1-INTRODUCTION" class="headerlink" title="1.INTRODUCTION"></a>1.INTRODUCTION<br></h3><p>RMI：仅支持查找<br><br>ALEX：扩展RMI，在leaf node中使用 gapped array，使用 cost model初始化RMI结构和动态更新RMI结构。存在last-mile问题<br><br>LIPP：解决last-mile问题，但是没有利用data distribution<br><br>DILI-LO：未解决last-mile问题，利用data distribution<br><br>DILI：解决last-mile问题，利用data distribution<br></p>
+<p>构建DILI的目的是实现最好的搜索性能 —&gt; 搜索的开销取决于(1)leaf node的深度(2)leaf  node中的linear model预测的accuracy —&gt; 这两个factors都应该在DILI的构建中被考虑</p>
+<p>因此，提出了一个two-phase bulk loading 方法<br><br><strong>Phase1</strong> -&gt; 使用greedy merging algorithm（考虑到了上面的两个factors） 构建一棵BU-tree（BU-tree的internal node’srange并不是被它的child nodes均分的，因此在BU-tree进行key搜索时，确定child node需要额外的开销）</p>
+<p><strong>Phase2</strong> -&gt;  借鉴BU-tree的结构构建DILI</p>
+<h4 id="Contribution"><a href="#Contribution" class="headerlink" title="Contribution"></a>Contribution</h4><ul>
+<li>提出DILI，algorithms 和它的cost analysis</li>
+<li>构建DILI的two-phase bulk loading 方法</li>
+<li>对DILI的leaf node的local optimization，解决last-mile问题</li>
+<li>对于DILI的insertion和deletion操作提出相应的algorithm来维持查找性能</li>
+<li>在synthetic data和real data上证实DILI的性能</li>
+</ul>
+<h3 id="2-OVERVIEW-OF-DILI"><a href="#2-OVERVIEW-OF-DILI" class="headerlink" title="2.OVERVIEW OF DILI"></a>2.OVERVIEW OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png" alt="img"><br>DILI的结构如Figure 1所示<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/2.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/3.png" alt="img"><br>DILI在没有使用local Optimization的时候SEARCH算法如下，查找key时，锁定了leaf node后需要再进行指数查找来确定position。<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/4.png" alt="img"></p>
+<h4 id="Local-Optimization-strategy"><a href="#Local-Optimization-strategy" class="headerlink" title="Local Optimization strategy"></a>Local Optimization strategy</h4><p>在leaf node中，先用线性模型预测key的position，之后直接将key放到预测的position上，如果发生冲突，就创建一个新的node，对应的entry设置为指向新node的指针</p>
+<h4 id="Updates"><a href="#Updates" class="headerlink" title="Updates"></a>Updates</h4><p>当对DILI插入数据时，如果发生conflict，会创建新的Node，当创建的新Node过多并且退化了查找性能时，需要进行调整策略（在section6会详细描述）</p>
+<h3 id="3-SEARCH-COST-ANALYSIS"><a href="#3-SEARCH-COST-ANALYSIS" class="headerlink" title="3.SEARCH COST ANALYSIS"></a>3.SEARCH COST ANALYSIS</h3><p>Cost Analysis:<br>未使用local optimization strategy<br>Algorithm1由两步组成(1)找到包含search key的leaf node (2)leaf node中的local search<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/5.png" alt="img"></p>
+<h3 id="4-CONSTRUCTION-OF-DILI"><a href="#4-CONSTRUCTION-OF-DILI" class="headerlink" title="4.CONSTRUCTION OF DILI"></a>4.CONSTRUCTION OF DILI</h3><h4 id="4-1Motivation-and-Overall-Idea-of-BU-Tree"><a href="#4-1Motivation-and-Overall-Idea-of-BU-Tree" class="headerlink" title="4.1Motivation and Overall Idea of BU-Tree"></a>4.1Motivation and Overall Idea of BU-Tree</h4><p>DILI的internal node的线性模型有着完美的准确性，因为internal node被它的child nodes均分。—-&gt; 现在有一个问题，如何确定DILI的fanout</p>
+<p>大致思路：<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/6.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/7.png" alt="img"></p>
+<h4 id="4-2-Building-BU-Tree"><a href="#4-2-Building-BU-Tree" class="headerlink" title="4.2 Building BU-Tree"></a>4.2 Building BU-Tree</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/8.png" alt="img"></p>
+<h5 id="4-2-1-Bottom-up-Node-and-Model-Creation"><a href="#4-2-1-Bottom-up-Node-and-Model-Creation" class="headerlink" title="4.2.1 Bottom-up Node and Model Creation"></a>4.2.1 Bottom-up Node and Model Creation</h5><p>构建第0层的leaf node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/9.png" alt="img"><br>已知h - 1层的internal node,构建第h层的internal node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/10.png" alt="img"></p>
+<h5 id="4-2-2-Determining-Node-Layout-at-A-Height"><a href="#4-2-2-Determining-Node-Layout-at-A-Height" class="headerlink" title="4.2.2 Determining Node Layout at A Height"></a>4.2.2 Determining Node Layout at A Height</h5><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/11.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/12.png" alt="img"></p>
+<p>但是BU-Tree是从下往上创建的，即使创建了第h层的node，我们也不知道BU-Tree的高度</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png" alt="img"></p>
+<h4 id="4-3-BU-Tree-based-Bulk-loading-for-DILI"><a href="#4-3-BU-Tree-based-Bulk-loading-for-DILI" class="headerlink" title="4.3 BU-Tree based Bulk loading for DILI"></a>4.3 BU-Tree based Bulk loading for DILI</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png" alt="img"></p>
+<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4><p>Skip ……</p>
+<h3 id="5-LOCAL-OPTIMIZATION-OF-DILI"><a href="#5-LOCAL-OPTIMIZATION-OF-DILI" class="headerlink" title="5. LOCAL OPTIMIZATION OF DILI"></a>5. LOCAL OPTIMIZATION OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/16.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/17.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/18.png" alt="img"></p>
+<h3 id="6-DATA-UPDATES-IN-DILI"><a href="#6-DATA-UPDATES-IN-DILI" class="headerlink" title="6. DATA UPDATES IN DILI"></a>6. DATA UPDATES IN DILI</h3><h4 id="6-1-Insertions"><a href="#6-1-Insertions" class="headerlink" title="6.1 Insertions"></a>6.1 Insertions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/19.png" alt="img"><br>P exists标注的地方错误		应设置为notExist  &lt;—  False</p>
+<h4 id="6-2-Deletions"><a href="#6-2-Deletions" class="headerlink" title="6.2 Deletions"></a>6.2 Deletions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/20.png" alt="img"></p>
+<h3 id="7-EXPERIMENTAL-STUDIES"><a href="#7-EXPERIMENTAL-STUDIES" class="headerlink" title="7.EXPERIMENTAL STUDIES"></a>7.EXPERIMENTAL STUDIES</h3><h4 id="7-1-Experimental-Settings"><a href="#7-1-Experimental-Settings" class="headerlink" title="7.1 Experimental Settings"></a>7.1 Experimental Settings</h4><p>数据集：使用了SOSD benchmark中的4个真实数据集 和 1 个合成数据集</p>
+<ul>
+<li>FB : 200M Facebook 用户id</li>
+<li>WikiTS : 200M 维基百科网站日志条目的唯一请求时间戳</li>
+<li>OSM :  800M OpenStreetMap单元格的id</li>
+<li>Books : 800M Amazon的books的id</li>
+<li>Logn : 200M 从重尾采样的独特值 N(0， 1) 的对数正态分布</li>
+</ul>
+<p>比较的baselines:<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/21.png" alt="img"></p>
+<p>Table 2 总结了所有index的属性特点，更好的表现被加粗了<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/22.png" alt="img"></p>
+<p>Evaluation Metrics : <br><br>Lookup —&gt; 平均每次query所用的时间 <br><br>Throughtput —&gt; 平均每second执行的operations的次数（query、insertion、deletion）<br></p>
+<h4 id="7-2-Overall-Query-Performance"><a href="#7-2-Overall-Query-Performance" class="headerlink" title="7.2 Overall Query Performance"></a>7.2 Overall Query Performance</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/23.png" alt="img"></p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/24.png" alt="img"></p>
+<h4 id="7-3-Performance-on-Different-Workloads"><a href="#7-3-Performance-on-Different-Workloads" class="headerlink" title="7.3 Performance on Different Workloads"></a>7.3 Performance on Different Workloads</h4><p>(1)The Read-only workload: 100M point queries <br><br>(2)The Read-Heavy workload: 50M insertions and 100M point queries <br><br>(3)The Write-Heavy workload: 100M insertions and 50M point queries <br><br>(4)The Write-only workload: 100M insertions <br></p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/25.png" alt="img"></p>
+<h4 id="7-4-Effect-of-Many-Deletions"><a href="#7-4-Effect-of-Many-Deletions" class="headerlink" title="7.4 Effect of Many Deletions"></a>7.4 Effect of Many Deletions</h4><p>(1)Read-Heavy workload : 100M lookups and 50M deletions<br>DILI achieves up to 3.6X, 2.3X, 7.0X and 2.3X higher throughput than B+ Tree,PGM,MassTree and ALEX,respectively.</p>
+<p>(2)Deletion-Heavy workload : 100M deletions and 50M lookups<br>Only ALEX performs a little better than DILI on Logn dataset</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/26.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>FITing-Tree-A-Data-aware-Index-Structure</title>
     <url>/2023/10/03/FiTing-Tree-A-Data-aware-Index-Structure/</url>
     <content><![CDATA[<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><ol>
@@ -621,6 +680,75 @@
 <p>error值为e的总估计查找延迟可以用以下表达式来建模,其中b是tree的fanout,buff是segment的最大buffer大小<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/10.png" alt="img"></p>
 <p>满足给定延迟要求并且存储占用最小的索引由以下表达式给出,其中E表示一组可能的错误值<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/11.png" alt="img"></p>
 <h3 id="Space-Budget"><a href="#Space-Budget" class="headerlink" title="Space Budget"></a>Space Budget</h3><p>空间预算<br>可以用以下函数来估计给定的错误阈值e下的只读聚类索引的大小(byte)<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/12.png" alt="img"><br>因此满足给定存储预算的最小误差阈值由以下表达式给出<br><img src="/../images/FiTing-Tree-A-Data-aware-Index-Structure/13.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>GRE使用手册</title>
+    <url>/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/</url>
+    <content><![CDATA[<h2 id="下载官网地址"><a href="#下载官网地址" class="headerlink" title="下载官网地址:"></a>下载官网地址:<br></h2><p><a href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
+<h2 id="软件环境"><a href="#软件环境" class="headerlink" title="软件环境"></a>软件环境</h2><p>Ubuntu 20.04.6 LTS<br><br>gcc 9.4.0<br><br>cmake 3.16.3</p>
+<h2 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h2><h3 id="intel-mkl-2018-4-274"><a href="#intel-mkl-2018-4-274" class="headerlink" title="intel-mkl 2018.4.274"></a>intel-mkl 2018.4.274<br></h3><p>这里安装2024的版本也可以<br><br>进入官网 <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html">https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html</a><br></p>
+<p>选择Linux 和 APT Package Manager<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/3.png" alt="img"><br>依次输入命令<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/1.png" alt="img"><br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/2.png" alt="img"></p>
+<p>默认安装路径如下：<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/4.png" alt="img"></p>
+<p>使用mkl库需要配置环境变量：<br></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">对所有用户生效，需要重启系统</span><br><span class="line">vim /etc/profile</span><br></pre></td></tr></table></figure>
+<p><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/5.png" alt="img"></p>
+<h3 id="intel-tbb-2020-3"><a href="#intel-tbb-2020-3" class="headerlink" title="intel-tbb 2020.3"></a>intel-tbb 2020.3<br></h3><p>tbb库的版本必须使用2020.3<br><br>下载地址<a href="https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3">https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3</a></p>
+<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">解压</span></span><br><span class="line">tar -zxvf oneTBB-2020_U3.tar.gz</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">因为要使用 gcc-9 进行编译，所以需要编辑成 gcc-9 形式</span></span><br><span class="line">cp build/linux.gcc.inc build/linux.gcc-9.inc </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编辑 linux.gcc-9.inc 文件：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">第15、16行原来是</span></span><br><span class="line">CPLUS ?= g++</span><br><span class="line">CONLY ?= gcc</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为</span></span><br><span class="line">CPLUS ?= g++-9</span><br><span class="line">CONLY ?= gcc-9</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">然后在文件夹 oneTBB-2020_U3/ 中编译</span></span><br><span class="line">cd oneTBB-2020_U3</span><br><span class="line">make compiler=gcc-9 stdver=c++17 tbb_build_prefix=my_tbb_build</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译完成后，在 builld/ 文件夹下会看到编译生成的文件夹 my_tbb_build_release/</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir /usr/local/tbb-2020_U3</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/include /usr/local/tbb-2020_U3/include</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/include/tbb /usr/local/include/tbb</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/build/my_tbb_build_release /usr/local/tbb-2020_U3/lib</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so2</span><br></pre></td></tr></table></figure>
+
+<p>然后把 库文件的路径写入到 ~&#x2F;.bashrc：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &#x27;export LD_LIBRARY_PATH=/usr/local/tbb-2020_U3/lib:$LD_LIBRARY_PATH&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>参考链接: <a href="https://blog.csdn.net/qq_39779233/article/details/126284595">https://blog.csdn.net/qq_39779233&#x2F;article&#x2F;details&#x2F;126284595</a></p>
+<h3 id="jemalloc"><a href="#jemalloc" class="headerlink" title="jemalloc"></a>jemalloc</h3><p>下载地址: <a href="https://github.com/jemalloc/jemalloc/releases">https://github.com/jemalloc/jemalloc/releases</a></p>
+<h4 id="编译与安装"><a href="#编译与安装" class="headerlink" title="编译与安装"></a>编译与安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 1</span></span><br><span class="line">./autogen.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 2</span></span><br><span class="line">make</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 3</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>参考链接: <a href="https://blog.csdn.net/SweeNeil/article/details/94648313">https://blog.csdn.net/SweeNeil/article/details/94648313</a></p>
+<h2 id="USAGE"><a href="#USAGE" class="headerlink" title="USAGE"></a>USAGE</h2><h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git submodule update --init # only for the first time</span><br><span class="line">mkdir -p build</span><br><span class="line">cd build</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release .. &amp;&amp; make</span><br></pre></td></tr></table></figure>
+<h3 id="RUN"><a href="#RUN" class="headerlink" title="RUN"></a>RUN</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./build/microbench \</span><br><span class="line">--keys_file=./data/dataset \  // 数据地址</span><br><span class="line">--keys_file_type=&#123;binary,text&#125; \  // 二进制 或者 文本</span><br><span class="line">--read=0.5 --insert=0.5 \ </span><br><span class="line">--operations_num=800000000 \ </span><br><span class="line">--table_size=-1 \ // 所使用的数据的size</span><br><span class="line">--init_table_ratio=0.5 \ //bulk_load所使用的数据的百分比</span><br><span class="line">--thread_num=24 \</span><br><span class="line">--index=index_name \ //测试的索引名称</span><br></pre></td></tr></table></figure>
+
+<p>其它参数见官网:<br><a href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
+<h3 id="如果要测试新的索引结构"><a href="#如果要测试新的索引结构" class="headerlink" title="如果要测试新的索引结构"></a>如果要测试新的索引结构</h3><h4 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h4><p>src&#x2F;competitor&#x2F;competitor.h<br>get_index函数中添加对应的index_type<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/6.png" alt="img"></p>
+<h4 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h4><p>在 src&#x2F;competitor 下放置源代码 new_index_name&#x2F;src<br>编写接口文件 src&#x2F;competitor&#x2F;new_index_name.h</p>
+<p>以lipp的接口文件为例：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;./src/src/core/lipp.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;../indexInterface.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LIPPInterface</span> : <span class="keyword">public</span> indexInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt; &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">init</span><span class="params">(Param *param = <span class="literal">nullptr</span>)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">bulk_load</span><span class="params">(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">put</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">update</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">remove</span><span class="params">(KEY_TYPE key, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">scan</span><span class="params">(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num, std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span></span></span><br><span class="line"><span class="params"><span class="function">                Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">long</span> <span class="type">long</span> <span class="title">memory_consumption</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> lipp.<span class="built_in">total_size</span>(); &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    LIPP &lt;KEY_TYPE, PAYLOAD_TYPE&gt; lipp;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">void</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">bulk_load</span>(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num,</span><br><span class="line">                                                      Param *param) &#123;</span><br><span class="line">    lipp.<span class="built_in">bulk_load</span>(key_value, <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(num));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">get</span>(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param) &#123;</span><br><span class="line">    <span class="type">bool</span> exist;</span><br><span class="line">    val = lipp.<span class="built_in">at</span>(key, <span class="literal">false</span>, exist);</span><br><span class="line">    <span class="keyword">return</span> exist;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">put</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">insert</span>(key, value);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">update</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">update</span>(key, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">remove</span>(KEY_TYPE key, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">remove</span>(key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">size_t</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">scan</span>(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num,</span><br><span class="line">                                                   std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span><br><span class="line">                                                   Param *param) &#123;</span><br><span class="line">    <span class="keyword">if</span>(!result) &#123;</span><br><span class="line">        result = <span class="keyword">new</span> std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt;[key_num];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">range_query_len</span>(result, key_low_bound, key_num);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>RadixSpline-A-Single-Pass-Learned-Index</title>
+    <url>/2023/10/03/RadixSpline-A-Single-Pass-Learned-Index/</url>
+    <content><![CDATA[<h2 id="RadixSpline"><a href="#RadixSpline" class="headerlink" title="RadixSpline"></a>RadixSpline</h2><h3 id="组成部分"><a href="#组成部分" class="headerlink" title="组成部分"></a>组成部分</h3><blockquote>
+<ol>
+<li>a set of spline points</li>
+<li>a radix table</li>
+</ol>
+</blockquote>
+<h3 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h3><blockquote>
+<ol>
+<li>Build Spline<blockquote>
+<p>首先建立一个Spline Model S<br>S(ki) &#x3D; pi +&#x2F;- e<br>(ki, pi)为要查找的key和真实的position e为error<br>模型的计算如下，其中(kleft,pleft)和(kright, pright)为两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/1.png" alt="img"></p>
+</blockquote>
+</li>
+</ol>
+</blockquote>
+<blockquote>
+<p>2.Build Radix Tablle</p>
+<blockquote>
+<p><strong>作用：</strong> 用于所定查找key的附近的两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/2.png" alt="img"><br><strong>过程：</strong> 确定使用的key的prefix的长度r，分配2^r长度的数组，遍历所有的spline points，碰到新的prefix，就插入该数组 </p>
+</blockquote>
+</blockquote>
 ]]></content>
       <categories>
         <category>Learned Index</category>
@@ -701,37 +829,6 @@
 <p><strong>批量加载时间</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/11.jpg" alt="img"></p>
 <p>与LIPP、ALEX、B-Tree相比，NFL需要2.25倍、0.86倍、2.81倍的大容量加载时间，其中77%的时间是用来转换key的</p>
 <p><strong>索引大小：</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/12.jpg" alt="img"><br>NFL的指数大小分别是ALEX和PGM的2.26倍和3.1倍；然而，NFL的大小仅为LIPP大小的0.51</p>
-]]></content>
-      <categories>
-        <category>Learned Index</category>
-      </categories>
-      <tags>
-        <tag>Learned Index</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>RadixSpline-A-Single-Pass-Learned-Index</title>
-    <url>/2023/10/03/RadixSpline-A-Single-Pass-Learned-Index/</url>
-    <content><![CDATA[<h2 id="RadixSpline"><a href="#RadixSpline" class="headerlink" title="RadixSpline"></a>RadixSpline</h2><h3 id="组成部分"><a href="#组成部分" class="headerlink" title="组成部分"></a>组成部分</h3><blockquote>
-<ol>
-<li>a set of spline points</li>
-<li>a radix table</li>
-</ol>
-</blockquote>
-<h3 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h3><blockquote>
-<ol>
-<li>Build Spline<blockquote>
-<p>首先建立一个Spline Model S<br>S(ki) &#x3D; pi +&#x2F;- e<br>(ki, pi)为要查找的key和真实的position e为error<br>模型的计算如下，其中(kleft,pleft)和(kright, pright)为两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/1.png" alt="img"></p>
-</blockquote>
-</li>
-</ol>
-</blockquote>
-<blockquote>
-<p>2.Build Radix Tablle</p>
-<blockquote>
-<p><strong>作用：</strong> 用于所定查找key的附近的两个spline point<br><img src="/../images/RadixSpline-A-Single-Pass-Learned-Index/2.png" alt="img"><br><strong>过程：</strong> 确定使用的key的prefix的长度r，分配2^r长度的数组，遍历所有的spline points，碰到新的prefix，就插入该数组 </p>
-</blockquote>
-</blockquote>
 ]]></content>
       <categories>
         <category>Learned Index</category>
@@ -848,12 +945,46 @@
       </tags>
   </entry>
   <entry>
+    <title>VMware的三种网络模式</title>
+    <url>/2024/08/20/VMware%E7%9A%84%E4%B8%89%E7%A7%8D%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<p><a href="https://wxler.github.io/2021/02/02/221724/">参考链接</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>VMware</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>cmake-generator-error-under-windows-system</title>
     <url>/2023/12/07/cmake-generator-error-under-windows-system/</url>
     <content><![CDATA[<p>1.安装windows版本cmake（配置环境变量）<br>2.安装windows版本mingw（配置环境变量）<br>3.创建工程目录<br>执行以下命令</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">mkdir build</span><br><span class="line">cd build</span><br><span class="line">cmake -G &quot;MinGW Makefiles&quot; -D &quot;CMAKE_MAKE_PROGRAM:PATH=your path to make.exe&quot;</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
 
 <p>参考：<br><a href="https://blog.csdn.net/dcrmg/article/details/103918543">https://blog.csdn.net/dcrmg/article/details/103918543</a><br><a href="https://codeantenna.com/a/ELzh11ElWs">https://codeantenna.com/a/ELzh11ElWs</a></p>
+]]></content>
+      <categories>
+        <category>cmake</category>
+      </categories>
+      <tags>
+        <tag>cmake</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>cmake学习</title>
+    <url>/2023/05/28/cmake%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<p>语法手册：cmake语法手册及教程_可克的博客-CSDN博客_cmake语法</p>
+<p><a href="https://www.bilibili.com/video/BV1vR4y1u77h?spm_id_from=333.337.search-card.all.click">哔哩哔哩视频</a></p>
+<p>视频下方有笔记</p>
+<p><img src="/images/cmake%E5%AD%A6%E4%B9%A0/1.jpg" alt="图片"></p>
+<p>add_definitions()添加编译选项</p>
+<p>include_directories()将指定目录添加到编译器的头文件搜索路径下</p>
+<p><a href="https://www.jianshu.com/p/e7de3de1b0fa">参考</a></p>
+<p>add_library()生成静态库（STATIC)或者动态库（SHARED）</p>
+<p>add_executable()生成可执行文件</p>
+<p>aux_source_directory(dir VAR) 发现一个目录(dir)下所有的源代码文件并将列表存储在一个变量(VAR)中</p>
+<p>target_link_libraries( # 目标库 demo # 目标库需要链接的库 ${log-lib} )</p>
 ]]></content>
       <categories>
         <category>cmake</category>
@@ -902,28 +1033,6 @@
       </categories>
       <tags>
         <tag>cmu15445—2023</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>cmake学习</title>
-    <url>/2023/05/28/cmake%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[<p>语法手册：cmake语法手册及教程_可克的博客-CSDN博客_cmake语法</p>
-<p><a href="https://www.bilibili.com/video/BV1vR4y1u77h?spm_id_from=333.337.search-card.all.click">哔哩哔哩视频</a></p>
-<p>视频下方有笔记</p>
-<p><img src="/images/cmake%E5%AD%A6%E4%B9%A0/1.jpg" alt="图片"></p>
-<p>add_definitions()添加编译选项</p>
-<p>include_directories()将指定目录添加到编译器的头文件搜索路径下</p>
-<p><a href="https://www.jianshu.com/p/e7de3de1b0fa">参考</a></p>
-<p>add_library()生成静态库（STATIC)或者动态库（SHARED）</p>
-<p>add_executable()生成可执行文件</p>
-<p>aux_source_directory(dir VAR) 发现一个目录(dir)下所有的源代码文件并将列表存储在一个变量(VAR)中</p>
-<p>target_link_libraries( # 目标库 demo # 目标库需要链接的库 ${log-lib} )</p>
-]]></content>
-      <categories>
-        <category>cmake</category>
-      </categories>
-      <tags>
-        <tag>cmake</tag>
       </tags>
   </entry>
   <entry>
@@ -1276,185 +1385,6 @@
       </tags>
   </entry>
   <entry>
-    <title>configure命令</title>
-    <url>/2023/05/28/configure%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_40941932/article/details/109992151">参考</a></p>
-]]></content>
-      <categories>
-        <category>随笔</category>
-      </categories>
-      <tags>
-        <tag>configure</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux下目录各个文件夹详解</title>
-    <url>/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/</url>
-    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_39652397/article/details/123794887">参考</a></p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>Linux不同目录详解</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux文件权限和属性</title>
-    <url>/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/</url>
-    <content><![CDATA[<p>如果一个文件被设置了SUID或SGID位，会分别表现在所有者或同组用户的权限的可执行位上。例如：</p>
-<p>1、-rwsr-xr-x 表示SUID和所有者权限中可执行位被设置</p>
-<p>2、-rwSr–r– 表示SUID被设置，但所有者权限中可执行位没有被设置</p>
-<p>3、-rwxr-sr-x 表示SGID和同组用户权限中可执行位被设置</p>
-<p>4、-rw-r-Sr– 表示SGID被设置，但同组用户权限中可执行位没有被设置</p>
-<p>给文件加SUID和SUID的命令如下：</p>
-<p>chmod u+s filename 设置SUID位</p>
-<p>chmod u-s filename 去掉SUID设置</p>
-<p>chmod g+s filename 设置SGID位</p>
-<p>chmod g-s filename 去掉SGID设置</p>
-<p>SUID属性<br>例如&#x2F;usr&#x2F;bin&#x2F;passwd  带有SUID属性 属于root用户 root用户主<br>其它用户只有&#x2F;usr&#x2F;bin&#x2F;passwd的可执行权限，在执行这个命令时会暂时获取root权限</p>
-<p>SGID属性<br>和SUID属性十分相似<br>不同的是其它用户在执行有SGID属性的命令时，会暂时获取该程序群组的支持</p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>Linux文件权限</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux配置环境变量</title>
-    <url>/2023/05/28/linux%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<p><a href="https://blog.csdn.net/an520_/article/details/125220048">参考</a></p>
-]]></content>
-      <categories>
-        <category>Linux</category>
-      </categories>
-      <tags>
-        <tag>Linux环境变量配置</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ssh免密登录失败</title>
-    <url>/2024/02/28/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5/</url>
-    <content><![CDATA[<h2 id="SSH免密码失败原因定位分析"><a href="#SSH免密码失败原因定位分析" class="headerlink" title="SSH免密码失败原因定位分析"></a>SSH免密码失败原因定位分析</h2><ol>
-<li>服务器B上.ssh目录的权限必须是700</li>
-<li>服务器B上.authorized_keys文件权限必须是600或者644</li>
-<li>服务器B上用户家目录文件权限必须是700，比如用户名是aischang，则&#x2F;home&#x2F;aischang这个目录权限必须是700</li>
-</ol>
-<p>如果不是700，在服务器A上查看&#x2F;var&#x2F;log&#x2F;secure文件会报错</p>
-<h2 id="原因："><a href="#原因：" class="headerlink" title="原因："></a>原因：</h2><p>sshd为了安全，对属主的目录和文件权限有所要求。如果权限不对，则ssh的免密码登陆不生效。</p>
-<blockquote>
-<ol>
-<li>服务器B上SELinux关闭为disabled，可以使用命令修改setenforce 0 ，查看状态的命令为getenforce或者 查看&#x2F;etc&#x2F;selinux&#x2F;config 文件中是否是disabled</li>
-</ol>
-</blockquote>
-<blockquote>
-<ol start="2">
-<li>有可能是StrictModes问题<br><br> 编辑 vi &#x2F;etc&#x2F;ssh&#x2F;sshd_config<br><br> 找到#StrictModes yes改成StrictModes no</li>
-</ol>
-</blockquote>
-<blockquote>
-<ol start="3">
-<li>有可能是PubkeyAuthentication问题<br><br> 编辑 vi &#x2F;etc&#x2F;ssh&#x2F;sshd_config<br><br> 找到PubkeyAuthentication改成yes</li>
-</ol>
-</blockquote>
-<p>如果还不行，可以在服务器A上用ssh -vvv 机器B的ip 查看详情，根据输出内容具体问题具体分析了</p>
-<p>参考链接: <a href="https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0">https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0</a></p>
-]]></content>
-      <categories>
-        <category>随笔</category>
-      </categories>
-      <tags>
-        <tag>ssh</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>动态链接</title>
-    <url>/2023/05/28/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/</url>
-    <content><![CDATA[<h3 id="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。"><a href="#静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。" class="headerlink" title="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。"></a>静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。</h3><p>-shared</p>
-<blockquote>
-<p>生成动态链接模块时只使用-shared，由于装载时重定位的方法需要修改指令，没有办法做到同一份指令被多个进程共享，因为指令被重定位之后对于每个进程来讲是不同的。</p>
-</blockquote>
-<p>-fPIC 地址无关代码</p>
-<blockquote>
-<p>实现的基本思想就是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分可以保持不变，而数据部分在每个进程中拥有一个副本。这种方案就是地址无关技术</p>
-</blockquote>
-<p>GOT全局偏移表</p>
-<blockquote>
-<p>对于动态链接模块中,对于外部符号（数据）的访问的机制，当指令需要访问某个外部变量时，程序会先找到GOT，然后根据GOT中变量所对应的项找到变量的目标地址。每个变量都对应一个4个字节的地址，链接器在装载模块的时候会查找每个变量所在的地址，然后填充GOT中的各个项。由于GOT表本身是放在数据段的，所以它可以在模块装载时被修改，并且每个进程都可以有独立的副本。</p>
-</blockquote>
-<p>-fPIE</p>
-<blockquote>
-<p>地址无关代码技术除了可以用在动态链接模块上，它也可以用于可执行文件</p>
-</blockquote>
-<p>共享模块（动态链接模块）的全局变量问题</p>
-<blockquote>
-<p>当一个模块引用了定义在共享对象的全局变量的时候，由于可执行文件在之前链接时就必须确定该全局变量的地址，所以连接器会在创建可执行文件时，在它的.bss段创建一个global变量的副本。导致同一变量同时存在于多个位置<br>于是解决的办法只有一个，那就是所有的使用这个变量的指令都指向位于可执行文件中的那个副本。ELF共享库在编译时，默认都把定义在模块内部的全局变量当作定义在其他模块的全局变量，也就是说当作前面的类型四，通过GOT来实现变量的访问。当共享模块被装载时，如果某个全局变量在可执行文件中拥有副本，那么动态链接器就会把GOT中的相应地址指向该副本，这样该变量在运行时实际上最终就只有一个实例。如果变量在共享模块中被初始化，那么动态链接器还需要将该初始化值复制到程序主模块中的变量副本；如果该全局变量在程序主模块中没有副本，那么GOT中的相应地址就指向模块内部的该变量副本。</p>
-</blockquote>
-<p><strong>默认情况下，如果可执行文件是动态链接的，那么GCC会使用PIC的方法来产生可执行文件的代码段部分，以便于不同的进程能够共享代码段，节省内存。所以动态链接的可执行文件中存在.got段</strong></p>
-<p>延迟绑定</p>
-<blockquote>
-<p>由于动态链接下对于全局数据的访问和跨模块的调用都要进行复杂的GOT定位，然后间接寻址或调用，导致程序的运行速度减慢大概1%~%5。又因为动态链接的链接工作在运行时完成，导致程序的启动速度减慢。<br>程序运行过程中，会有很多函数没有用到（错误处理函数，没有使用的功能模块等），所以没有必要一开始就把所有函数都链接好，ELF采用延迟绑定的方法，基本思想是当函数第一次被用到时才由动态链接器进行绑定（符号查找，重定位等），没用到的不绑定。这提高了程序的启动速度。<br>ELF使用PLT（Procedure Linkage Table）来实现延迟绑定,它使用了一些很精巧的指令序列来完成</p>
-</blockquote>
-<p>ELF将GOT拆分成了两个表.got和.got.plt，其中.got用来保存全局变量引用的地址，.got.plt用来保存函数引用的地址<br>PLT在ELF文件中以独立的段存放，段名通常叫做.plt，因为它本身是一些地址无关代码，所以可以跟代码段合并成同一个可读可写可执行的“Segment”被载入内存<br><a href="https://markrepo.github.io/kernel/2018/08/19/dynamic-link/">参考链接</a></p>
-]]></content>
-      <categories>
-        <category>随笔</category>
-      </categories>
-      <tags>
-        <tag>链接、装载与库</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>动手深度学习</title>
-    <url>/2023/05/28/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[<h2 id="正规方程"><a href="#正规方程" class="headerlink" title="正规方程"></a>正规方程</h2><p>正规方程是通过求解下面的方程来找出使得代价最小的函数<img src="/images/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/1.jpg"><br>只适用于线性模型，不适合逻辑回归模型等其它模型</p>
-<h2 id="过拟合、欠拟合、权重衰退"><a href="#过拟合、欠拟合、权重衰退" class="headerlink" title="过拟合、欠拟合、权重衰退"></a>过拟合、欠拟合、权重衰退</h2><h3 id="训练误差和泛化误差"><a href="#训练误差和泛化误差" class="headerlink" title="训练误差和泛化误差"></a>训练误差和泛化误差</h3><p>训练误差：模型在训练数据集上计算得到的误差<br>泛化误差：模型应用在同样从原始样本的分布中抽取的无限多数据样本时，模型误差的期望</p>
-<blockquote>
-<p>我们永远不能准确地计算出泛化误差。这是因为无限多地数据样本是一个虚构的对象。在实际中，我们只能通过将模型应用于一个独立的测试集来估计泛化误差，该测试集由随机选取的、未曾在训练集中出现的数据样本构成</p>
-</blockquote>
-<h3 id="模型复杂度"><a href="#模型复杂度" class="headerlink" title="模型复杂度"></a>模型复杂度</h3><p>几个倾向于影响模型泛化的因素<br>1.可调整参数的数量。当可调整参数的数量（自由度）很大时，模型往往更容易过拟合<br>2.参数采用的值。当权重的取值范围较大时，模型可能更容易过拟合<br>3.训练样本的数量。即使模型很简单，也很容易过拟合只包含一两个样本的数据集。而过拟合一个有数百万个样本的数据集则需要一个极其灵活的模型</p>
-<blockquote>
-<p>正则化是处理过拟合的常用方法：在训练集的损失函数中加入惩罚项，以降低学习到的模型的复杂度</p>
-</blockquote>
-<h2 id="Unet网络"><a href="#Unet网络" class="headerlink" title="Unet网络"></a>Unet网络</h2><p><a href="https://www.jianshu.com/p/14641b79a672">Unet</a></p>
-]]></content>
-      <categories>
-        <category>随笔</category>
-      </categories>
-      <tags>
-        <tag>深度学习</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>静态链接</title>
-    <url>/2023/05/28/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/</url>
-    <content><![CDATA[<blockquote>
-<p>连接器采用“两部链接”的方法，将链接过程分为两部：</p>
-</blockquote>
-<p>1.空间和地址分配：扫描所有的输入目标文件，获得各个节的长度、属性、位置并将它们合并，计算合并后各个段的长度与位置，建立映射关系。收集所有输入目标文件中符号表中所有的符号定义和符号引用，统一放到全局符号表中<br>2.符号解析与重定位：使用第一步中收集到的所有信息，读取输入文件中节的数据、重定位信息，并且进行符号解析与重定位、调整代码中的地址等。</p>
-<p><strong>重定位过程是链接过程的核心</strong></p>
-<h2 id="符号解析与重定位"><a href="#符号解析与重定位" class="headerlink" title="符号解析与重定位"></a>符号解析与重定位</h2><h4 id="符号解析"><a href="#符号解析" class="headerlink" title="符号解析"></a>符号解析</h4><blockquote>
-<p>重定位的过程伴随着符号解析过程，每个目标文件都可能定义一些符号，也可能引用到定义在其他目标文件的符号。重定位过程中，每个重定位的入口都是一个外部符号的引用，当链接器需要对某个符号的引用进行重定位时，他就要确定这个符号的目标地址。这时候链接器会去查找有所有输入目标文件的符号表组成的全局符号表，找到相应的符号后进行重定位，如果没有找到，就会报符号未定义的错误。</p>
-</blockquote>
-<h4 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h4><blockquote>
-<p>对于32位 x86平台下的ELF文件的重定位入口所修正的指令寻址方式只有两种：</p>
-</blockquote>
-<p>1.绝对近址32位寻址<br>2.相对近址32为寻址</p>
-<blockquote>
-<p>这两种重定位指令修正方式每个被修正的位置的长度都为32位，即4字节。而且都是近址寻址，不用考虑Intel的段间远址寻址。</p>
-</blockquote>
-<p>X86基本重定位类型：<br><img src="/images/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/1.jpg" alt="QQ截图20221203153333.png"></p>
-]]></content>
-      <categories>
-        <category>随笔</category>
-      </categories>
-      <tags>
-        <tag>链接、装载与库</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>cmu15445-project4</title>
     <url>/2024/02/29/cmu15445-project4/</url>
     <content><![CDATA[<h2 id="Concurrency-Control-Theory"><a href="#Concurrency-Control-Theory" class="headerlink" title="Concurrency Control Theory"></a>Concurrency Control Theory</h2><h3 id="formal-Definitions"><a href="#formal-Definitions" class="headerlink" title="formal Definitions"></a>formal Definitions</h3><p>Database: A fixed set of named data objects (e.g., A, B, C, …)<br>Transaction: A sequence of read and write operations (e.g., R(A), W(B), …)</p>
@@ -1699,136 +1629,15 @@
       </tags>
   </entry>
   <entry>
-    <title>GRE使用手册</title>
-    <url>/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/</url>
-    <content><![CDATA[<h2 id="下载官网地址"><a href="#下载官网地址" class="headerlink" title="下载官网地址:"></a>下载官网地址:<br></h2><p><a href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
-<h2 id="软件环境"><a href="#软件环境" class="headerlink" title="软件环境"></a>软件环境</h2><p>Ubuntu 20.04.6 LTS<br><br>gcc 9.4.0<br><br>cmake 3.16.3</p>
-<h2 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h2><h3 id="intel-mkl-2018-4-274"><a href="#intel-mkl-2018-4-274" class="headerlink" title="intel-mkl 2018.4.274"></a>intel-mkl 2018.4.274<br></h3><p>这里安装2024的版本也可以<br><br>进入官网 <a href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html">https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html</a><br></p>
-<p>选择Linux 和 APT Package Manager<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/3.png" alt="img"><br>依次输入命令<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/1.png" alt="img"><br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/2.png" alt="img"></p>
-<p>默认安装路径如下：<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/4.png" alt="img"></p>
-<p>使用mkl库需要配置环境变量：<br></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">对所有用户生效，需要重启系统</span><br><span class="line">vim /etc/profile</span><br></pre></td></tr></table></figure>
-<p><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/5.png" alt="img"></p>
-<h3 id="intel-tbb-2020-3"><a href="#intel-tbb-2020-3" class="headerlink" title="intel-tbb 2020.3"></a>intel-tbb 2020.3<br></h3><p>tbb库的版本必须使用2020.3<br><br>下载地址<a href="https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3">https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3</a></p>
-<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">解压</span></span><br><span class="line">tar -zxvf oneTBB-2020_U3.tar.gz</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">因为要使用 gcc-9 进行编译，所以需要编辑成 gcc-9 形式</span></span><br><span class="line">cp build/linux.gcc.inc build/linux.gcc-9.inc </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编辑 linux.gcc-9.inc 文件：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">第15、16行原来是</span></span><br><span class="line">CPLUS ?= g++</span><br><span class="line">CONLY ?= gcc</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为</span></span><br><span class="line">CPLUS ?= g++-9</span><br><span class="line">CONLY ?= gcc-9</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">然后在文件夹 oneTBB-2020_U3/ 中编译</span></span><br><span class="line">cd oneTBB-2020_U3</span><br><span class="line">make compiler=gcc-9 stdver=c++17 tbb_build_prefix=my_tbb_build</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译完成后，在 builld/ 文件夹下会看到编译生成的文件夹 my_tbb_build_release/</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mkdir /usr/local/tbb-2020_U3</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/include /usr/local/tbb-2020_U3/include</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/include/tbb /usr/local/include/tbb</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/build/my_tbb_build_release /usr/local/tbb-2020_U3/lib</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so2</span><br></pre></td></tr></table></figure>
-
-<p>然后把 库文件的路径写入到 ~&#x2F;.bashrc：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &#x27;export LD_LIBRARY_PATH=/usr/local/tbb-2020_U3/lib:$LD_LIBRARY_PATH&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>参考链接: <a href="https://blog.csdn.net/qq_39779233/article/details/126284595">https://blog.csdn.net/qq_39779233&#x2F;article&#x2F;details&#x2F;126284595</a></p>
-<h3 id="jemalloc"><a href="#jemalloc" class="headerlink" title="jemalloc"></a>jemalloc</h3><p>下载地址: <a href="https://github.com/jemalloc/jemalloc/releases">https://github.com/jemalloc/jemalloc/releases</a></p>
-<h4 id="编译与安装"><a href="#编译与安装" class="headerlink" title="编译与安装"></a>编译与安装</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 1</span></span><br><span class="line">./autogen.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 2</span></span><br><span class="line">make</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 3</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-<p>参考链接: <a href="https://blog.csdn.net/SweeNeil/article/details/94648313">https://blog.csdn.net/SweeNeil/article/details/94648313</a></p>
-<h2 id="USAGE"><a href="#USAGE" class="headerlink" title="USAGE"></a>USAGE</h2><h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git submodule update --init # only for the first time</span><br><span class="line">mkdir -p build</span><br><span class="line">cd build</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release .. &amp;&amp; make</span><br></pre></td></tr></table></figure>
-<h3 id="RUN"><a href="#RUN" class="headerlink" title="RUN"></a>RUN</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">./build/microbench \</span><br><span class="line">--keys_file=./data/dataset \  // 数据地址</span><br><span class="line">--keys_file_type=&#123;binary,text&#125; \  // 二进制 或者 文本</span><br><span class="line">--read=0.5 --insert=0.5 \ </span><br><span class="line">--operations_num=800000000 \ </span><br><span class="line">--table_size=-1 \ // 所使用的数据的size</span><br><span class="line">--init_table_ratio=0.5 \ //bulk_load所使用的数据的百分比</span><br><span class="line">--thread_num=24 \</span><br><span class="line">--index=index_name \ //测试的索引名称</span><br></pre></td></tr></table></figure>
-
-<p>其它参数见官网:<br><a href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
-<h3 id="如果要测试新的索引结构"><a href="#如果要测试新的索引结构" class="headerlink" title="如果要测试新的索引结构"></a>如果要测试新的索引结构</h3><h4 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h4><p>src&#x2F;competitor&#x2F;competitor.h<br>get_index函数中添加对应的index_type<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/6.png" alt="img"></p>
-<h4 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h4><p>在 src&#x2F;competitor 下放置源代码 new_index_name&#x2F;src<br>编写接口文件 src&#x2F;competitor&#x2F;new_index_name.h</p>
-<p>以lipp的接口文件为例：</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;./src/src/core/lipp.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;../indexInterface.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LIPPInterface</span> : <span class="keyword">public</span> indexInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt; &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">init</span><span class="params">(Param *param = <span class="literal">nullptr</span>)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">bulk_load</span><span class="params">(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">put</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">update</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">remove</span><span class="params">(KEY_TYPE key, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">scan</span><span class="params">(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num, std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span></span></span><br><span class="line"><span class="params"><span class="function">                Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">long</span> <span class="type">long</span> <span class="title">memory_consumption</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> lipp.<span class="built_in">total_size</span>(); &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    LIPP &lt;KEY_TYPE, PAYLOAD_TYPE&gt; lipp;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">void</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">bulk_load</span>(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num,</span><br><span class="line">                                                      Param *param) &#123;</span><br><span class="line">    lipp.<span class="built_in">bulk_load</span>(key_value, <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(num));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">get</span>(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param) &#123;</span><br><span class="line">    <span class="type">bool</span> exist;</span><br><span class="line">    val = lipp.<span class="built_in">at</span>(key, <span class="literal">false</span>, exist);</span><br><span class="line">    <span class="keyword">return</span> exist;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">put</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">insert</span>(key, value);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">update</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">update</span>(key, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">remove</span>(KEY_TYPE key, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">remove</span>(key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">size_t</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">scan</span>(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num,</span><br><span class="line">                                                   std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span><br><span class="line">                                                   Param *param) &#123;</span><br><span class="line">    <span class="keyword">if</span>(!result) &#123;</span><br><span class="line">        result = <span class="keyword">new</span> std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt;[key_num];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">range_query_len</span>(result, key_low_bound, key_num);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>Learned Index</category>
-      </categories>
-      <tags>
-        <tag>Learned Index</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>布隆过滤器</title>
-    <url>/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/</url>
-    <content><![CDATA[<h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>查找时，过滤掉一定不存在的key，提高查找效率</p>
-<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在数组或者列表中搜索相应值的时候，你必须遍历已有的集合。若集合中存在大量的数据，就会影响查找的效率</p>
-<p>针对这个问题，可以考虑使用哈希表，利用哈希表来对”值”进行哈希处理来获得该值对应的索引值，然后将该”值”存放到列表中对应的索引位置。<br>这意味着判断列表中是否存在该值时，只需要对值进行哈希处理并在相应的索引位置进行搜索即可，这时的搜索速度是非常快的。</p>
-<p><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.png" alt="img"></p>
-<p>Bloom Filter本质上是由长度为m的位向量（仅包含0或者1）组成，最初所有值均设置为0，如下图所示：<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.png" alt="img"></p>
-<p>为了将数据项添加到布隆过滤器中，使用k个不同的哈希函数对其进行哈希，并将结果位置上对应位置为1</p>
-<h3 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h3><p>输入”semlinker”，预设的3个哈希函数将输出2、4、6,我们把相应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.png" alt="img"><br>再输入”kakuqo”，哈希函数输出3、4、7,把对应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.png" alt="img"><br>再输入”fullstack”,哈希函数输出2、3、7，这时发现相应的索引位都已经置为了1，这意味着我们可以说”fullstack”可能已经插入到集合中。这是一种误判情况<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.png" alt="img"></p>
-<p>布隆过滤器有一个可预测的误判率(FPP):<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/6.png" alt="img"></p>
-<ul>
-<li>n是已经添加元素的数量</li>
-<li>k是哈希的次数</li>
-<li>m为布隆过滤器的长度(如比特数组的大小)</li>
-</ul>
-<p>实际情况中，布隆过滤器的长度m可以根据误判率(FFP)的和期望添加的元素个数n的通过如下公式计算:<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/7.png" alt="img"></p>
-<blockquote>
-<p>因此，我们得出一个结论，当我们搜索一个值的时候，若该值经过k个哈希函数运算后任何一个索引位为0，那么该值肯定不在集合中。但如果所有哈希索引值均为1，则只能说该搜索的值可能存在集合中</p>
-</blockquote>
-<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>在实际工作中，布隆过滤器常见的应用场景如下：</p>
-<ul>
-<li>网页爬虫对 URL 去重，避免爬取相同的 URL 地址；</li>
-<li>反垃圾邮件，从数十亿个垃圾邮件列表中判断某邮箱是否垃圾邮箱；</li>
-<li>Google Chrome 使用布隆过滤器识别恶意 URL；</li>
-<li>Medium 使用布隆过滤器避免推荐给用户已经读过的文章；</li>
-<li>Google BigTable，Apache HBbase 和 Apache Cassandra 使用布隆过滤器减少对不存在的行和列的查找</li>
-</ul>
+    <title>configure命令</title>
+    <url>/2023/05/28/configure%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_40941932/article/details/109992151">参考</a></p>
 ]]></content>
       <categories>
-        <category>布隆过滤器</category>
+        <category>随笔</category>
       </categories>
       <tags>
-        <tag>布隆过滤器</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>DILI论文重点部分</title>
-    <url>/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/</url>
-    <content><![CDATA[<h2 id="DILI：A-Distribution-driven-Learned-Index"><a href="#DILI：A-Distribution-driven-Learned-Index" class="headerlink" title="DILI：A Distribution-driven Learned Index"></a>DILI：A Distribution-driven Learned Index</h2><p>摘要：<br><br>DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测key的位置的。</p>
-<p>为了构建DILI，首先构建一颗bottom-up tree,然后使用这个bottom-up tree，自顶向下构建一个DILI树。DILI在the number of leaf nodes和tree height之间有一个很好的平衡（the number of leaf nodes 和 tree height是影响key搜索时间的关键因素）。设计了灵活的插入和删除算法，并在必要时调整树形结构。</p>
-<p>实验结果表明DILI比其它baseline在不同的workloads上要表现的更好。</p>
-<h3 id="1-INTRODUCTION"><a href="#1-INTRODUCTION" class="headerlink" title="1.INTRODUCTION"></a>1.INTRODUCTION<br></h3><p>RMI：仅支持查找<br><br>ALEX：扩展RMI，在leaf node中使用 gapped array，使用 cost model初始化RMI结构和动态更新RMI结构。存在last-mile问题<br><br>LIPP：解决last-mile问题，但是没有利用data distribution<br><br>DILI-LO：未解决last-mile问题，利用data distribution<br><br>DILI：解决last-mile问题，利用data distribution<br></p>
-<p>构建DILI的目的是实现最好的搜索性能 —&gt; 搜索的开销取决于(1)leaf node的深度(2)leaf  node中的linear model预测的accuracy —&gt; 这两个factors都应该在DILI的构建中被考虑</p>
-<p>因此，提出了一个two-phase bulk loading 方法<br><br><strong>Phase1</strong> -&gt; 使用greedy merging algorithm（考虑到了上面的两个factors） 构建一棵BU-tree（BU-tree的internal node’srange并不是被它的child nodes均分的，因此在BU-tree进行key搜索时，确定child node需要额外的开销）</p>
-<p><strong>Phase2</strong> -&gt;  借鉴BU-tree的结构构建DILI</p>
-<h4 id="Contribution"><a href="#Contribution" class="headerlink" title="Contribution"></a>Contribution</h4><ul>
-<li>提出DILI，algorithms 和它的cost analysis</li>
-<li>构建DILI的two-phase bulk loading 方法</li>
-<li>对DILI的leaf node的local optimization，解决last-mile问题</li>
-<li>对于DILI的insertion和deletion操作提出相应的algorithm来维持查找性能</li>
-<li>在synthetic data和real data上证实DILI的性能</li>
-</ul>
-<h3 id="2-OVERVIEW-OF-DILI"><a href="#2-OVERVIEW-OF-DILI" class="headerlink" title="2.OVERVIEW OF DILI"></a>2.OVERVIEW OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png" alt="img"><br>DILI的结构如Figure 1所示<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/2.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/3.png" alt="img"><br>DILI在没有使用local Optimization的时候SEARCH算法如下，查找key时，锁定了leaf node后需要再进行指数查找来确定position。<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/4.png" alt="img"></p>
-<h4 id="Local-Optimization-strategy"><a href="#Local-Optimization-strategy" class="headerlink" title="Local Optimization strategy"></a>Local Optimization strategy</h4><p>在leaf node中，先用线性模型预测key的position，之后直接将key放到预测的position上，如果发生冲突，就创建一个新的node，对应的entry设置为指向新node的指针</p>
-<h4 id="Updates"><a href="#Updates" class="headerlink" title="Updates"></a>Updates</h4><p>当对DILI插入数据时，如果发生conflict，会创建新的Node，当创建的新Node过多并且退化了查找性能时，需要进行调整策略（在section6会详细描述）</p>
-<h3 id="3-SEARCH-COST-ANALYSIS"><a href="#3-SEARCH-COST-ANALYSIS" class="headerlink" title="3.SEARCH COST ANALYSIS"></a>3.SEARCH COST ANALYSIS</h3><p>Cost Analysis:<br>未使用local optimization strategy<br>Algorithm1由两步组成(1)找到包含search key的leaf node (2)leaf node中的local search<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/5.png" alt="img"></p>
-<h3 id="4-CONSTRUCTION-OF-DILI"><a href="#4-CONSTRUCTION-OF-DILI" class="headerlink" title="4.CONSTRUCTION OF DILI"></a>4.CONSTRUCTION OF DILI</h3><h4 id="4-1Motivation-and-Overall-Idea-of-BU-Tree"><a href="#4-1Motivation-and-Overall-Idea-of-BU-Tree" class="headerlink" title="4.1Motivation and Overall Idea of BU-Tree"></a>4.1Motivation and Overall Idea of BU-Tree</h4><p>DILI的internal node的线性模型有着完美的准确性，因为internal node被它的child nodes均分。—-&gt; 现在有一个问题，如何确定DILI的fanout</p>
-<p>大致思路：<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/6.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/7.png" alt="img"></p>
-<h4 id="4-2-Building-BU-Tree"><a href="#4-2-Building-BU-Tree" class="headerlink" title="4.2 Building BU-Tree"></a>4.2 Building BU-Tree</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/8.png" alt="img"></p>
-<h5 id="4-2-1-Bottom-up-Node-and-Model-Creation"><a href="#4-2-1-Bottom-up-Node-and-Model-Creation" class="headerlink" title="4.2.1 Bottom-up Node and Model Creation"></a>4.2.1 Bottom-up Node and Model Creation</h5><p>构建第0层的leaf node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/9.png" alt="img"><br>已知h - 1层的internal node,构建第h层的internal node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/10.png" alt="img"></p>
-<h5 id="4-2-2-Determining-Node-Layout-at-A-Height"><a href="#4-2-2-Determining-Node-Layout-at-A-Height" class="headerlink" title="4.2.2 Determining Node Layout at A Height"></a>4.2.2 Determining Node Layout at A Height</h5><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/11.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/12.png" alt="img"></p>
-<p>但是BU-Tree是从下往上创建的，即使创建了第h层的node，我们也不知道BU-Tree的高度</p>
-<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png" alt="img"></p>
-<h4 id="4-3-BU-Tree-based-Bulk-loading-for-DILI"><a href="#4-3-BU-Tree-based-Bulk-loading-for-DILI" class="headerlink" title="4.3 BU-Tree based Bulk loading for DILI"></a>4.3 BU-Tree based Bulk loading for DILI</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png" alt="img"></p>
-<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4><p>Skip ……</p>
-<h3 id="5-LOCAL-OPTIMIZATION-OF-DILI"><a href="#5-LOCAL-OPTIMIZATION-OF-DILI" class="headerlink" title="5. LOCAL OPTIMIZATION OF DILI"></a>5. LOCAL OPTIMIZATION OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/16.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/17.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/18.png" alt="img"></p>
-<h3 id="6-DATA-UPDATES-IN-DILI"><a href="#6-DATA-UPDATES-IN-DILI" class="headerlink" title="6. DATA UPDATES IN DILI"></a>6. DATA UPDATES IN DILI</h3><h4 id="6-1-Insertions"><a href="#6-1-Insertions" class="headerlink" title="6.1 Insertions"></a>6.1 Insertions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/19.png" alt="img"><br>P exists标注的地方错误		应设置为notExist  &lt;—  False</p>
-<h4 id="6-2-Deletions"><a href="#6-2-Deletions" class="headerlink" title="6.2 Deletions"></a>6.2 Deletions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/20.png" alt="img"></p>
-<h3 id="7-EXPERIMENTAL-STUDIES"><a href="#7-EXPERIMENTAL-STUDIES" class="headerlink" title="7.EXPERIMENTAL STUDIES"></a>7.EXPERIMENTAL STUDIES</h3><h4 id="7-1-Experimental-Settings"><a href="#7-1-Experimental-Settings" class="headerlink" title="7.1 Experimental Settings"></a>7.1 Experimental Settings</h4><p>数据集：使用了SOSD benchmark中的4个真实数据集 和 1 个合成数据集</p>
-<ul>
-<li>FB : 200M Facebook 用户id</li>
-<li>WikiTS : 200M 维基百科网站日志条目的唯一请求时间戳</li>
-<li>OSM :  800M OpenStreetMap单元格的id</li>
-<li>Books : 800M Amazon的books的id</li>
-<li>Logn : 200M 从重尾采样的独特值 N(0， 1) 的对数正态分布</li>
-</ul>
-<p>比较的baselines:<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/21.png" alt="img"></p>
-<p>Table 2 总结了所有index的属性特点，更好的表现被加粗了<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/22.png" alt="img"></p>
-<p>Evaluation Metrics : <br><br>Lookup —&gt; 平均每次query所用的时间 <br><br>Throughtput —&gt; 平均每second执行的operations的次数（query、insertion、deletion）<br></p>
-<h4 id="7-2-Overall-Query-Performance"><a href="#7-2-Overall-Query-Performance" class="headerlink" title="7.2 Overall Query Performance"></a>7.2 Overall Query Performance</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/23.png" alt="img"></p>
-<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/24.png" alt="img"></p>
-<h4 id="7-3-Performance-on-Different-Workloads"><a href="#7-3-Performance-on-Different-Workloads" class="headerlink" title="7.3 Performance on Different Workloads"></a>7.3 Performance on Different Workloads</h4><p>(1)The Read-only workload: 100M point queries <br><br>(2)The Read-Heavy workload: 50M insertions and 100M point queries <br><br>(3)The Write-Heavy workload: 100M insertions and 50M point queries <br><br>(4)The Write-only workload: 100M insertions <br></p>
-<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/25.png" alt="img"></p>
-<h4 id="7-4-Effect-of-Many-Deletions"><a href="#7-4-Effect-of-Many-Deletions" class="headerlink" title="7.4 Effect of Many Deletions"></a>7.4 Effect of Many Deletions</h4><p>(1)Read-Heavy workload : 100M lookups and 50M deletions<br>DILI achieves up to 3.6X, 2.3X, 7.0X and 2.3X higher throughput than B+ Tree,PGM,MassTree and ALEX,respectively.</p>
-<p>(2)Deletion-Heavy workload : 100M deletions and 50M lookups<br>Only ALEX performs a little better than DILI on Logn dataset</p>
-<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/26.png" alt="img"></p>
-]]></content>
-      <categories>
-        <category>Learned Index</category>
-      </categories>
-      <tags>
-        <tag>Learned Index</tag>
+        <tag>configure</tag>
       </tags>
   </entry>
   <entry>
@@ -1858,6 +1667,53 @@
       </categories>
       <tags>
         <tag>javascript</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux下目录各个文件夹详解</title>
+    <url>/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/qq_39652397/article/details/123794887">参考</a></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux不同目录详解</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux文件权限和属性</title>
+    <url>/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/</url>
+    <content><![CDATA[<p>如果一个文件被设置了SUID或SGID位，会分别表现在所有者或同组用户的权限的可执行位上。例如：</p>
+<p>1、-rwsr-xr-x 表示SUID和所有者权限中可执行位被设置</p>
+<p>2、-rwSr–r– 表示SUID被设置，但所有者权限中可执行位没有被设置</p>
+<p>3、-rwxr-sr-x 表示SGID和同组用户权限中可执行位被设置</p>
+<p>4、-rw-r-Sr– 表示SGID被设置，但同组用户权限中可执行位没有被设置</p>
+<p>给文件加SUID和SUID的命令如下：</p>
+<p>chmod u+s filename 设置SUID位</p>
+<p>chmod u-s filename 去掉SUID设置</p>
+<p>chmod g+s filename 设置SGID位</p>
+<p>chmod g-s filename 去掉SGID设置</p>
+<p>SUID属性<br>例如&#x2F;usr&#x2F;bin&#x2F;passwd  带有SUID属性 属于root用户 root用户主<br>其它用户只有&#x2F;usr&#x2F;bin&#x2F;passwd的可执行权限，在执行这个命令时会暂时获取root权限</p>
+<p>SGID属性<br>和SUID属性十分相似<br>不同的是其它用户在执行有SGID属性的命令时，会暂时获取该程序群组的支持</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux文件权限</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux配置环境变量</title>
+    <url>/2023/05/28/linux%E9%85%8D%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<p><a href="https://blog.csdn.net/an520_/article/details/125220048">参考</a></p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux环境变量配置</tag>
       </tags>
   </entry>
   <entry>
@@ -1937,15 +1793,159 @@
       </tags>
   </entry>
   <entry>
-    <title>VMware的三种网络模式</title>
-    <url>/2024/08/20/VMware%E7%9A%84%E4%B8%89%E7%A7%8D%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/</url>
-    <content><![CDATA[<p><a href="https://wxler.github.io/2021/02/02/221724/">参考链接</a></p>
+    <title>动态链接</title>
+    <url>/2023/05/28/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/</url>
+    <content><![CDATA[<h3 id="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。"><a href="#静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。" class="headerlink" title="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。"></a>静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。</h3><p>-shared</p>
+<blockquote>
+<p>生成动态链接模块时只使用-shared，由于装载时重定位的方法需要修改指令，没有办法做到同一份指令被多个进程共享，因为指令被重定位之后对于每个进程来讲是不同的。</p>
+</blockquote>
+<p>-fPIC 地址无关代码</p>
+<blockquote>
+<p>实现的基本思想就是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分可以保持不变，而数据部分在每个进程中拥有一个副本。这种方案就是地址无关技术</p>
+</blockquote>
+<p>GOT全局偏移表</p>
+<blockquote>
+<p>对于动态链接模块中,对于外部符号（数据）的访问的机制，当指令需要访问某个外部变量时，程序会先找到GOT，然后根据GOT中变量所对应的项找到变量的目标地址。每个变量都对应一个4个字节的地址，链接器在装载模块的时候会查找每个变量所在的地址，然后填充GOT中的各个项。由于GOT表本身是放在数据段的，所以它可以在模块装载时被修改，并且每个进程都可以有独立的副本。</p>
+</blockquote>
+<p>-fPIE</p>
+<blockquote>
+<p>地址无关代码技术除了可以用在动态链接模块上，它也可以用于可执行文件</p>
+</blockquote>
+<p>共享模块（动态链接模块）的全局变量问题</p>
+<blockquote>
+<p>当一个模块引用了定义在共享对象的全局变量的时候，由于可执行文件在之前链接时就必须确定该全局变量的地址，所以连接器会在创建可执行文件时，在它的.bss段创建一个global变量的副本。导致同一变量同时存在于多个位置<br>于是解决的办法只有一个，那就是所有的使用这个变量的指令都指向位于可执行文件中的那个副本。ELF共享库在编译时，默认都把定义在模块内部的全局变量当作定义在其他模块的全局变量，也就是说当作前面的类型四，通过GOT来实现变量的访问。当共享模块被装载时，如果某个全局变量在可执行文件中拥有副本，那么动态链接器就会把GOT中的相应地址指向该副本，这样该变量在运行时实际上最终就只有一个实例。如果变量在共享模块中被初始化，那么动态链接器还需要将该初始化值复制到程序主模块中的变量副本；如果该全局变量在程序主模块中没有副本，那么GOT中的相应地址就指向模块内部的该变量副本。</p>
+</blockquote>
+<p><strong>默认情况下，如果可执行文件是动态链接的，那么GCC会使用PIC的方法来产生可执行文件的代码段部分，以便于不同的进程能够共享代码段，节省内存。所以动态链接的可执行文件中存在.got段</strong></p>
+<p>延迟绑定</p>
+<blockquote>
+<p>由于动态链接下对于全局数据的访问和跨模块的调用都要进行复杂的GOT定位，然后间接寻址或调用，导致程序的运行速度减慢大概1%~%5。又因为动态链接的链接工作在运行时完成，导致程序的启动速度减慢。<br>程序运行过程中，会有很多函数没有用到（错误处理函数，没有使用的功能模块等），所以没有必要一开始就把所有函数都链接好，ELF采用延迟绑定的方法，基本思想是当函数第一次被用到时才由动态链接器进行绑定（符号查找，重定位等），没用到的不绑定。这提高了程序的启动速度。<br>ELF使用PLT（Procedure Linkage Table）来实现延迟绑定,它使用了一些很精巧的指令序列来完成</p>
+</blockquote>
+<p>ELF将GOT拆分成了两个表.got和.got.plt，其中.got用来保存全局变量引用的地址，.got.plt用来保存函数引用的地址<br>PLT在ELF文件中以独立的段存放，段名通常叫做.plt，因为它本身是一些地址无关代码，所以可以跟代码段合并成同一个可读可写可执行的“Segment”被载入内存<br><a href="https://markrepo.github.io/kernel/2018/08/19/dynamic-link/">参考链接</a></p>
 ]]></content>
       <categories>
         <category>随笔</category>
       </categories>
       <tags>
-        <tag>VMware</tag>
+        <tag>链接、装载与库</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssh免密登录失败</title>
+    <url>/2024/02/28/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5/</url>
+    <content><![CDATA[<h2 id="SSH免密码失败原因定位分析"><a href="#SSH免密码失败原因定位分析" class="headerlink" title="SSH免密码失败原因定位分析"></a>SSH免密码失败原因定位分析</h2><ol>
+<li>服务器B上.ssh目录的权限必须是700</li>
+<li>服务器B上.authorized_keys文件权限必须是600或者644</li>
+<li>服务器B上用户家目录文件权限必须是700，比如用户名是aischang，则&#x2F;home&#x2F;aischang这个目录权限必须是700</li>
+</ol>
+<p>如果不是700，在服务器A上查看&#x2F;var&#x2F;log&#x2F;secure文件会报错</p>
+<h2 id="原因："><a href="#原因：" class="headerlink" title="原因："></a>原因：</h2><p>sshd为了安全，对属主的目录和文件权限有所要求。如果权限不对，则ssh的免密码登陆不生效。</p>
+<blockquote>
+<ol>
+<li>服务器B上SELinux关闭为disabled，可以使用命令修改setenforce 0 ，查看状态的命令为getenforce或者 查看&#x2F;etc&#x2F;selinux&#x2F;config 文件中是否是disabled</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="2">
+<li>有可能是StrictModes问题<br><br> 编辑 vi &#x2F;etc&#x2F;ssh&#x2F;sshd_config<br><br> 找到#StrictModes yes改成StrictModes no</li>
+</ol>
+</blockquote>
+<blockquote>
+<ol start="3">
+<li>有可能是PubkeyAuthentication问题<br><br> 编辑 vi &#x2F;etc&#x2F;ssh&#x2F;sshd_config<br><br> 找到PubkeyAuthentication改成yes</li>
+</ol>
+</blockquote>
+<p>如果还不行，可以在服务器A上用ssh -vvv 机器B的ip 查看详情，根据输出内容具体问题具体分析了</p>
+<p>参考链接: <a href="https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0">https://juejin.cn/s/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5%E5%8E%9F%E5%9B%A0</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>ssh</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动手深度学习</title>
+    <url>/2023/05/28/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</url>
+    <content><![CDATA[<h2 id="正规方程"><a href="#正规方程" class="headerlink" title="正规方程"></a>正规方程</h2><p>正规方程是通过求解下面的方程来找出使得代价最小的函数<img src="/images/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/1.jpg"><br>只适用于线性模型，不适合逻辑回归模型等其它模型</p>
+<h2 id="过拟合、欠拟合、权重衰退"><a href="#过拟合、欠拟合、权重衰退" class="headerlink" title="过拟合、欠拟合、权重衰退"></a>过拟合、欠拟合、权重衰退</h2><h3 id="训练误差和泛化误差"><a href="#训练误差和泛化误差" class="headerlink" title="训练误差和泛化误差"></a>训练误差和泛化误差</h3><p>训练误差：模型在训练数据集上计算得到的误差<br>泛化误差：模型应用在同样从原始样本的分布中抽取的无限多数据样本时，模型误差的期望</p>
+<blockquote>
+<p>我们永远不能准确地计算出泛化误差。这是因为无限多地数据样本是一个虚构的对象。在实际中，我们只能通过将模型应用于一个独立的测试集来估计泛化误差，该测试集由随机选取的、未曾在训练集中出现的数据样本构成</p>
+</blockquote>
+<h3 id="模型复杂度"><a href="#模型复杂度" class="headerlink" title="模型复杂度"></a>模型复杂度</h3><p>几个倾向于影响模型泛化的因素<br>1.可调整参数的数量。当可调整参数的数量（自由度）很大时，模型往往更容易过拟合<br>2.参数采用的值。当权重的取值范围较大时，模型可能更容易过拟合<br>3.训练样本的数量。即使模型很简单，也很容易过拟合只包含一两个样本的数据集。而过拟合一个有数百万个样本的数据集则需要一个极其灵活的模型</p>
+<blockquote>
+<p>正则化是处理过拟合的常用方法：在训练集的损失函数中加入惩罚项，以降低学习到的模型的复杂度</p>
+</blockquote>
+<h2 id="Unet网络"><a href="#Unet网络" class="headerlink" title="Unet网络"></a>Unet网络</h2><p><a href="https://www.jianshu.com/p/14641b79a672">Unet</a></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>深度学习</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>布隆过滤器</title>
+    <url>/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/</url>
+    <content><![CDATA[<h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>查找时，过滤掉一定不存在的key，提高查找效率</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在数组或者列表中搜索相应值的时候，你必须遍历已有的集合。若集合中存在大量的数据，就会影响查找的效率</p>
+<p>针对这个问题，可以考虑使用哈希表，利用哈希表来对”值”进行哈希处理来获得该值对应的索引值，然后将该”值”存放到列表中对应的索引位置。<br>这意味着判断列表中是否存在该值时，只需要对值进行哈希处理并在相应的索引位置进行搜索即可，这时的搜索速度是非常快的。</p>
+<p><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.png" alt="img"></p>
+<p>Bloom Filter本质上是由长度为m的位向量（仅包含0或者1）组成，最初所有值均设置为0，如下图所示：<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.png" alt="img"></p>
+<p>为了将数据项添加到布隆过滤器中，使用k个不同的哈希函数对其进行哈希，并将结果位置上对应位置为1</p>
+<h3 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h3><p>输入”semlinker”，预设的3个哈希函数将输出2、4、6,我们把相应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.png" alt="img"><br>再输入”kakuqo”，哈希函数输出3、4、7,把对应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.png" alt="img"><br>再输入”fullstack”,哈希函数输出2、3、7，这时发现相应的索引位都已经置为了1，这意味着我们可以说”fullstack”可能已经插入到集合中。这是一种误判情况<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.png" alt="img"></p>
+<p>布隆过滤器有一个可预测的误判率(FPP):<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/6.png" alt="img"></p>
+<ul>
+<li>n是已经添加元素的数量</li>
+<li>k是哈希的次数</li>
+<li>m为布隆过滤器的长度(如比特数组的大小)</li>
+</ul>
+<p>实际情况中，布隆过滤器的长度m可以根据误判率(FFP)的和期望添加的元素个数n的通过如下公式计算:<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/7.png" alt="img"></p>
+<blockquote>
+<p>因此，我们得出一个结论，当我们搜索一个值的时候，若该值经过k个哈希函数运算后任何一个索引位为0，那么该值肯定不在集合中。但如果所有哈希索引值均为1，则只能说该搜索的值可能存在集合中</p>
+</blockquote>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>在实际工作中，布隆过滤器常见的应用场景如下：</p>
+<ul>
+<li>网页爬虫对 URL 去重，避免爬取相同的 URL 地址；</li>
+<li>反垃圾邮件，从数十亿个垃圾邮件列表中判断某邮箱是否垃圾邮箱；</li>
+<li>Google Chrome 使用布隆过滤器识别恶意 URL；</li>
+<li>Medium 使用布隆过滤器避免推荐给用户已经读过的文章；</li>
+<li>Google BigTable，Apache HBbase 和 Apache Cassandra 使用布隆过滤器减少对不存在的行和列的查找</li>
+</ul>
+]]></content>
+      <categories>
+        <category>布隆过滤器</category>
+      </categories>
+      <tags>
+        <tag>布隆过滤器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>静态链接</title>
+    <url>/2023/05/28/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/</url>
+    <content><![CDATA[<blockquote>
+<p>连接器采用“两部链接”的方法，将链接过程分为两部：</p>
+</blockquote>
+<p>1.空间和地址分配：扫描所有的输入目标文件，获得各个节的长度、属性、位置并将它们合并，计算合并后各个段的长度与位置，建立映射关系。收集所有输入目标文件中符号表中所有的符号定义和符号引用，统一放到全局符号表中<br>2.符号解析与重定位：使用第一步中收集到的所有信息，读取输入文件中节的数据、重定位信息，并且进行符号解析与重定位、调整代码中的地址等。</p>
+<p><strong>重定位过程是链接过程的核心</strong></p>
+<h2 id="符号解析与重定位"><a href="#符号解析与重定位" class="headerlink" title="符号解析与重定位"></a>符号解析与重定位</h2><h4 id="符号解析"><a href="#符号解析" class="headerlink" title="符号解析"></a>符号解析</h4><blockquote>
+<p>重定位的过程伴随着符号解析过程，每个目标文件都可能定义一些符号，也可能引用到定义在其他目标文件的符号。重定位过程中，每个重定位的入口都是一个外部符号的引用，当链接器需要对某个符号的引用进行重定位时，他就要确定这个符号的目标地址。这时候链接器会去查找有所有输入目标文件的符号表组成的全局符号表，找到相应的符号后进行重定位，如果没有找到，就会报符号未定义的错误。</p>
+</blockquote>
+<h4 id="重定位"><a href="#重定位" class="headerlink" title="重定位"></a>重定位</h4><blockquote>
+<p>对于32位 x86平台下的ELF文件的重定位入口所修正的指令寻址方式只有两种：</p>
+</blockquote>
+<p>1.绝对近址32位寻址<br>2.相对近址32为寻址</p>
+<blockquote>
+<p>这两种重定位指令修正方式每个被修正的位置的长度都为32位，即4字节。而且都是近址寻址，不用考虑Intel的段间远址寻址。</p>
+</blockquote>
+<p>X86基本重定位类型：<br><img src="/images/%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5/1.jpg" alt="QQ截图20221203153333.png"></p>
+]]></content>
+      <categories>
+        <category>随笔</category>
+      </categories>
+      <tags>
+        <tag>链接、装载与库</tag>
       </tags>
   </entry>
 </search>
