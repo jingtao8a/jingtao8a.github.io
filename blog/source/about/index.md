@@ -5,8 +5,9 @@ type: "about"
 comments: false
 ---
 
-***
-[<center>github地址</center>](https://github.com/jingtao8a)
-***
-[<center>gitee地址</center>](https://gitee.com/jingtao8a)
-***
+
+
+### 个人仓库
+
+| [![github](../images/about/github.png)](https://github.com/jingtao8a) | [![gitee](../images/about/gitee.png)](https://gitee.com/jingtao8a) |
+|-----------------------------------------------------------------------|--------------------------------------------------------------------|
