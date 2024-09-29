@@ -190,6 +190,248 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/28/linux%E4%B8%8B%E7%9B%AE%E5%BD%95%E5%90%84%E4%B8%AA%E6%96%87%E4%BB%B6%E5%A4%B9%E8%AF%A6%E8%A7%A3/" class="post-title-link" itemprop="url">linux下目录各个文件夹详解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-28 10:58:33" itemprop="dateCreated datePublished" datetime="2023-05-28T10:58:33-07:00">2023-05-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39652397/article/details/123794887">参考</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/28/linux%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90%E5%92%8C%E5%B1%9E%E6%80%A7/" class="post-title-link" itemprop="url">linux文件权限和属性</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-28 10:56:48" itemprop="dateCreated datePublished" datetime="2023-05-28T10:56:48-07:00">2023-05-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>如果一个文件被设置了SUID或SGID位，会分别表现在所有者或同组用户的权限的可执行位上。例如：</p>
+<p>1、-rwsr-xr-x 表示SUID和所有者权限中可执行位被设置</p>
+<p>2、-rwSr–r– 表示SUID被设置，但所有者权限中可执行位没有被设置</p>
+<p>3、-rwxr-sr-x 表示SGID和同组用户权限中可执行位被设置</p>
+<p>4、-rw-r-Sr– 表示SGID被设置，但同组用户权限中可执行位没有被设置</p>
+<p>给文件加SUID和SUID的命令如下：</p>
+<p>chmod u+s filename 设置SUID位</p>
+<p>chmod u-s filename 去掉SUID设置</p>
+<p>chmod g+s filename 设置SGID位</p>
+<p>chmod g-s filename 去掉SGID设置</p>
+<p>SUID属性<br>例如&#x2F;usr&#x2F;bin&#x2F;passwd  带有SUID属性 属于root用户 root用户主<br>其它用户只有&#x2F;usr&#x2F;bin&#x2F;passwd的可执行权限，在执行这个命令时会暂时获取root权限</p>
+<p>SGID属性<br>和SUID属性十分相似<br>不同的是其它用户在执行有SGID属性的命令时，会暂时获取该程序群组的支持</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/28/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="post-title-link" itemprop="url">动手深度学习</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-28 10:20:36" itemprop="dateCreated datePublished" datetime="2023-05-28T10:20:36-07:00">2023-05-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="正规方程"><a href="#正规方程" class="headerlink" title="正规方程"></a>正规方程</h2><p>正规方程是通过求解下面的方程来找出使得代价最小的函数<img src="/images/%E5%8A%A8%E6%89%8B%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/1.jpg"><br>只适用于线性模型，不适合逻辑回归模型等其它模型</p>
+<h2 id="过拟合、欠拟合、权重衰退"><a href="#过拟合、欠拟合、权重衰退" class="headerlink" title="过拟合、欠拟合、权重衰退"></a>过拟合、欠拟合、权重衰退</h2><h3 id="训练误差和泛化误差"><a href="#训练误差和泛化误差" class="headerlink" title="训练误差和泛化误差"></a>训练误差和泛化误差</h3><p>训练误差：模型在训练数据集上计算得到的误差<br>泛化误差：模型应用在同样从原始样本的分布中抽取的无限多数据样本时，模型误差的期望</p>
+<blockquote>
+<p>我们永远不能准确地计算出泛化误差。这是因为无限多地数据样本是一个虚构的对象。在实际中，我们只能通过将模型应用于一个独立的测试集来估计泛化误差，该测试集由随机选取的、未曾在训练集中出现的数据样本构成</p>
+</blockquote>
+<h3 id="模型复杂度"><a href="#模型复杂度" class="headerlink" title="模型复杂度"></a>模型复杂度</h3><p>几个倾向于影响模型泛化的因素<br>1.可调整参数的数量。当可调整参数的数量（自由度）很大时，模型往往更容易过拟合<br>2.参数采用的值。当权重的取值范围较大时，模型可能更容易过拟合<br>3.训练样本的数量。即使模型很简单，也很容易过拟合只包含一两个样本的数据集。而过拟合一个有数百万个样本的数据集则需要一个极其灵活的模型</p>
+<blockquote>
+<p>正则化是处理过拟合的常用方法：在训练集的损失函数中加入惩罚项，以降低学习到的模型的复杂度</p>
+</blockquote>
+<h2 id="Unet网络"><a href="#Unet网络" class="headerlink" title="Unet网络"></a>Unet网络</h2><p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/14641b79a672">Unet</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/15-%E4%BA%8B%E5%8A%A1%E7%9A%84%E9%9A%94%E7%A6%BB%E7%BA%A7%E5%88%AB/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -765,328 +1007,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/8-%E5%8D%95%E8%A1%A8%E8%AE%BF%E9%97%AE%E6%96%B9%E6%B3%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/8-%E5%8D%95%E8%A1%A8%E8%AE%BF%E9%97%AE%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">8.单表访问方法</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:19:50" itemprop="dateCreated datePublished" datetime="2023-05-27T14:19:50-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<p>const:<br>1.直接利用主键值在聚簇索引中定位对应的用户记录<br>2.根据唯一二级索引列来定位一条记录</p>
-</blockquote>
-<blockquote>
-<p>ref:<br>1.对某个普通的二级索引列与常数进行等值比较<br>2.无论是普通二级索引还是唯一二级索引，索引列值为NULL<br>3.对于某个包含多个索引列的二级索引来说，只要是最左边的连续索引列是与常数的等值比较</p>
-</blockquote>
-<blockquote>
-<p>ref_of_null:<br>1.当我们不仅想找出某个二级索引列的值等于某个常数的记录，还想把列的值为NULL的记录也找出来</p>
-</blockquote>
-<blockquote>
-<p>range:<br>1.利用索引进行范围匹配</p>
-</blockquote>
-<blockquote>
-<p>index:<br>1.直接遍历二级索引记录</p>
-</blockquote>
-<blockquote>
-<p>all:<br>1.全表扫描</p>
-</blockquote>
-<p>优化</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/7-B-%E6%A0%91%E7%B4%A2%E5%BC%95/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/7-B-%E6%A0%91%E7%B4%A2%E5%BC%95/" class="post-title-link" itemprop="url">7.B+树索引</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:19:18" itemprop="dateCreated datePublished" datetime="2023-05-27T14:19:18-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="在没有索引的请况下："><a href="#在没有索引的请况下：" class="headerlink" title="在没有索引的请况下："></a>在没有索引的请况下：</h1><h3 id="在一个页中查找"><a href="#在一个页中查找" class="headerlink" title="在一个页中查找"></a>在一个页中查找</h3><ul>
-<li>以主键为搜索条件<br>可以在页目录中使用二分法快速定位到对应的槽，然后再遍历该槽对应分组中的记录即可快速找到指定的记录。</li>
-<li>以其它列为搜索条件<br>这种情况下只能从最小记录开始依次遍历单链表中的每条记录，然后对比每条记录是不是符合搜索条件。</li>
-</ul>
-<p>###在很多个页中查找</p>
-<blockquote>
-<p>分为两个步骤：<br>1.定位到记录所在的页<br>2.从所在的页内中查找相应的记录</p>
-</blockquote>
-<p>由于我们并不能快速的定位到记录所在的页，所以只能从第一个页沿着双向链表一直往下找，在每一个页中根据我们刚刚介绍过的查找方式去查找指定的记录,当然这种方法是非常耗时的</p>
-<h1 id="索引查找"><a href="#索引查找" class="headerlink" title="索引查找"></a>索引查找</h1><p>一个简单的索引方案</p>
-<ul>
-<li>下一个数据页中用户记录的主键值必须大于上一个页中用户记录的主键值</li>
-<li>给所有页建立一个目录项，每个页对应一个目录项，每个目录项包括下面两个部分（页的用户记录中最小的主键值，我们用key来表示。页号，我们用page_no表示。）</li>
-</ul>
-<p>InnoDB中的索引方案</p>
-<ul>
-<li>InnoDB是使用页来作为管理存储空间的基本单位，也就是最多能保证16KB的连续存储空间，而随着表中记录数量的增多，需要非常大的连续的存储空间才能把所有的目录项都放下，这对记录数量非常多的表是不现实的。</li>
-<li>我们时常会对记录进行增删，假设我们把页28中的记录都删除了，页28也就没有存在的必要了，那意味着目录项2也就没有存在的必要了，这就需要把目录项2后的目录项都向前移动一下，这种牵一发而动全身的设计不是什么好主意～</li>
-</ul>
-<p>所以InnoDB复用了之前存储用户记录的数据页来存储目录项，为了和用户记录做一下区分，我们把这些用来表示目录项的记录称为目录项记录。<br>InnoDB就是通过记录头信息中的record_type来进行区分一条普通的记录是普通用户记录还是目录项记录</p>
-<p>当为这些存储目录项记录的页再生成一个更高级的目录，就像是一个多级目录一样，大目录里嵌套小目录，小目录里才是实际的数据，随着表中记录的增加，这个目录的层级会继续增加，如果简化一下，那么我们可以用下面这个图来描述它：<br><img src="/images/7_1.jpg" alt="QQ截图20221216141803.png"><br>一般情况下，我们用到的B+树都不会超过4层，那我们通过主键值去查找某条记录最多只需要做4个页面内的查找（查找3个目录项页和一个用户记录页），又因为在每个页面内有所谓的Page Directory（页目录），所以在页面内也可以通过二分法实现快速定位记录</p>
-<h3 id="聚簇索引"><a href="#聚簇索引" class="headerlink" title="聚簇索引"></a>聚簇索引</h3><p>我们上面介绍的B+树本身就是一个目录，或者说本身就是一个索引。它有两个特点：</p>
-<p>1.使用记录主键值的大小进行记录和页的排序，这包括三个方面的含义：</p>
-<ul>
-<li>页内的记录是按照主键的大小顺序排成一个单向链表。</li>
-<li>各个存放用户记录的页也是根据页中用户记录的主键大小顺序排成一个双向链表。</li>
-<li>存放目录项记录的页分为不同的层次，在同一层次中的页也是根据页中目录项记录的主键大小顺序排成一个双向链表。</li>
-</ul>
-<p>2.B+树的叶子节点存储的是完整的用户记录。</p>
-<ul>
-<li>所谓完整的用户记录，就是指这个记录中存储了所有列的值（包括隐藏列）。</li>
-</ul>
-<p>具有以上两种特性的B+树称为聚簇索引，所有完整的用户记录都存放在这个聚簇索引的叶子节点处。这种索引不需要通过使用INDEX语句去创建。</p>
-<h3 id="二级索引（辅助索引）"><a href="#二级索引（辅助索引）" class="headerlink" title="二级索引（辅助索引）"></a>二级索引（辅助索引）</h3><p>上面介绍的聚簇索引只能在搜索条件是主键值时才能发挥作用，因为B+树中的数据都是按照主键进行排序的。如果想以别的列作为搜索条件，可以多建立几棵B+树<br>在查找数据的过程中，查找完二级索引后只能获得主键值，仍然需要到聚簇索引中再查一遍，这个过程称为回表</p>
-<h3 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h3><p>我们页可以同时以多个列的大小作为排序规则，也就是同时为多个列建立索引，联合索引的本质上也是一个二级索引。</p>
-<h1 id="B-树索引注意事项"><a href="#B-树索引注意事项" class="headerlink" title="B+树索引注意事项"></a>B+树索引注意事项</h1><h3 id="根页面万年不动窝"><a href="#根页面万年不动窝" class="headerlink" title="根页面万年不动窝"></a>根页面万年不动窝</h3><ul>
-<li>每当为某个表创建一个B+树索引（聚簇索引不是人为创建的，默认就有）的时候，都会为这个索引创建一个根节点页面。最开始表中没有数据的时候，每个B+树索引对应的根节点中既没有用户记录，也没有目录项记录</li>
-<li>随后向表中插入用户记录时，先把用户记录存储到这个根节点中</li>
-<li>当根节点中的可用空间用完时继续插入记录，此时会将根节点中的所有记录复制到一个新的分配页，然后再对这个新页进行页分裂的操作，根节点升级为存储目录项记录的页。</li>
-</ul>
-<h3 id="内节点中目录项记录的唯一性"><a href="#内节点中目录项记录的唯一性" class="headerlink" title="内节点中目录项记录的唯一性"></a>内节点中目录项记录的唯一性</h3><h3 id="一个页面最少存储2条记录"><a href="#一个页面最少存储2条记录" class="headerlink" title="一个页面最少存储2条记录"></a>一个页面最少存储2条记录</h3><h1 id="MyISAM中的索引方案"><a href="#MyISAM中的索引方案" class="headerlink" title="MyISAM中的索引方案"></a>MyISAM中的索引方案</h1><p>将索引和数据分开存储</p>
-<ul>
-<li>将表中的记录按照记录的插入顺序单独村粗在一个文件中，称之为数据文件。可以通过行号快速访问到一条记录</li>
-<li>会将索引信息另外存储到一个称为索引文件的另一个文件中。MyISAM会单独为表的主键创建一个索引，只不过在索引的叶子节点中存储的不是完整的用户记录，而是主键值 + 行号 的组合。先通过索引找到行号，再通过行号去找到对应的记录</li>
-<li>如果有需要的话，我们也可以对其它的列分别建立索引或者建立联合索引，原理和InnoDB中的索引差不多，不过在叶子节点处存储的是相应的列 + 行号。这些索引也全部都是二级索引。</li>
-</ul>
-<h1 id="MySQL中创建和删除索引的语句"><a href="#MySQL中创建和删除索引的语句" class="headerlink" title="MySQL中创建和删除索引的语句"></a>MySQL中创建和删除索引的语句</h1><p>我们可以在创建表的时候指定需要建立索引的单个列或者建立联合索引的多个列：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE TALBE 表名 (</span><br><span class="line">    各种列的信息 ··· , </span><br><span class="line">    [KEY|INDEX] 索引名 (需要被索引的单个列或多个列)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE 表名 ADD [INDEX|KEY] 索引名 (需要被索引的单个列或多个列);</span><br><span class="line">ALTER TABLE 表名 DROP [INDEX|KEY] 索引名;</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/6-InnoDB%E6%95%B0%E6%8D%AE%E9%A1%B5%E7%BB%93%E6%9E%84/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/6-InnoDB%E6%95%B0%E6%8D%AE%E9%A1%B5%E7%BB%93%E6%9E%84/" class="post-title-link" itemprop="url">6.InnoDB数据页结构</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:18:38" itemprop="dateCreated datePublished" datetime="2023-05-27T14:18:38-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="数据页结构图"><a href="#数据页结构图" class="headerlink" title="数据页结构图"></a>数据页结构图</h2><p><img src="/images/6_1.jpg" alt="QQ截图20221212140703.png"></p>
-<blockquote>
-<p>每当我们插入一条记录，都会从Free Space部分，也就是尚未使用的存储空间中申请一个记录大小的空间划分到User Records部分，当Free Space部分的空间全部被User Records部分替代掉之后，也就意味着这个页使用完了，如果还有新的记录插入的话，就需要去申请新的页了</p>
-</blockquote>
-<blockquote>
-<p>为了更好的管理在User Records中的这些记录，行格式中的记录头信息至关重要，以下为compact行格式中的记录头信息</p>
-</blockquote>
-<p><img src="/images/6_2.jpg" alt="QQ截图20221216113033.png"></p>
-<h2 id="页目录（Page-Directory"><a href="#页目录（Page-Directory" class="headerlink" title="页目录（Page Directory)"></a>页目录（Page Directory)</h2><p>1.将所有正常的记录（包括最大和最小记录，不包括标记为已删除的记录）划分为几个组。<br>2.每个组的最后一条记录（也就是组内最大的那条记录）的头信息中的n_owned属性表示该记录拥有多少条记录，也就是该组内共有几条记录。<br>3.将每个组的最后一条记录的地址偏移量单独提取出来按顺序存储到靠近页的尾部的地方，这个地方就是所谓的Page Directory，也就是页目录（此时应该返回头看看页面各个部分的图）。页面目录中的这些地址偏移量被称为槽（英文名：Slot），所以这个页面目录就是由槽组成的。</p>
-<p><img src="/images/6_3.jpg" alt="QQ截图20221216113857.png"></p>
-<blockquote>
-<p>对于最小记录所在的分组只能有 1 条记录，最大记录所在的分组拥有的记录条数只能在 1<del>8 条之间，剩下的分组中记录的条数范围只能在是 4</del>8 条之间。所以分组是按照下面的步骤进行的：</p>
-</blockquote>
-<ul>
-<li>初始情况下一个数据页里只有最小记录和最大记录两条记录，它们分属于两个分组。</li>
-<li>之后每插入一条记录，都会从页目录中找到主键值比本记录的主键值大并且差值最小的槽，然后把该槽对应的记录的n_owned值加1，表示本组内又添加了一条记录，直到该组中的记录数等于8个</li>
-<li>在一个组中的记录数等于8个后再插入一条记录时，会将组中的记录拆分成两个组，一个组中4条记录，另一个5条记录。这个过程会在页目录中新增一个槽来记录这个新增分组中最大的那条记录的偏移量。</li>
-</ul>
-<p>在一个数据页中查找指定主键值的记录的过程分为两步：<br>1.通过二分法确定该记录所在的槽，并找到该槽中主键值最小的那条记录。<br>2.通过记录的next_record属性遍历该槽所在的组中的各个记录。</p>
-<h2 id="页面头部-Page-Header"><a href="#页面头部-Page-Header" class="headerlink" title="页面头部(Page Header)"></a>页面头部(Page Header)</h2><p><img src="/images/6_4.jpg" alt="QQ截图20221216114601.png"></p>
-<h2 id="文件头部（File-Header"><a href="#文件头部（File-Header" class="headerlink" title="文件头部（File Header)"></a>文件头部（File Header)</h2><p><img src="/images/6_5.jpg" alt="QQ截图20221216114854.png"></p>
-<ul>
-<li>FIL_PAGE_TYPE 页的类型<br><img src="/images/6_6.jpg" alt="QQ截图20221216115011.png"></li>
-<li>FIL_PAGE_PREV和FIL_PAGE_NEXT<br>InnoDB都是以页为单位存放数据的，有时候我们存放某种类型的数据占用的空间非常大（比方说一张表中可以有成千上万条记录），InnoDB可能不可以一次性为这么多数据分配一个非常大的存储空间，如果分散到多个不连续的页中存储的话需要把这些页关联起来，FIL_PAGE_PREV和FIL_PAGE_NEXT就分别代表本页的上一个和下一个页的页号。</li>
-</ul>
-<h2 id="FILE-TAILER"><a href="#FILE-TAILER" class="headerlink" title="FILE TAILER"></a>FILE TAILER</h2><p>InnoDB会把数据存储到磁盘上，操作数据时，需要以页为单位将数据移动到内存中，如果该页中的数据在内存中被修改了，那么在修改后的某个时间需要把数据同步到磁盘中。但是在同步了一半的时候中断电了咋办?</p>
-<ul>
-<li>前4个字节代表页的校验和<blockquote>
-<p>这个部分是和File Header中的校验和相对应的。每当一个页面在内存中修改了，在同步之前就要把它的校验和算出来，因为File Header在页面的前面，所以校验和会被首先同步到磁盘，当完全写完时，校验和也会被写到页的尾部，如果完全同步成功，则页的首部和尾部的校验和应该是一致的。如果写了一半儿断电了，那么在File Header中的校验和就代表着已经修改过的页，而在File Trialer中的校验和代表着原先的页，二者不同则意味着同步中间出了错。</p>
-</blockquote>
-</li>
-<li>后4个字节代表页面被最后修改时对应的日志序列位置（LSN）<blockquote>
-<p>这个部分也是为了校验页的完整性的，只不过我们目前还没说LSN是个什么意思，所以大家可以先不用管这个属性。这个File Trailer与File Header类似，都是所有类型的页通用的。</p>
-</blockquote>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1158,7 +1078,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">45</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>

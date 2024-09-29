@@ -1948,4 +1948,68 @@
         <tag>链接、装载与库</tag>
       </tags>
   </entry>
+  <entry>
+    <title>ASLM:Adaptive Single Layer Model for Learned Index</title>
+    <url>/2024/09/28/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/</url>
+    <content><![CDATA[<h3 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h3><p>读写场景</p>
+<h3 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h3><p>Learned Index<br><br>(1)RMI 采用的分区策略没有考虑数据之间的相似性<br><br>(2)RMI 不支持更新</p>
+<p><img src="/../images/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/1.png" alt="img"></p>
+<h3 id="方法："><a href="#方法：" class="headerlink" title="方法："></a>方法：</h3><h4 id="分区算法"><a href="#分区算法" class="headerlink" title="分区算法"></a>分区算法</h4><h5 id="Method1"><a href="#Method1" class="headerlink" title="Method1:"></a>Method1:</h5><p><img src="/../images/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/2.png" alt="img"><br>SLM:这是一个简单的模型，只有一层，这一层包含K个子模型</p>
+<h5 id="Method2："><a href="#Method2：" class="headerlink" title="Method2："></a>Method2：</h5><p><img src="/../images/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/3.png" alt="img"><br>数据点之间三角形面积可替换为欧式距离，用来表示两个数据点之间的相似度</p>
+<h4 id="数据插入："><a href="#数据插入：" class="headerlink" title="数据插入："></a>数据插入：</h4><p><img src="/../images/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/4.png" alt="img"></p>
+<p><img src="/../images/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/5.png" alt="img"></p>
+<h3 id="结果："><a href="#结果：" class="headerlink" title="结果："></a>结果：</h3><p><img src="/../images/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/6.png" alt="img"></p>
+<p><img src="/../images/ASLM-Adaptive-Single-Layer-Model-for-Learned-Index/7.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Dabble:基于中间层的可扩展学习索引技术</title>
+    <url>/2024/09/28/Dabble-%E5%9F%BA%E4%BA%8E%E4%B8%AD%E9%97%B4%E5%B1%82%E7%9A%84%E5%8F%AF%E6%89%A9%E5%B1%95%E5%AD%A6%E4%B9%A0%E7%B4%A2%E5%BC%95%E6%8A%80%E6%9C%AF/</url>
+    <content><![CDATA[<h3 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h3><p>读写场景</p>
+<h3 id="解决方案："><a href="#解决方案：" class="headerlink" title="解决方案："></a>解决方案：</h3><p>提出Dabble模型<br><img src="/../images/Dabble-%E5%9F%BA%E4%BA%8E%E4%B8%AD%E9%97%B4%E5%B1%82%E7%9A%84%E5%8F%AF%E6%89%A9%E5%B1%95%E5%AD%A6%E4%B9%A0%E7%B4%A2%E5%BC%95%E6%8A%80%E6%9C%AF/1.png" alt="img"><br>（1）用K-Means算法把数据集进行聚类，从而划分为K个数据区域，使得每个区域内的数据分布尽可能的一致<br><br>（2）在模型训练阶段，我们对K个数据区域采用前馈神经网络进行学习，并在模型的损失函数中加入数据的访问热度，从而使模型对访问频率高的数据预测率该更加精准<br><br>（3）针对数据插入问题，借鉴LSM树中的延迟更新机制，在内存中开辟一块缓存用来存放新插入的数据，当缓存溢出时一次性将数据进行插入<br><br>（4）针对索引更新问题，提出了一种基于中间层的机制，通过模型解耦的方式缓解了索引带来的消耗</p>
+<h3 id="结果："><a href="#结果：" class="headerlink" title="结果："></a>结果：</h3><p>（1）在 Lognormal 人工数据集上,Dabble 模型的查询性能比 B+树提升了 69%,比学习索引提升了 13%,比 ALEX提升了 8%;内存占用比 B+树减少了 92%,神经网络模型的内存占用比学习索引减少了 99%,<br>比 ALEX 减少了 98%.同时,Dabble 模型的插入性能比 B+树提升了 250%,比 ALEX 提升了 123%; <br><br>（2）在真实数据集 Weblogs 上,Dabble 的查询性能比 B+树提升了 49%,比学习索引提升了 33%,比 ALEX 提升了 9%;内存占用比 B+树减少了 92%,神经网络模型的内存占用比学习索引减少了 99%,比 ALEX 减少了 98%.同时,Dabble 的插入性能比 B+树提升了 400%,比 ALEX 提升了 88%. </p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>EWALI:a Data-aware Learned Index Schema for Efficient Writes</title>
+    <url>/2024/09/28/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/</url>
+    <content><![CDATA[<h3 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h3><p>(1)支持读写工作负载,在重写工作负载中性能表现很好<br><br>(2)使用轻量的light-weight data-aware data partition algorithm构建模型<br><br>(3)当data distribution发生变化，EWALI会自动分裂相关叶子节点，重训练模型<br><br>(4)并采用duel buffer（双缓冲）来处理新数据，并采用延迟更新机制合并数据，提高写入性能<br></p>
+<p>问题描述：<br>（1）RMI不支持写操作，插入新数据导致data distribution变化，需要重训练所有模型<br>（2）RMI构建时采用统一的数据划分策略，没有考虑划分到同一模型中数据的相似性，导致预测不准确</p>
+<h3 id="难点和分析过程："><a href="#难点和分析过程：" class="headerlink" title="难点和分析过程："></a>难点和分析过程：</h3><p>（1）现在支持写操作的方法包括就地插入（gap array，需要移动数据或产生不必要的空间开销）缓冲区插入（发生写入阻塞）<br><br>（2）现存的data-partition-algorithm<br><br>K-means算法（Dabble模型）<br><br>贪心算法（ASLM）<br><br>Piece-wise linear function（PGM-iNDEX  FITing-Tree）</p>
+<p>以上不同的算法有不同的计算开销和误差</p>
+<h3 id="解决方案："><a href="#解决方案：" class="headerlink" title="解决方案："></a>解决方案：</h3><p><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image.png" alt="img"></p>
+<h4 id="Data-partition-algorithm"><a href="#Data-partition-algorithm" class="headerlink" title="Data-partition-algorithm"></a>Data-partition-algorithm</h4><p>考虑lower model error 和 time cost 以及 memory usage选择ShrinkingCone<br><br><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy.png" alt="img"><br><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%202.png" alt="img"></p>
+<h4 id="DARMI-Design"><a href="#DARMI-Design" class="headerlink" title="DARMI Design"></a>DARMI Design</h4><h5 id="Model-Training"><a href="#Model-Training" class="headerlink" title="Model Training:"></a>Model Training:</h5><p>(1)non-leaf node<br>(2)leaf node</p>
+<h5 id="Model-Retraining"><a href="#Model-Retraining" class="headerlink" title="Model Retraining:"></a>Model Retraining:</h5><p>当incremental buffer与segments合并后，改变了数据分布，后台线程被唤醒进行retraining操作</p>
+<h5 id="Node-Split"><a href="#Node-Split" class="headerlink" title="Node Split:"></a>Node Split:</h5><p>当一个Node管辖的data数量超过一定数量时，会产生以下影响<br>1.过多的数据会导致重训练的时候要扫描更多的key，增加训练耗时，降低写性能<br>2.过多的数据也会让线性模型更难去拟合，精准度会下降</p>
+<p>(1)horizontal split<br>Disadvantages: result in lower prediction accuracy of parent model</p>
+<p>(2)Vertical split<br>Disadvantages: increase the height of DARMI, result in high lookup time<br><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%203.png" alt="img"><br>DARMI会动态地选择两种split方式<br><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%204.png" alt="img"><br><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%205.png" alt="img"></p>
+<h5 id="Retrain-DARMI"><a href="#Retrain-DARMI" class="headerlink" title="Retrain DARMI"></a>Retrain DARMI</h5><p>当DARMI的高度达到一个阈值，查找性能退化地过于严重了，需要对root Node进行重训练，<br>将所有的old leaf node的first key用来训练root node的线性模型，DARMI又变成two-layer</p>
+<h4 id="Incremental-Buffer-Design"><a href="#Incremental-Buffer-Design" class="headerlink" title="Incremental Buffer Design"></a>Incremental Buffer Design</h4><p><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%206.png" alt="img"></p>
+<h4 id="DARMI的核心操作"><a href="#DARMI的核心操作" class="headerlink" title="DARMI的核心操作"></a>DARMI的核心操作</h4><p><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%207.png" alt="img"></p>
+<p><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%208.png" alt="img"></p>
+<p><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%209.png" alt="img"></p>
+<p><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%2010.png" alt="img"></p>
+<h3 id="结果："><a href="#结果：" class="headerlink" title="结果："></a>结果：</h3><p>数据集：<br><br>真实数据集（NYCT、OSM） 合成数据集（Lognormal）<br><br>工作负载：<br><br>（1）read-only （2）write-only （3）write-read-balance (50% read 50%write)<br><br>（4）write-heavy(95% write 5% read) （5）read-heavy(95% read 5%write)<br><br>（6）short-ranges(95% range queries 5% write)<br></p>
+<p><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%2011.png" alt="img"><br><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%2012.png" alt="img"><br><img src="/../images/EWALI-a-Data-aware-Learned-Index-Schema-for-Efficient-Writes/image%20copy%2013.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
 </search>
