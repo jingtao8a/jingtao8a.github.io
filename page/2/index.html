@@ -190,6 +190,625 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/04/02/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/" class="post-title-link" itemprop="url">DILI论文重点部分</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-04-02 05:08:10" itemprop="dateCreated datePublished" datetime="2024-04-02T05:08:10-07:00">2024-04-02</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-12 20:46:32" itemprop="dateModified" datetime="2024-04-12T20:46:32-07:00">2024-04-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="DILI：A-Distribution-driven-Learned-Index"><a href="#DILI：A-Distribution-driven-Learned-Index" class="headerlink" title="DILI：A Distribution-driven Learned Index"></a>DILI：A Distribution-driven Learned Index</h2><p>摘要：<br><br>DILI的每个节点（internal node 和 leaf node）都有一个Linear model，并且internal node的key’s range被它的child node均分，当进行key查找时，可以准确地找到对应的leaf node。在leaf node中的linear model是可以准确预测key的位置的。</p>
+<p>为了构建DILI，首先构建一颗bottom-up tree,然后使用这个bottom-up tree，自顶向下构建一个DILI树。DILI在the number of leaf nodes和tree height之间有一个很好的平衡（the number of leaf nodes 和 tree height是影响key搜索时间的关键因素）。设计了灵活的插入和删除算法，并在必要时调整树形结构。</p>
+<p>实验结果表明DILI比其它baseline在不同的workloads上要表现的更好。</p>
+<h3 id="1-INTRODUCTION"><a href="#1-INTRODUCTION" class="headerlink" title="1.INTRODUCTION"></a>1.INTRODUCTION<br></h3><p>RMI：仅支持查找<br><br>ALEX：扩展RMI，在leaf node中使用 gapped array，使用 cost model初始化RMI结构和动态更新RMI结构。存在last-mile问题<br><br>LIPP：解决last-mile问题，但是没有利用data distribution<br><br>DILI-LO：未解决last-mile问题，利用data distribution<br><br>DILI：解决last-mile问题，利用data distribution<br></p>
+<p>构建DILI的目的是实现最好的搜索性能 —&gt; 搜索的开销取决于(1)leaf node的深度(2)leaf  node中的linear model预测的accuracy —&gt; 这两个factors都应该在DILI的构建中被考虑</p>
+<p>因此，提出了一个two-phase bulk loading 方法<br><br><strong>Phase1</strong> -&gt; 使用greedy merging algorithm（考虑到了上面的两个factors） 构建一棵BU-tree（BU-tree的internal node’srange并不是被它的child nodes均分的，因此在BU-tree进行key搜索时，确定child node需要额外的开销）</p>
+<p><strong>Phase2</strong> -&gt;  借鉴BU-tree的结构构建DILI</p>
+<h4 id="Contribution"><a href="#Contribution" class="headerlink" title="Contribution"></a>Contribution</h4><ul>
+<li>提出DILI，algorithms 和它的cost analysis</li>
+<li>构建DILI的two-phase bulk loading 方法</li>
+<li>对DILI的leaf node的local optimization，解决last-mile问题</li>
+<li>对于DILI的insertion和deletion操作提出相应的algorithm来维持查找性能</li>
+<li>在synthetic data和real data上证实DILI的性能</li>
+</ul>
+<h3 id="2-OVERVIEW-OF-DILI"><a href="#2-OVERVIEW-OF-DILI" class="headerlink" title="2.OVERVIEW OF DILI"></a>2.OVERVIEW OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/1.png" alt="img"><br>DILI的结构如Figure 1所示<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/2.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/3.png" alt="img"><br>DILI在没有使用local Optimization的时候SEARCH算法如下，查找key时，锁定了leaf node后需要再进行指数查找来确定position。<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/4.png" alt="img"></p>
+<h4 id="Local-Optimization-strategy"><a href="#Local-Optimization-strategy" class="headerlink" title="Local Optimization strategy"></a>Local Optimization strategy</h4><p>在leaf node中，先用线性模型预测key的position，之后直接将key放到预测的position上，如果发生冲突，就创建一个新的node，对应的entry设置为指向新node的指针</p>
+<h4 id="Updates"><a href="#Updates" class="headerlink" title="Updates"></a>Updates</h4><p>当对DILI插入数据时，如果发生conflict，会创建新的Node，当创建的新Node过多并且退化了查找性能时，需要进行调整策略（在section6会详细描述）</p>
+<h3 id="3-SEARCH-COST-ANALYSIS"><a href="#3-SEARCH-COST-ANALYSIS" class="headerlink" title="3.SEARCH COST ANALYSIS"></a>3.SEARCH COST ANALYSIS</h3><p>Cost Analysis:<br>未使用local optimization strategy<br>Algorithm1由两步组成(1)找到包含search key的leaf node (2)leaf node中的local search<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/5.png" alt="img"></p>
+<h3 id="4-CONSTRUCTION-OF-DILI"><a href="#4-CONSTRUCTION-OF-DILI" class="headerlink" title="4.CONSTRUCTION OF DILI"></a>4.CONSTRUCTION OF DILI</h3><h4 id="4-1Motivation-and-Overall-Idea-of-BU-Tree"><a href="#4-1Motivation-and-Overall-Idea-of-BU-Tree" class="headerlink" title="4.1Motivation and Overall Idea of BU-Tree"></a>4.1Motivation and Overall Idea of BU-Tree</h4><p>DILI的internal node的线性模型有着完美的准确性，因为internal node被它的child nodes均分。—-&gt; 现在有一个问题，如何确定DILI的fanout</p>
+<p>大致思路：<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/6.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/7.png" alt="img"></p>
+<h4 id="4-2-Building-BU-Tree"><a href="#4-2-Building-BU-Tree" class="headerlink" title="4.2 Building BU-Tree"></a>4.2 Building BU-Tree</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/8.png" alt="img"></p>
+<h5 id="4-2-1-Bottom-up-Node-and-Model-Creation"><a href="#4-2-1-Bottom-up-Node-and-Model-Creation" class="headerlink" title="4.2.1 Bottom-up Node and Model Creation"></a>4.2.1 Bottom-up Node and Model Creation</h5><p>构建第0层的leaf node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/9.png" alt="img"><br>已知h - 1层的internal node,构建第h层的internal node<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/10.png" alt="img"></p>
+<h5 id="4-2-2-Determining-Node-Layout-at-A-Height"><a href="#4-2-2-Determining-Node-Layout-at-A-Height" class="headerlink" title="4.2.2 Determining Node Layout at A Height"></a>4.2.2 Determining Node Layout at A Height</h5><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/11.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/12.png" alt="img"></p>
+<p>但是BU-Tree是从下往上创建的，即使创建了第h层的node，我们也不知道BU-Tree的高度</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/13.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/14.png" alt="img"></p>
+<h4 id="4-3-BU-Tree-based-Bulk-loading-for-DILI"><a href="#4-3-BU-Tree-based-Bulk-loading-for-DILI" class="headerlink" title="4.3 BU-Tree based Bulk loading for DILI"></a>4.3 BU-Tree based Bulk loading for DILI</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/15.png" alt="img"></p>
+<h4 id="4-4-Remarks"><a href="#4-4-Remarks" class="headerlink" title="4.4 Remarks"></a>4.4 Remarks</h4><p>Skip ……</p>
+<h3 id="5-LOCAL-OPTIMIZATION-OF-DILI"><a href="#5-LOCAL-OPTIMIZATION-OF-DILI" class="headerlink" title="5. LOCAL OPTIMIZATION OF DILI"></a>5. LOCAL OPTIMIZATION OF DILI</h3><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/16.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/17.png" alt="img"><br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/18.png" alt="img"></p>
+<h3 id="6-DATA-UPDATES-IN-DILI"><a href="#6-DATA-UPDATES-IN-DILI" class="headerlink" title="6. DATA UPDATES IN DILI"></a>6. DATA UPDATES IN DILI</h3><h4 id="6-1-Insertions"><a href="#6-1-Insertions" class="headerlink" title="6.1 Insertions"></a>6.1 Insertions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/19.png" alt="img"><br>P exists标注的地方错误		应设置为notExist  &lt;—  False</p>
+<h4 id="6-2-Deletions"><a href="#6-2-Deletions" class="headerlink" title="6.2 Deletions"></a>6.2 Deletions</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/20.png" alt="img"></p>
+<h3 id="7-EXPERIMENTAL-STUDIES"><a href="#7-EXPERIMENTAL-STUDIES" class="headerlink" title="7.EXPERIMENTAL STUDIES"></a>7.EXPERIMENTAL STUDIES</h3><h4 id="7-1-Experimental-Settings"><a href="#7-1-Experimental-Settings" class="headerlink" title="7.1 Experimental Settings"></a>7.1 Experimental Settings</h4><p>数据集：使用了SOSD benchmark中的4个真实数据集 和 1 个合成数据集</p>
+<ul>
+<li>FB : 200M Facebook 用户id</li>
+<li>WikiTS : 200M 维基百科网站日志条目的唯一请求时间戳</li>
+<li>OSM :  800M OpenStreetMap单元格的id</li>
+<li>Books : 800M Amazon的books的id</li>
+<li>Logn : 200M 从重尾采样的独特值 N(0， 1) 的对数正态分布</li>
+</ul>
+<p>比较的baselines:<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/21.png" alt="img"></p>
+<p>Table 2 总结了所有index的属性特点，更好的表现被加粗了<br><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/22.png" alt="img"></p>
+<p>Evaluation Metrics : <br><br>Lookup —&gt; 平均每次query所用的时间 <br><br>Throughtput —&gt; 平均每second执行的operations的次数（query、insertion、deletion）<br></p>
+<h4 id="7-2-Overall-Query-Performance"><a href="#7-2-Overall-Query-Performance" class="headerlink" title="7.2 Overall Query Performance"></a>7.2 Overall Query Performance</h4><p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/23.png" alt="img"></p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/24.png" alt="img"></p>
+<h4 id="7-3-Performance-on-Different-Workloads"><a href="#7-3-Performance-on-Different-Workloads" class="headerlink" title="7.3 Performance on Different Workloads"></a>7.3 Performance on Different Workloads</h4><p>(1)The Read-only workload: 100M point queries <br><br>(2)The Read-Heavy workload: 50M insertions and 100M point queries <br><br>(3)The Write-Heavy workload: 100M insertions and 50M point queries <br><br>(4)The Write-only workload: 100M insertions <br></p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/25.png" alt="img"></p>
+<h4 id="7-4-Effect-of-Many-Deletions"><a href="#7-4-Effect-of-Many-Deletions" class="headerlink" title="7.4 Effect of Many Deletions"></a>7.4 Effect of Many Deletions</h4><p>(1)Read-Heavy workload : 100M lookups and 50M deletions<br>DILI achieves up to 3.6X, 2.3X, 7.0X and 2.3X higher throughput than B+ Tree,PGM,MassTree and ALEX,respectively.</p>
+<p>(2)Deletion-Heavy workload : 100M deletions and 50M lookups<br>Only ALEX performs a little better than DILI on Logn dataset</p>
+<p><img src="/../images/DILI%E8%AE%BA%E6%96%87%E9%87%8D%E7%82%B9%E9%83%A8%E5%88%86/26.png" alt="img"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/03/16/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" class="post-title-link" itemprop="url">布隆过滤器</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-03-16 02:55:19" itemprop="dateCreated datePublished" datetime="2024-03-16T02:55:19-07:00">2024-03-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-04-02 05:03:05" itemprop="dateModified" datetime="2024-04-02T05:03:05-07:00">2024-04-02</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/" itemprop="url" rel="index"><span itemprop="name">布隆过滤器</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="作用"><a href="#作用" class="headerlink" title="作用"></a>作用</h3><p>查找时，过滤掉一定不存在的key，提高查找效率</p>
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>在数组或者列表中搜索相应值的时候，你必须遍历已有的集合。若集合中存在大量的数据，就会影响查找的效率</p>
+<p>针对这个问题，可以考虑使用哈希表，利用哈希表来对”值”进行哈希处理来获得该值对应的索引值，然后将该”值”存放到列表中对应的索引位置。<br>这意味着判断列表中是否存在该值时，只需要对值进行哈希处理并在相应的索引位置进行搜索即可，这时的搜索速度是非常快的。</p>
+<p><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/1.png" alt="img"></p>
+<p>Bloom Filter本质上是由长度为m的位向量（仅包含0或者1）组成，最初所有值均设置为0，如下图所示：<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/2.png" alt="img"></p>
+<p>为了将数据项添加到布隆过滤器中，使用k个不同的哈希函数对其进行哈希，并将结果位置上对应位置为1</p>
+<h3 id="简单的例子"><a href="#简单的例子" class="headerlink" title="简单的例子"></a>简单的例子</h3><p>输入”semlinker”，预设的3个哈希函数将输出2、4、6,我们把相应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/3.png" alt="img"><br>再输入”kakuqo”，哈希函数输出3、4、7,把对应位置为1<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/4.png" alt="img"><br>再输入”fullstack”,哈希函数输出2、3、7，这时发现相应的索引位都已经置为了1，这意味着我们可以说”fullstack”可能已经插入到集合中。这是一种误判情况<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/5.png" alt="img"></p>
+<p>布隆过滤器有一个可预测的误判率(FPP):<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/6.png" alt="img"></p>
+<ul>
+<li>n是已经添加元素的数量</li>
+<li>k是哈希的次数</li>
+<li>m为布隆过滤器的长度(如比特数组的大小)</li>
+</ul>
+<p>实际情况中，布隆过滤器的长度m可以根据误判率(FFP)的和期望添加的元素个数n的通过如下公式计算:<br><img src="/../images/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8/7.png" alt="img"></p>
+<blockquote>
+<p>因此，我们得出一个结论，当我们搜索一个值的时候，若该值经过k个哈希函数运算后任何一个索引位为0，那么该值肯定不在集合中。但如果所有哈希索引值均为1，则只能说该搜索的值可能存在集合中</p>
+</blockquote>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><p>在实际工作中，布隆过滤器常见的应用场景如下：</p>
+<ul>
+<li>网页爬虫对 URL 去重，避免爬取相同的 URL 地址；</li>
+<li>反垃圾邮件，从数十亿个垃圾邮件列表中判断某邮箱是否垃圾邮箱；</li>
+<li>Google Chrome 使用布隆过滤器识别恶意 URL；</li>
+<li>Medium 使用布隆过滤器避免推荐给用户已经读过的文章；</li>
+<li>Google BigTable，Apache HBbase 和 Apache Cassandra 使用布隆过滤器减少对不存在的行和列的查找</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/" class="post-title-link" itemprop="url">GRE使用手册</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2024-03-04 06:02:31 / Modified: 07:12:51" itemprop="dateCreated datePublished" datetime="2024-03-04T06:02:31-08:00">2024-03-04</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="下载官网地址"><a href="#下载官网地址" class="headerlink" title="下载官网地址:"></a>下载官网地址:<br></h2><p><a target="_blank" rel="noopener" href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
+<h2 id="软件环境"><a href="#软件环境" class="headerlink" title="软件环境"></a>软件环境</h2><p>Ubuntu 20.04.6 LTS<br><br>gcc 9.4.0<br><br>cmake 3.16.3</p>
+<h2 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h2><h3 id="intel-mkl-2018-4-274"><a href="#intel-mkl-2018-4-274" class="headerlink" title="intel-mkl 2018.4.274"></a>intel-mkl 2018.4.274<br></h3><p>这里安装2024的版本也可以<br><br>进入官网 <a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html">https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html</a><br></p>
+<p>选择Linux 和 APT Package Manager<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/3.png" alt="img"><br>依次输入命令<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/1.png" alt="img"><br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/2.png" alt="img"></p>
+<p>默认安装路径如下：<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/4.png" alt="img"></p>
+<p>使用mkl库需要配置环境变量：<br></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">对所有用户生效，需要重启系统</span><br><span class="line">vim /etc/profile</span><br></pre></td></tr></table></figure>
+<p><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/5.png" alt="img"></p>
+<h3 id="intel-tbb-2020-3"><a href="#intel-tbb-2020-3" class="headerlink" title="intel-tbb 2020.3"></a>intel-tbb 2020.3<br></h3><p>tbb库的版本必须使用2020.3<br><br>下载地址<a target="_blank" rel="noopener" href="https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3">https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3</a></p>
+<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">解压</span></span><br><span class="line">tar -zxvf oneTBB-2020_U3.tar.gz</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">因为要使用 gcc-9 进行编译，所以需要编辑成 gcc-9 形式</span></span><br><span class="line">cp build/linux.gcc.inc build/linux.gcc-9.inc </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编辑 linux.gcc-9.inc 文件：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">第15、16行原来是</span></span><br><span class="line">CPLUS ?= g++</span><br><span class="line">CONLY ?= gcc</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为</span></span><br><span class="line">CPLUS ?= g++-9</span><br><span class="line">CONLY ?= gcc-9</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">然后在文件夹 oneTBB-2020_U3/ 中编译</span></span><br><span class="line">cd oneTBB-2020_U3</span><br><span class="line">make compiler=gcc-9 stdver=c++17 tbb_build_prefix=my_tbb_build</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译完成后，在 builld/ 文件夹下会看到编译生成的文件夹 my_tbb_build_release/</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir /usr/local/tbb-2020_U3</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/include /usr/local/tbb-2020_U3/include</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/include/tbb /usr/local/include/tbb</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/build/my_tbb_build_release /usr/local/tbb-2020_U3/lib</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so2</span><br></pre></td></tr></table></figure>
+
+<p>然后把 库文件的路径写入到 ~&#x2F;.bashrc：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export LD_LIBRARY_PATH=/usr/local/tbb-2020_U3/lib:$LD_LIBRARY_PATH&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+<p>参考链接: <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39779233/article/details/126284595">https://blog.csdn.net/qq_39779233&#x2F;article&#x2F;details&#x2F;126284595</a></p>
+<h3 id="jemalloc"><a href="#jemalloc" class="headerlink" title="jemalloc"></a>jemalloc</h3><p>下载地址: <a target="_blank" rel="noopener" href="https://github.com/jemalloc/jemalloc/releases">https://github.com/jemalloc/jemalloc/releases</a></p>
+<h4 id="编译与安装"><a href="#编译与安装" class="headerlink" title="编译与安装"></a>编译与安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 1</span></span><br><span class="line">./autogen.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 2</span></span><br><span class="line">make</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 3</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
+<p>参考链接: <a target="_blank" rel="noopener" href="https://blog.csdn.net/SweeNeil/article/details/94648313">https://blog.csdn.net/SweeNeil/article/details/94648313</a></p>
+<h2 id="USAGE"><a href="#USAGE" class="headerlink" title="USAGE"></a>USAGE</h2><h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --init # only for the first time</span><br><span class="line">mkdir -p build</span><br><span class="line">cd build</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release .. &amp;&amp; make</span><br></pre></td></tr></table></figure>
+<h3 id="RUN"><a href="#RUN" class="headerlink" title="RUN"></a>RUN</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">./build/microbench \</span><br><span class="line">--keys_file=./data/dataset \  // 数据地址</span><br><span class="line">--keys_file_type=&#123;binary,text&#125; \  // 二进制 或者 文本</span><br><span class="line">--read=0.5 --insert=0.5 \ </span><br><span class="line">--operations_num=800000000 \ </span><br><span class="line">--table_size=-1 \ // 所使用的数据的size</span><br><span class="line">--init_table_ratio=0.5 \ //bulk_load所使用的数据的百分比</span><br><span class="line">--thread_num=24 \</span><br><span class="line">--index=index_name \ //测试的索引名称</span><br></pre></td></tr></table></figure>
+
+<p>其它参数见官网:<br><a target="_blank" rel="noopener" href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
+<h3 id="如果要测试新的索引结构"><a href="#如果要测试新的索引结构" class="headerlink" title="如果要测试新的索引结构"></a>如果要测试新的索引结构</h3><h4 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h4><p>src&#x2F;competitor&#x2F;competitor.h<br>get_index函数中添加对应的index_type<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/6.png" alt="img"></p>
+<h4 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h4><p>在 src&#x2F;competitor 下放置源代码 new_index_name&#x2F;src<br>编写接口文件 src&#x2F;competitor&#x2F;new_index_name.h</p>
+<p>以lipp的接口文件为例：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;./src/src/core/lipp.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;../indexInterface.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LIPPInterface</span> : <span class="keyword">public</span> indexInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt; &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">init</span><span class="params">(Param *param = <span class="literal">nullptr</span>)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">bulk_load</span><span class="params">(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">put</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">update</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">remove</span><span class="params">(KEY_TYPE key, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">scan</span><span class="params">(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num, std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span></span></span><br><span class="line"><span class="params"><span class="function">                Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">long</span> <span class="type">long</span> <span class="title">memory_consumption</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> lipp.<span class="built_in">total_size</span>(); &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    LIPP &lt;KEY_TYPE, PAYLOAD_TYPE&gt; lipp;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">void</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">bulk_load</span>(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num,</span><br><span class="line">                                                      Param *param) &#123;</span><br><span class="line">    lipp.<span class="built_in">bulk_load</span>(key_value, <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(num));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">get</span>(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param) &#123;</span><br><span class="line">    <span class="type">bool</span> exist;</span><br><span class="line">    val = lipp.<span class="built_in">at</span>(key, <span class="literal">false</span>, exist);</span><br><span class="line">    <span class="keyword">return</span> exist;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">put</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">insert</span>(key, value);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">update</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">update</span>(key, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">remove</span>(KEY_TYPE key, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">remove</span>(key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">size_t</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">scan</span>(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num,</span><br><span class="line">                                                   std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span><br><span class="line">                                                   Param *param) &#123;</span><br><span class="line">    <span class="keyword">if</span>(!result) &#123;</span><br><span class="line">        result = <span class="keyword">new</span> std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt;[key_num];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">range_query_len</span>(result, key_low_bound, key_num);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/02/29/cmu15445-project4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/02/29/cmu15445-project4/" class="post-title-link" itemprop="url">cmu15445-project4</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-02-29 04:11:36" itemprop="dateCreated datePublished" datetime="2024-02-29T04:11:36-08:00">2024-02-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-03-04 05:59:21" itemprop="dateModified" datetime="2024-03-04T05:59:21-08:00">2024-03-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/cmu15445-2023/" itemprop="url" rel="index"><span itemprop="name">cmu15445-2023</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="Concurrency-Control-Theory"><a href="#Concurrency-Control-Theory" class="headerlink" title="Concurrency Control Theory"></a>Concurrency Control Theory</h2><h3 id="formal-Definitions"><a href="#formal-Definitions" class="headerlink" title="formal Definitions"></a>formal Definitions</h3><p>Database: A fixed set of named data objects (e.g., A, B, C, …)<br>Transaction: A sequence of read and write operations (e.g., R(A), W(B), …)</p>
+<p>transaction的正确性标准ACID：</p>
+<ul>
+<li>Atomicity: 原子性 “all or nothing”</li>
+<li>Consistency: 一致性 “it looks correct to me”</li>
+<li>Isolation: 隔离性 “as if alone”</li>
+<li>Durability: 持久性 “survive failures”</li>
+</ul>
+<h3 id="Conflicting-Operations"><a href="#Conflicting-Operations" class="headerlink" title="Conflicting Operations"></a>Conflicting Operations</h3><p>多个transaction并发执行时会发生冲突:</p>
+<ul>
+<li>读写冲突(R-W)</li>
+<li>写读冲突(W-R)</li>
+<li>写写冲突(W-W)</li>
+</ul>
+<p>读写冲突造成的问题：<br></p>
+<ul>
+<li>不可重复读(在一个事务内多次读取同一个数据，如果出现前后两次读到的数据不一样的情况，就意味着发生了[不可重复读]的现象)</li>
+<li>幻读：在一个事务内多次查询某个符合查询条件的[记录数量]，出现前后两次查询到的记录数量不一样</li>
+</ul>
+<p>写读冲突造成的问题：<br></p>
+<ul>
+<li>脏读(一个事务[读到]了另一个[未提交事务修改过的数据],就意味着发生了[脏读]现象)</li>
+</ul>
+<p>写写冲突造成的问题: <br></p>
+<ul>
+<li>丢失修改</li>
+</ul>
+<p><img src="/../images/cmu15445-project4/2.png" alt="img"><br><img src="/../images/cmu15445-project4/3.png" alt="img"><br><img src="/../images/cmu15445-project4/4.png" alt="img"></p>
+<blockquote>
+<p>MySQL InnoDB引擎的默认隔离级别虽然是[可重复读]，但是它很大程度上避免幻读现象，并没有解决幻读 <a target="_blank" rel="noopener" href="https://xiaolincoding.com/mysql/transaction/phantom.html">参考文章</a><br></p>
+</blockquote>
+<hr>
+<blockquote>
+<p>解决方案有两种:</p>
+<ul>
+<li>普通select语句(快照读),通过MVCC方式解决了幻读问题</li>
+<li>select … for update语句(当前读)，通过next-key lock(记录锁 + 间隙锁)方式解决了幻读</li>
+</ul>
+</blockquote>
+<h3 id="Read-View在MVCC里如何工作的"><a href="#Read-View在MVCC里如何工作的" class="headerlink" title="Read View在MVCC里如何工作的?"></a>Read View在MVCC里如何工作的?</h3><p>Read View有四个重要的字段<br><br>四个字段只有m_ids是一个集合，creator_trx_id在m_ids集合中，<br>min_trx_id是m_ids集合的最小值<br><img src="/../images/cmu15445-project4/5.png" alt="img"></p>
+<p>记录的两个隐藏列<br><img src="/../images/cmu15445-project4/6.png" alt="img"></p>
+<ul>
+<li>trx_id，当一个事务对某条聚簇索引记录进行改动时，就会把该事务的事务 id 记录在 trx_id 隐藏列里；</li>
+<li>roll_pointer，每次对某条聚簇索引记录进行改动时，都会把旧版本的记录写入到 undo 日志中，然后这个隐藏列是个指针，指向每一个旧版本记录，于是就可以通过它找到修改前的记录</li>
+</ul>
+<p>在创建ReadView后，一个事务去访问记录的时候，除了自己的更新记录总是可见之外，还有几种情况：</p>
+<ul>
+<li>如果记录的trx_id小于ReadView的min_trx_id，表示这个版本的记录是在创建 Read View 前已经提交的事务生成的，所以该版本的记录对当前事务可见</li>
+<li>如果记录的trx_id大于等于ReadView中的max_trx_id,表示这个版本的记录是在创建 Read View 后才启动的事务生成的，所以该版本的记录对当前事务不可见</li>
+<li>如果记录的 trx_id 值在 Read View 的 min_trx_id 和 max_trx_id 之间，需要判断 trx_id 是否在 m_ids 列表中：<ul>
+<li>如果记录的 trx_id 在 m_ids 列表中，表示生成该版本记录的活跃事务依然活跃着（还没提交事务），所以该版本的记录对当前事务不可见。</li>
+<li>如果记录的 trx_id 不在 m_ids列表中，表示生成该版本记录的活跃事务已经被提交，所以该版本的记录对当前事务可见。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Two-Phase-Locking-两阶段锁"><a href="#Two-Phase-Locking-两阶段锁" class="headerlink" title="Two Phase Locking 两阶段锁"></a>Two Phase Locking 两阶段锁</h3><p>2PL将事务划分为两个阶段:</p>
+<ul>
+<li>Growing Phase: 只获得锁</li>
+<li>Shrink Phase: 只释放锁</li>
+</ul>
+<p><img src="/../images/cmu15445-project4/7.png" alt="img"><br>2PL本身已经足够保证schedule是seriable的，但2PL可能导致cascading aborts，举例如下:<br><img src="/../images/cmu15445-project4/8.png" alt="img"></p>
+<p>于是引入2PL的增强版变种，Rigorous 2PL，后者每个事务在结束之前，其写过的数据不能被其它事务读取或者重写</p>
+<p><img src="/../images/cmu15445-project4/9.png" alt="img"></p>
+<h3 id="Deadlock-Detection-Prevention"><a href="#Deadlock-Detection-Prevention" class="headerlink" title="Deadlock Detection &amp; Prevention"></a>Deadlock Detection &amp; Prevention</h3><p>2PL 无法避免的一个问题就是死锁，解决方案：<br></p>
+<h4 id="Deadlock-Detection-事后检测"><a href="#Deadlock-Detection-事后检测" class="headerlink" title="Deadlock Detection 事后检测"></a>Deadlock Detection 事后检测</h4><p>为了检测死锁，DBMS 会维护一张 waits-for graph，来跟踪每个事务正在等待 (释放锁) 的其它事务，然后系统会定期地检查 waits-for graph，看其中是否有成环，如果成环了就要决定如何打破这个环。<br><br>waits-for graph 中的节点是事务，从 Ti 到 Tj 的边就表示 Ti 正在等待 Tj 释放锁，举例如下<br><img src="/../images/cmu15445-project4/10.png" alt="img"><br>当 DBMS 检测到死锁时，它会选择一个 “受害者” (事务)，将该事务回滚，打破环形依赖，而这个 “受害者” 将依靠配置或者应用层逻辑重试或中止。这里有两个设计决定：</p>
+<ol>
+<li>检测死锁的频率</li>
+<li>如何选择合适的 “受害者”</li>
+</ol>
+<p>检测死锁的频率越高，陷入死锁的事务等待的时间越短，但消耗的 cpu 也就越多。所以这是个典型的 trade-off，通常有一个调优的参数供用户配置。</p>
+<p>选择 “受害者” 的指标可能有很多：事务持续时间、事务的进度、事务锁住的数据数量、级联事务的数量、事务曾经重启的次数等等。在选择完 “受害者” 后，DBMS 还有一个设计决定需要做：完全回滚还是回滚到足够消除环形依赖即可。</p>
+<h4 id="Deadlock-Prevention-事前阻止"><a href="#Deadlock-Prevention-事前阻止" class="headerlink" title="Deadlock Prevention 事前阻止"></a>Deadlock Prevention 事前阻止</h4><p>通常 prevention 会按照事务的年龄来赋予优先级，事务的时间戳越老，优先级越高。有两种 prevention 的策略： <br></p>
+<ul>
+<li>Old Waits for Young：如果 requesting txn 优先级比 holding txn 更高则等待后者释放锁；更低则自行中止<br></li>
+<li>Young Waits for Old：如果 requesting txn 优先级比 holding txn 更高则后者自行中止释放锁，让前者获取锁，否则 requesting txn 等待 holding txn 释放锁</li>
+</ul>
+<p>举例如下:</p>
+<p><img src="/../images/cmu15445-project4/11.png" alt="img"></p>
+<p>死锁产生的必要条件是<br><br>1.互斥 2.请求与保持 3.不可抢占 4.循环等待<br></p>
+<h2 id="Task-1-Lock-Manager"><a href="#Task-1-Lock-Manager" class="headerlink" title="Task#1 Lock Manager"></a>Task#1 Lock Manager</h2><p>五种锁 S X IS IX SIX<br><img src="/../images/cmu15445-project4/12.png" alt="img"><br>这里只实现三种隔离级别READ_UNCOMMITTED、READ_COMMITTED、REPEATABLE_READ</p>
+<h3 id="LOCK-NOTE"><a href="#LOCK-NOTE" class="headerlink" title="LOCK NOTE"></a>LOCK NOTE</h3><ol>
+<li><p>GENERAL BEHAVIOUR:</p>
+<ul>
+<li>Both LockTable() and LockRow() are blocking methods; they should wait till the lock is granted and then return.</li>
+<li>If the transaction was aborted in the meantime, do not grant the lock and return false.</li>
+</ul>
+</li>
+<li><p>MULTIPLE TRANSACTIONS:</p>
+<ul>
+<li>LockManager should maintain a queue for each resource; locks should be granted to transactions in a FIFO manner.</li>
+<li>If there are multiple compatible lock requests, all should be granted at the same time</li>
+<li>as long as FIFO is honoured.</li>
+</ul>
+</li>
+<li><p>SUPPORTED LOCK MODES:</p>
+<ul>
+<li>Table locking should support all lock modes.</li>
+<li>Row locking should not support Intention locks. Attempting this should set the TransactionState as</li>
+<li>ABORTED and throw a TransactionAbortException (ATTEMPTED_INTENTION_LOCK_ON_ROW)</li>
+</ul>
+</li>
+<li><p>ISOLATION LEVEL:</p>
+<ul>
+<li><p>REPEATABLE_READ:<br><br>  The transaction is required to take all locks.<br>  All locks are allowed in the GROWING state<br>  No locks are allowed in the SHRINKING state</p>
+</li>
+<li><p>READ_COMMITTED:<br><br> The transaction is required to take all locks.<br> All locks are allowed in the GROWING state<br> Only IS, S locks are allowed in the SHRINKING state</p>
+</li>
+<li><p>READ_UNCOMMITTED:<br><br> The transaction is required to take only IX, X locks.<br> X, IX locks are allowed in the GROWING state.<br> S, IS, SIX locks are never allowed</p>
+</li>
+</ul>
+</li>
+<li><p>MULTILEVEL LOCKING:</p>
+<ul>
+<li>While locking rows, Lock() should ensure that the transaction has an appropriate lock on the table which the row</li>
+</ul>
+<p> belongs to. For instance, if an exclusive lock is attempted on a row, the transaction must hold either X, IX, or SIX on the table. If such a lock does not exist on the table, Lock() should set the TransactionState as ABORTED and throw a TransactionAbortException (TABLE_LOCK_NOT_PRESENT)</p>
+</li>
+<li><p>LOCK UPGRADE:<br><br>Calling Lock() on a resource that is already locked should have the following behaviour:    </p>
+<ul>
+<li>If requested lock mode is the same as that of the lock presently held, Lock() should return true since it already has the lock.</li>
+<li>If requested lock mode is different, Lock() should upgrade the lock held by the transaction.<br><br> While upgrading, only the following transitions should be allowed:<br><ol>
+<li>IS -&gt; [S, X, IX, SIX]</li>
+<li>S -&gt; [X, SIX]</li>
+<li>IX -&gt; [X, SIX]</li>
+<li>SIX -&gt; [X]</li>
+</ol>
+</li>
+</ul>
+<ul>
+<li>Any other upgrade is considered incompatible, and such an attempt should set the TransactionState as ABORTED and throw a TransactionAbortException (INCOMPATIBLE_UPGRADE)</li>
+<li>Furthermore, only one transaction should be allowed to upgrade its lock on a given resource. Multiple concurrent lock upgrades on the same resource should set the TransactionState as ABORTED and throw a TransactionAbortException (UPGRADE_CONFLICT).</li>
+</ul>
+</li>
+</ol>
+<h3 id="UNLOCK-NOTE"><a href="#UNLOCK-NOTE" class="headerlink" title="UNLOCK NOTE"></a>UNLOCK NOTE</h3><ol>
+<li>GENERAL BEHAVIOUR:<ul>
+<li>Both UnlockTable() and UnlockRow() should release the lock on the resource and return. Both should ensure that the transaction currently holds a lock on the resource it is attempting to unlock.</li>
+</ul>
+<p>If not, LockManager should set the TransactionState as ABORTED and throw a TransactionAbortException (ATTEMPTED_UNLOCK_BUT_NO_LOCK_HELD)</p>
+<ul>
+<li>Additionally, unlocking a table should only be allowed if the transaction does not hold locks on any row on that table. If the transaction holds locks on rows of the table, Unlock should set the Transaction State as ABORTED and throw a TransactionAbortException (TABLE_UNLOCKED_BEFORE_UNLOCKING_ROWS).</li>
+<li>Finally, unlocking a resource should also grant any new lock requests for the resource (if possible).</li>
+</ul>
+</li>
+<li>TRANSACTION STATE UPDATE<ul>
+<li>REPEATABLE_READ:<br><br>   Unlocking S&#x2F;X locks should set the transaction state to SHRINKING</li>
+<li>READ_COMMITTED:<br><br>   Unlocking X locks should set the transaction state to SHRINKING.<br><br>   Unlocking S locks does not affect transaction state.</li>
+<li>READ_UNCOMMITTED:<br><br>   Unlocking X locks should set the transaction state to SHRINKING.<br><br>   S locks are not permitted under READ_UNCOMMITTED.<br><br>   The behaviour upon unlocking an S lock under this isolation level is undefined.</li>
+</ul>
+</li>
+</ol>
+<p><br><br><br></p>
+<ul>
+<li>LockTable(Transaction, LockMode, TableOID)</li>
+<li>UnlockTable(Transction, TableOID)</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::LockTable</span><span class="params">(Transaction *txn, LockMode lock_mode, <span class="type">const</span> <span class="type">table_oid_t</span> &amp;oid)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">LockTableDirectlyOrNot</span>(txn, lock_mode, oid, <span class="literal">true</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::LockTableDirectlyOrNot</span><span class="params">(Transaction *txn, LockMode lock_mode, <span class="type">const</span> <span class="type">table_oid_t</span> &amp;oid, <span class="type">bool</span> directly)</span></span></span><br><span class="line"><span class="function">    -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> txn_state = txn-&gt;<span class="built_in">GetState</span>();</span><br><span class="line">  <span class="keyword">auto</span> iso_level = txn-&gt;<span class="built_in">GetIsolationLevel</span>();</span><br><span class="line">  <span class="keyword">if</span> (txn_state == TransactionState::COMMITTED || txn_state == TransactionState::ABORTED) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;<span class="comment">//事务已经提交或终止，返回false</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">switch</span> (iso_level) &#123;</span><br><span class="line">    <span class="keyword">case</span> IsolationLevel::REPEATABLE_READ:</span><br><span class="line">      <span class="keyword">if</span> (txn_state == TransactionState::SHRINKING) &#123;<span class="comment">//REPEATABLE_READ级别下,SHRINKING阶段不可加锁</span></span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_ON_SHRINKING, directly);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IsolationLevel::READ_COMMITTED:</span><br><span class="line">      <span class="keyword">if</span> (txn_state == TransactionState::SHRINKING) &#123;</span><br><span class="line">        <span class="comment">//READ_COMMITTED级别下，SHRINGKING阶段只可加IS、S锁</span></span><br><span class="line">        <span class="keyword">if</span> (lock_mode != LockMode::INTENTION_SHARED &amp;&amp; lock_mode != LockMode::SHARED) &#123;</span><br><span class="line">          <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_ON_SHRINKING, directly);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IsolationLevel::READ_UNCOMMITTED:</span><br><span class="line">      <span class="comment">//READ_UNCOMMITTED级别下,SHRINKING阶段不可加锁</span></span><br><span class="line">      <span class="keyword">if</span> (txn_state == TransactionState::SHRINKING) &#123;</span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_ON_SHRINKING, directly);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//READ_UNCOMMITTED级别下,只可以加IX和X锁</span></span><br><span class="line">      <span class="keyword">if</span> (lock_mode != LockMode::INTENTION_EXCLUSIVE &amp;&amp; lock_mode != LockMode::EXCLUSIVE) &#123;</span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_SHARED_ON_READ_UNCOMMITTED, directly);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="built_in">UNREACHABLE</span>(<span class="string">&quot;wrong IsolationLevel&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  table_lock_map_latch_.<span class="built_in">lock</span>();</span><br><span class="line">  <span class="keyword">if</span> (table_lock_map_.<span class="built_in">count</span>(oid) == <span class="number">0</span>) &#123;</span><br><span class="line">    table_lock_map_[oid] = std::<span class="built_in">make_shared</span>&lt;LockRequestQueue&gt;();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> lrq = table_lock_map_[oid];<span class="comment">//拿到该table的LockRequestQueue</span></span><br><span class="line">  <span class="function">std::unique_lock&lt;std::mutex&gt; <span class="title">lock</span><span class="params">(lrq-&gt;latch_)</span></span>;</span><br><span class="line">  table_lock_map_latch_.<span class="built_in">unlock</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 检查此锁的请求是否为一次锁升级</span></span><br><span class="line">  <span class="type">bool</span> upgrade = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> iter = lrq-&gt;request_queue_.<span class="built_in">begin</span>(); iter != lrq-&gt;request_queue_.<span class="built_in">end</span>(); iter++) &#123;<span class="comment">//遍历LockRequestQueue</span></span><br><span class="line">    <span class="keyword">auto</span> lr = *iter;</span><br><span class="line">    <span class="keyword">if</span> (lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;  <span class="comment">// 同一个事务对相同table请求加锁</span></span><br><span class="line">      <span class="keyword">if</span> (lr-&gt;lock_mode_ == lock_mode) &#123;           <span class="comment">// 加锁的类型相同,直接返回</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (lrq-&gt;upgrading_ != INVALID_TXN_ID) &#123;  <span class="comment">// 有事务正在对该resource进行锁升级</span></span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::UPGRADE_CONFLICT, directly);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (!<span class="built_in">CanLockUpgrade</span>(lr-&gt;lock_mode_, lock_mode)) &#123;  <span class="comment">// 不能够进行锁升级</span></span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::INCOMPATIBLE_UPGRADE, directly);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//锁升级</span></span><br><span class="line">      lrq-&gt;upgrading_ = txn-&gt;<span class="built_in">GetTransactionId</span>();</span><br><span class="line">      lrq-&gt;request_queue_.<span class="built_in">erase</span>(iter);<span class="comment">//将lr从LockRequestQueue中删除</span></span><br><span class="line">      <span class="built_in">RemoveFromTxnTableLockSet</span>(txn, lr-&gt;lock_mode_, oid);<span class="comment">//将txn事务持有该table的锁删除</span></span><br><span class="line">      <span class="keyword">delete</span> lr;  <span class="comment">// 防止内存泄露</span></span><br><span class="line">      lrq-&gt;request_queue_.<span class="built_in">push_back</span>(<span class="keyword">new</span> <span class="built_in">LockRequest</span>(txn-&gt;<span class="built_in">GetTransactionId</span>(), lock_mode, oid));<span class="comment">//加入LockRequest</span></span><br><span class="line">      upgrade = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 不是锁升级</span></span><br><span class="line">  <span class="keyword">if</span> (!upgrade) &#123;</span><br><span class="line">    lrq-&gt;request_queue_.<span class="built_in">push_back</span>(<span class="keyword">new</span> <span class="built_in">LockRequest</span>(txn-&gt;<span class="built_in">GetTransactionId</span>(), lock_mode, oid));<span class="comment">//加入LockRequest</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (!<span class="built_in">CanTxnTakeLock</span>(txn, lock_mode, lrq)) &#123;<span class="comment">//判断是否可以给改Table加锁</span></span><br><span class="line">    lrq-&gt;cv_.<span class="built_in">wait</span>(lock);<span class="comment">//互斥阻塞</span></span><br><span class="line">    <span class="comment">// 可能死锁检测将该事务ABORTED 或者 手动ABORT该事务</span></span><br><span class="line">    <span class="keyword">if</span> (txn-&gt;<span class="built_in">GetState</span>() == TransactionState::ABORTED) &#123;</span><br><span class="line">      <span class="comment">// 删除该事务对该资源的request</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">auto</span> iter = lrq-&gt;request_queue_.<span class="built_in">begin</span>(); iter != lrq-&gt;request_queue_.<span class="built_in">end</span>(); iter++) &#123;</span><br><span class="line">        <span class="keyword">auto</span> lr = *iter;</span><br><span class="line">        <span class="keyword">if</span> (lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;</span><br><span class="line">          lrq-&gt;request_queue_.<span class="built_in">erase</span>(iter);</span><br><span class="line">          <span class="keyword">delete</span> lr;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      lrq-&gt;cv_.<span class="built_in">notify_all</span>();</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">AddIntoTxnTableLockSet</span>(txn, lock_mode, oid);<span class="comment">//该Table获得锁</span></span><br><span class="line">  <span class="comment">// LOG_DEBUG(&quot;txn:%d LockTable %d lock_mode:%d&quot;, txn-&gt;GetTransactionId(), oid, lock_mode);</span></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::CanTxnTakeLock</span><span class="params">(Transaction *txn, LockMode lock_mode,</span></span></span><br><span class="line"><span class="params"><span class="function">                                 std::shared_ptr&lt;LockRequestQueue&gt; &amp;lock_request_queue)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> lr : lock_request_queue-&gt;request_queue_) &#123;</span><br><span class="line">    <span class="keyword">if</span> (lr-&gt;granted_ &amp;&amp; !<span class="built_in">AreLocksCompatible</span>(lock_mode, lr-&gt;lock_mode_)) &#123;  <span class="comment">// 存在锁冲突</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 锁升级优先级最高</span></span><br><span class="line">  <span class="keyword">if</span> (lock_request_queue-&gt;upgrading_ != INVALID_TXN_ID) &#123;</span><br><span class="line">    <span class="keyword">if</span> (lock_request_queue-&gt;upgrading_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;  <span class="comment">// 事务进行锁升级</span></span><br><span class="line">      lock_request_queue-&gt;upgrading_ = INVALID_TXN_ID;</span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">auto</span> lr : lock_request_queue-&gt;request_queue_) &#123;</span><br><span class="line">        <span class="keyword">if</span> (!lr-&gt;granted_ &amp;&amp; lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;</span><br><span class="line">          lr-&gt;granted_ = <span class="literal">true</span>;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;  <span class="comment">// 进行锁升级的是其它事务,那么该事务需要等待</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 遵循FIFO规则</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> lr : lock_request_queue-&gt;request_queue_) &#123;</span><br><span class="line">    <span class="keyword">if</span> (lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;</span><br><span class="line">      lr-&gt;granted_ = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!lr-&gt;granted_ &amp;&amp; !<span class="built_in">AreLocksCompatible</span>(lock_mode, lr-&gt;lock_mode_)) &#123;  <span class="comment">// 锁冲突</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::UnlockTable</span><span class="params">(Transaction *txn, <span class="type">const</span> <span class="type">table_oid_t</span> &amp;oid)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">CheckAllRowsUnLock</span>(txn, oid)) &#123;<span class="comment">//检查该Table下的所有row的锁是否释放</span></span><br><span class="line">    <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::TABLE_UNLOCKED_BEFORE_UNLOCKING_ROWS, <span class="literal">true</span>);<span class="comment">//抛出异常</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  table_lock_map_latch_.<span class="built_in">lock</span>();</span><br><span class="line">  <span class="keyword">if</span> (table_lock_map_.<span class="built_in">count</span>(oid) == <span class="number">0</span>) &#123;</span><br><span class="line">    table_lock_map_latch_.<span class="built_in">unlock</span>();</span><br><span class="line">    <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::ATTEMPTED_UNLOCK_BUT_NO_LOCK_HELD, <span class="literal">true</span>);<span class="comment">//该table未加锁</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> lrq = table_lock_map_[oid];</span><br><span class="line">  <span class="function">std::unique_lock&lt;std::mutex&gt; <span class="title">lock</span><span class="params">(lrq-&gt;latch_)</span></span>;</span><br><span class="line">  table_lock_map_latch_.<span class="built_in">unlock</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> iter = lrq-&gt;request_queue_.<span class="built_in">begin</span>(); iter != lrq-&gt;request_queue_.<span class="built_in">end</span>(); ++iter) &#123;</span><br><span class="line">    <span class="keyword">auto</span> lr = *iter;</span><br><span class="line">    <span class="keyword">if</span> (lr-&gt;granted_ &amp;&amp; lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;<span class="comment">//找到该事务对该table的LockRequest</span></span><br><span class="line">      <span class="keyword">auto</span> iso_level = txn-&gt;<span class="built_in">GetIsolationLevel</span>();</span><br><span class="line">      <span class="keyword">switch</span> (iso_level) &#123;</span><br><span class="line">        <span class="keyword">case</span> IsolationLevel::REPEATABLE_READ:</span><br><span class="line">          <span class="keyword">if</span> (lr-&gt;lock_mode_ == LockMode::SHARED || lr-&gt;lock_mode_ == LockMode::EXCLUSIVE) &#123;</span><br><span class="line">            txn-&gt;<span class="built_in">SetState</span>(TransactionState::SHRINKING);</span><br><span class="line">            <span class="comment">// LOG_DEBUG(&quot;txn:%d be set SHRINGKING&quot;, txn-&gt;GetTransactionId());</span></span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> IsolationLevel::READ_COMMITTED:</span><br><span class="line">        <span class="keyword">case</span> IsolationLevel::READ_UNCOMMITTED:</span><br><span class="line">          <span class="keyword">if</span> (lr-&gt;lock_mode_ == LockMode::EXCLUSIVE) &#123;</span><br><span class="line">            txn-&gt;<span class="built_in">SetState</span>(TransactionState::SHRINKING);</span><br><span class="line">          &#125;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">          <span class="built_in">UNREACHABLE</span>(<span class="string">&quot;wrong IsolationLevel&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="built_in">RemoveFromTxnTableLockSet</span>(txn, lr-&gt;lock_mode_, oid);</span><br><span class="line">      <span class="comment">// LOG_DEBUG(&quot;txn:%d UnlockTable %d&quot;, txn-&gt;GetTransactionId(), oid);</span></span><br><span class="line">      lrq-&gt;request_queue_.<span class="built_in">erase</span>(iter);</span><br><span class="line">      <span class="keyword">delete</span> lr;</span><br><span class="line">      lrq-&gt;cv_.<span class="built_in">notify_all</span>();<span class="comment">//资源释放，cv_进行notify</span></span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::ATTEMPTED_UNLOCK_BUT_NO_LOCK_HELD, <span class="literal">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>LockRow(Transaction, LockMode, TableOID, RID)</li>
+<li>UnlockRow(Transaction, TableOID, RID, force)<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::LockRow</span><span class="params">(Transaction *txn, LockMode lock_mode, <span class="type">const</span> <span class="type">table_oid_t</span> &amp;oid, <span class="type">const</span> RID &amp;rid)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">    <span class="comment">//row只能加S和E锁</span></span><br><span class="line">  <span class="keyword">if</span> (lock_mode != LockMode::SHARED &amp;&amp; lock_mode != LockMode::EXCLUSIVE) &#123;</span><br><span class="line">    <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::ATTEMPTED_INTENTION_LOCK_ON_ROW, <span class="literal">true</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">auto</span> txn_state = txn-&gt;<span class="built_in">GetState</span>();</span><br><span class="line">  <span class="keyword">auto</span> iso_level = txn-&gt;<span class="built_in">GetIsolationLevel</span>();</span><br><span class="line">  <span class="keyword">if</span> (txn_state == TransactionState::COMMITTED || txn_state == TransactionState::ABORTED) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">switch</span> (iso_level) &#123;</span><br><span class="line">    <span class="keyword">case</span> IsolationLevel::REPEATABLE_READ:</span><br><span class="line">    <span class="comment">//REPEATABLE_READ级别下SHRINKING阶段不可以加锁</span></span><br><span class="line">      <span class="keyword">if</span> (txn_state == TransactionState::SHRINKING) &#123;</span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_ON_SHRINKING, <span class="literal">true</span>);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IsolationLevel::READ_COMMITTED:</span><br><span class="line">    <span class="comment">//READ_COMMITTED级别下SHRINKING阶段只能给row加SHARED锁</span></span><br><span class="line">      <span class="keyword">if</span> (txn_state == TransactionState::SHRINKING) &#123;</span><br><span class="line">        <span class="keyword">if</span> (lock_mode != LockMode::SHARED) &#123;</span><br><span class="line">          <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_ON_SHRINKING, <span class="literal">true</span>);<span class="comment">//抛出异常</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> IsolationLevel::READ_UNCOMMITTED:</span><br><span class="line">    <span class="comment">//READ_UNCOMMITTED级别下SHRINKING阶段不能加锁</span></span><br><span class="line">      <span class="keyword">if</span> (txn_state == TransactionState::SHRINKING) &#123;</span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_ON_SHRINKING, <span class="literal">true</span>);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//READ_UNCOMMITTED级别下，只能给row加X锁</span></span><br><span class="line">      <span class="keyword">if</span> (lock_mode != LockMode::EXCLUSIVE) &#123;</span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::LOCK_SHARED_ON_READ_UNCOMMITTED, <span class="literal">true</span>);<span class="comment">//抛出异常</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="built_in">UNREACHABLE</span>(<span class="string">&quot;wrong IsolationLevel&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!<span class="built_in">CheckAppropriateLockOnTable</span>(txn, oid, lock_mode)) &#123;<span class="comment">//查看该row的Table是否加锁</span></span><br><span class="line">    <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::TABLE_LOCK_NOT_PRESENT, <span class="literal">true</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  row_lock_map_latch_.<span class="built_in">lock</span>();</span><br><span class="line">  <span class="keyword">if</span> (row_lock_map_.<span class="built_in">count</span>(rid) == <span class="number">0</span>) &#123;</span><br><span class="line">    row_lock_map_[rid] = std::<span class="built_in">make_shared</span>&lt;LockRequestQueue&gt;();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> lrq = row_lock_map_[rid];</span><br><span class="line">  <span class="function">std::unique_lock&lt;std::mutex&gt; <span class="title">lock</span><span class="params">(lrq-&gt;latch_)</span></span>;</span><br><span class="line">  row_lock_map_latch_.<span class="built_in">unlock</span>();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 检查是否是一次锁升级(S-&gt;X)</span></span><br><span class="line">  <span class="type">bool</span> upgrade = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> iter = lrq-&gt;request_queue_.<span class="built_in">begin</span>(); iter != lrq-&gt;request_queue_.<span class="built_in">end</span>(); iter++) &#123;</span><br><span class="line">    <span class="keyword">auto</span> lr = *iter;</span><br><span class="line">    <span class="keyword">if</span> (lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (lr-&gt;lock_mode_ == lock_mode) &#123;  <span class="comment">// 重复的锁</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (lrq-&gt;upgrading_ != INVALID_TXN_ID) &#123;  <span class="comment">// 抛出 UPGRADE_CONFLICT 异常</span></span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::UPGRADE_CONFLICT, <span class="literal">true</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">if</span> (!<span class="built_in">CanLockUpgrade</span>(lr-&gt;lock_mode_, lock_mode)) &#123;  <span class="comment">// 抛 INCOMPATIBLE_UPGRADE 异常</span></span><br><span class="line">        <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::INCOMPATIBLE_UPGRADE, <span class="literal">true</span>);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      lrq-&gt;upgrading_ = txn-&gt;<span class="built_in">GetTransactionId</span>();</span><br><span class="line">      lrq-&gt;request_queue_.<span class="built_in">erase</span>(iter);</span><br><span class="line">      <span class="built_in">RemoveFromTxnRowLockSet</span>(txn, lr-&gt;lock_mode_, oid, rid);</span><br><span class="line">      <span class="keyword">delete</span> lr;</span><br><span class="line">      lrq-&gt;request_queue_.<span class="built_in">push_back</span>(<span class="keyword">new</span> <span class="built_in">LockRequest</span>(txn-&gt;<span class="built_in">GetTransactionId</span>(), lock_mode, oid, rid));</span><br><span class="line">      upgrade = <span class="literal">true</span>;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!upgrade) &#123;</span><br><span class="line">    lrq-&gt;request_queue_.<span class="built_in">push_back</span>(<span class="keyword">new</span> <span class="built_in">LockRequest</span>(txn-&gt;<span class="built_in">GetTransactionId</span>(), lock_mode, oid, rid));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (!<span class="built_in">CanTxnTakeLock</span>(txn, lock_mode, lrq)) &#123;</span><br><span class="line">    lrq-&gt;cv_.<span class="built_in">wait</span>(lock);</span><br><span class="line">    <span class="comment">// LOG_DEBUG(&quot;txn:%d wake&quot;, txn-&gt;GetTransactionId());</span></span><br><span class="line">    <span class="comment">// 死锁检测ABORT该事务 或者 手动ABORT该事务</span></span><br><span class="line">    <span class="keyword">if</span> (txn-&gt;<span class="built_in">GetState</span>() == TransactionState::ABORTED) &#123;</span><br><span class="line">      <span class="comment">// LOG_DEBUG(&quot;txn:%d ABORT&quot;, txn-&gt;GetTransactionId());</span></span><br><span class="line">      <span class="comment">// 移除该事务对该资源的request</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">auto</span> iter = lrq-&gt;request_queue_.<span class="built_in">begin</span>(); iter != lrq-&gt;request_queue_.<span class="built_in">end</span>(); iter++) &#123;</span><br><span class="line">        <span class="keyword">auto</span> lr = *iter;</span><br><span class="line">        <span class="keyword">if</span> (lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;</span><br><span class="line">          lrq-&gt;request_queue_.<span class="built_in">erase</span>(iter);</span><br><span class="line">          <span class="keyword">delete</span> lr;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      lrq-&gt;cv_.<span class="built_in">notify_all</span>();</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">AddIntoTxnRowLockSet</span>(txn, lock_mode, oid, rid);</span><br><span class="line">  <span class="comment">// LOG_DEBUG(&quot;txn:%d LockRow oid:%d rid:%d:%d lock_mode:%d&quot;, txn-&gt;GetTransactionId(), oid, rid.GetPageId(),</span></span><br><span class="line">  <span class="comment">// rid.GetSlotNum(), lock_mode);</span></span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::UnlockRow</span><span class="params">(Transaction *txn, <span class="type">const</span> <span class="type">table_oid_t</span> &amp;oid, <span class="type">const</span> RID &amp;rid, <span class="type">bool</span> force)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  row_lock_map_latch_.<span class="built_in">lock</span>();</span><br><span class="line">  <span class="keyword">if</span> (row_lock_map_.<span class="built_in">count</span>(rid) == <span class="number">0</span>) &#123;</span><br><span class="line">    row_lock_map_latch_.<span class="built_in">unlock</span>();</span><br><span class="line">    <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::ATTEMPTED_UNLOCK_BUT_NO_LOCK_HELD, <span class="literal">true</span>);<span class="comment">//该row未加锁抛出异常</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">auto</span> lrq = row_lock_map_[rid];</span><br><span class="line">  <span class="function">std::unique_lock&lt;std::mutex&gt; <span class="title">lock</span><span class="params">(lrq-&gt;latch_)</span></span>;</span><br><span class="line">  row_lock_map_latch_.<span class="built_in">unlock</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> iter = lrq-&gt;request_queue_.<span class="built_in">begin</span>(); iter != lrq-&gt;request_queue_.<span class="built_in">end</span>(); ++iter) &#123;</span><br><span class="line">    <span class="keyword">auto</span> lr = *iter;</span><br><span class="line">    <span class="keyword">if</span> (lr-&gt;granted_ &amp;&amp; lr-&gt;txn_id_ == txn-&gt;<span class="built_in">GetTransactionId</span>()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!force) &#123;</span><br><span class="line">        <span class="keyword">auto</span> iso_level = txn-&gt;<span class="built_in">GetIsolationLevel</span>();</span><br><span class="line">        <span class="keyword">switch</span> (iso_level) &#123;</span><br><span class="line">          <span class="keyword">case</span> IsolationLevel::REPEATABLE_READ:</span><br><span class="line">            <span class="keyword">if</span> (lr-&gt;lock_mode_ == LockMode::SHARED || lr-&gt;lock_mode_ == LockMode::EXCLUSIVE) &#123;</span><br><span class="line">              txn-&gt;<span class="built_in">SetState</span>(TransactionState::SHRINKING);</span><br><span class="line">              <span class="comment">// LOG_DEBUG(&quot;txn:%d be set SHRINGKING&quot;, txn-&gt;GetTransactionId());</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">          <span class="keyword">case</span> IsolationLevel::READ_COMMITTED:</span><br><span class="line">          <span class="keyword">case</span> IsolationLevel::READ_UNCOMMITTED:</span><br><span class="line">            <span class="keyword">if</span> (lr-&gt;lock_mode_ == LockMode::EXCLUSIVE) &#123;</span><br><span class="line">              txn-&gt;<span class="built_in">SetState</span>(TransactionState::SHRINKING);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">          <span class="keyword">default</span>:</span><br><span class="line">            <span class="built_in">UNREACHABLE</span>(<span class="string">&quot;wrong IsolationLevel&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="built_in">RemoveFromTxnRowLockSet</span>(txn, lr-&gt;lock_mode_, oid, rid);</span><br><span class="line">      <span class="comment">// LOG_DEBUG(&quot;txn:%d UnlockRow oid:%d rid:%d:%d&quot;, txn-&gt;GetTransactionId(), oid, rid.GetPageId(),</span></span><br><span class="line">      <span class="comment">// rid.GetSlotNum());</span></span><br><span class="line">      lrq-&gt;request_queue_.<span class="built_in">erase</span>(iter);</span><br><span class="line">      <span class="keyword">delete</span> lr;</span><br><span class="line">      lrq-&gt;cv_.<span class="built_in">notify_all</span>();</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">ABORT_FOR_REASON_DIRECTLY_OR_NOT</span>(AbortReason::ATTEMPTED_UNLOCK_BUT_NO_LOCK_HELD, <span class="literal">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="Task-2-Deadlock-Detection"><a href="#Task-2-Deadlock-Detection" class="headerlink" title="Task #2 - Deadlock Detection"></a>Task #2 - Deadlock Detection</h2><p>锁管理器应该在后台线程中运行死锁检测，定期构建等待图并根据需要中止事务以消除死锁。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//给LockManger添加死锁检测所需的数据成员</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LockManager</span> &#123;</span><br><span class="line">  std::atomic&lt;<span class="type">bool</span>&gt; enable_cycle_detection_;</span><br><span class="line">  std::thread *cycle_detection_thread_;</span><br><span class="line">  <span class="comment">/** Waits-for graph representation. */</span></span><br><span class="line">  std::map&lt;<span class="type">txn_id_t</span>, std::set&lt;<span class="type">txn_id_t</span>&gt;&gt; waits_for_;</span><br><span class="line">  <span class="comment">// std::unordered_map&lt;txn_id_t, int&gt; node_value_;</span></span><br><span class="line">  <span class="comment">// std::vector&lt;txn_id_t&gt; route_;</span></span><br><span class="line">  std::vector&lt;<span class="type">txn_id_t</span>&gt; stk_;</span><br><span class="line">  std::unordered_map&lt;<span class="type">txn_id_t</span>, <span class="type">bool</span>&gt; in_stk_;</span><br><span class="line">  std::unordered_map&lt;<span class="type">txn_id_t</span>, <span class="type">bool</span>&gt; has_search_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>开启死锁检测的后台线程<br><img src="/../images/cmu15445-project4/13.png" alt="img"></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">LockManager::RunCycleDetection</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">while</span> (enable_cycle_detection_) &#123;</span><br><span class="line">    std::this_thread::<span class="built_in">sleep_for</span>(cycle_detection_interval);</span><br><span class="line">    &#123;</span><br><span class="line">      waits_for_.<span class="built_in">clear</span>();</span><br><span class="line">      <span class="built_in">BuildGraph</span>();<span class="comment">//构建等待图</span></span><br><span class="line">      <span class="comment">// PrintGraph();</span></span><br><span class="line">      <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">        stk_.<span class="built_in">clear</span>();</span><br><span class="line">        in_stk_.<span class="built_in">clear</span>();</span><br><span class="line">        has_search_.<span class="built_in">clear</span>();</span><br><span class="line">        <span class="type">txn_id_t</span> abort_tid;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">HasCycle</span>(&amp;abort_tid)) &#123;<span class="comment">//判断是否有环，如果有获取abort_id</span></span><br><span class="line">          <span class="comment">// LOG_DEBUG(&quot;abort_tid:%d&quot;, abort_tid);</span></span><br><span class="line">          <span class="keyword">auto</span> txn = txn_manager_-&gt;<span class="built_in">GetTransaction</span>(abort_tid);</span><br><span class="line">          txn-&gt;<span class="built_in">SetState</span>(TransactionState::ABORTED);</span><br><span class="line">          <span class="built_in">RemoveAllAboutAbortTxn</span>(abort_tid);<span class="comment">//删除有向图中该abort_tid的所有入边和出边</span></span><br><span class="line">          <span class="built_in">WakeAbortedTxn</span>(abort_tid);<span class="comment">//该abort_tid的事务所占有的资源的cv_进行notify_all</span></span><br><span class="line">          <span class="comment">// LOG_DEBUG(&quot;dead_detect notify all&quot;);</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//HasCycle函数判断是否有环，并且返回环中最大的txn_id</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::HasCycle</span><span class="params">(<span class="type">txn_id_t</span> *txn_id)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> std::<span class="built_in">any_of</span>(waits_for_.<span class="built_in">begin</span>(), waits_for_.<span class="built_in">end</span>(),</span><br><span class="line">                     [<span class="keyword">this</span>, txn_id](<span class="type">const</span> std::pair&lt;<span class="type">txn_id_t</span>, std::set&lt;<span class="type">txn_id_t</span>&gt;&gt; &amp;p) &#123;</span><br><span class="line">                       <span class="keyword">auto</span> k = p.first;</span><br><span class="line">                       <span class="keyword">if</span> (!<span class="keyword">this</span>-&gt;has_search_[k] &amp;&amp; <span class="built_in">DFS</span>(k)) &#123;</span><br><span class="line">                         <span class="keyword">auto</span> iter = std::<span class="built_in">find</span>(<span class="keyword">this</span>-&gt;stk_.<span class="built_in">begin</span>(), <span class="keyword">this</span>-&gt;stk_.<span class="built_in">end</span>() - <span class="number">1</span>, <span class="keyword">this</span>-&gt;stk_.<span class="built_in">back</span>());</span><br><span class="line">                         *txn_id = <span class="number">-1</span>;</span><br><span class="line">                         <span class="keyword">while</span> (iter != <span class="keyword">this</span>-&gt;stk_.<span class="built_in">end</span>()) &#123;</span><br><span class="line">                           <span class="keyword">if</span> (*iter &gt; *txn_id) &#123;</span><br><span class="line">                             *txn_id = *iter;</span><br><span class="line">                           &#125;</span><br><span class="line">                           ++iter;</span><br><span class="line">                         &#125;</span><br><span class="line">                         <span class="keyword">this</span>-&gt;stk_.<span class="built_in">clear</span>();</span><br><span class="line">                         <span class="keyword">this</span>-&gt;in_stk_.<span class="built_in">clear</span>();</span><br><span class="line">                         <span class="keyword">this</span>-&gt;has_search_.<span class="built_in">clear</span>();</span><br><span class="line">                         <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">                       &#125;</span><br><span class="line">                       <span class="keyword">this</span>-&gt;stk_.<span class="built_in">clear</span>();</span><br><span class="line">                       <span class="keyword">this</span>-&gt;in_stk_.<span class="built_in">clear</span>();</span><br><span class="line">                       <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">                     &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//DFS函数判断是否有环,txn_id为遍历的起始点</span></span><br><span class="line"><span class="comment">//有环返回true 无环返回false</span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">LockManager::DFS</span><span class="params">(<span class="type">txn_id_t</span> txn_id)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  has_search_[txn_id] = <span class="literal">true</span>;</span><br><span class="line">  stk_.<span class="built_in">push_back</span>(txn_id);</span><br><span class="line">  in_stk_[txn_id] = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span> id : waits_for_[txn_id]) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!has_search_[id]) &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">DFS</span>(id);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (in_stk_[id]) &#123;</span><br><span class="line">      stk_.<span class="built_in">push_back</span>(id);</span><br><span class="line">      <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  stk_.<span class="built_in">pop_back</span>();</span><br><span class="line">  in_stk_[txn_id] = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="Task-3-Concurrent-Query-Execution"><a href="#Task-3-Concurrent-Query-Execution" class="headerlink" title="Task #3 - Concurrent Query Execution"></a>Task #3 - Concurrent Query Execution</h2><p>TransactionManager的Abort函数需要恢复Table和对应Index的原始状态</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">TransactionManager::Commit</span><span class="params">(Transaction *txn)</span> </span>&#123;</span><br><span class="line">  <span class="comment">// Release all the locks.</span></span><br><span class="line">  <span class="built_in">ReleaseLocks</span>(txn);</span><br><span class="line"></span><br><span class="line">  txn-&gt;<span class="built_in">SetState</span>(TransactionState::COMMITTED);</span><br><span class="line">  <span class="function">std::unique_lock&lt;std::shared_mutex&gt; <span class="title">guard</span><span class="params">(txn_map_mutex_)</span></span>;</span><br><span class="line">  txn_map_.<span class="built_in">erase</span>(txn-&gt;<span class="built_in">GetTransactionId</span>());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">TransactionManager::Abort</span><span class="params">(Transaction *txn)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/* <span class="doctag">TODO:</span> revert all the changes in write set */</span></span><br><span class="line">  <span class="keyword">while</span> (!txn-&gt;<span class="built_in">GetWriteSet</span>()-&gt;<span class="built_in">empty</span>()) &#123;</span><br><span class="line">    <span class="keyword">auto</span> twr = txn-&gt;<span class="built_in">GetWriteSet</span>()-&gt;<span class="built_in">back</span>();</span><br><span class="line">    <span class="keyword">if</span> (twr.wtype_ == WType::INSERT) &#123;</span><br><span class="line">      <span class="keyword">auto</span> tuple_meta = twr.table_heap_-&gt;<span class="built_in">GetTupleMeta</span>(twr.rid_);</span><br><span class="line">      tuple_meta.is_deleted_ = <span class="literal">true</span>;</span><br><span class="line">      twr.table_heap_-&gt;<span class="built_in">UpdateTupleMeta</span>(tuple_meta, twr.rid_);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (twr.wtype_ == WType::DELETE) &#123;</span><br><span class="line">      <span class="keyword">auto</span> tuple_meta = twr.table_heap_-&gt;<span class="built_in">GetTupleMeta</span>(twr.rid_);</span><br><span class="line">      tuple_meta.is_deleted_ = <span class="literal">false</span>;</span><br><span class="line">      twr.table_heap_-&gt;<span class="built_in">UpdateTupleMeta</span>(tuple_meta, twr.rid_);</span><br><span class="line">    &#125;</span><br><span class="line">    txn-&gt;<span class="built_in">GetWriteSet</span>()-&gt;<span class="built_in">pop_back</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> (!txn-&gt;<span class="built_in">GetIndexWriteSet</span>()-&gt;<span class="built_in">empty</span>()) &#123;</span><br><span class="line">    <span class="keyword">auto</span> iwr = txn-&gt;<span class="built_in">GetIndexWriteSet</span>()-&gt;<span class="built_in">back</span>();</span><br><span class="line">    <span class="keyword">if</span> (iwr.wtype_ == WType::INSERT) &#123;</span><br><span class="line">      iwr.catalog_-&gt;<span class="built_in">GetIndex</span>(iwr.index_oid_)-&gt;index_-&gt;<span class="built_in">DeleteEntry</span>(iwr.tuple_, iwr.rid_, txn);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (iwr.wtype_ == WType::DELETE) &#123;</span><br><span class="line">      iwr.catalog_-&gt;<span class="built_in">GetIndex</span>(iwr.index_oid_)-&gt;index_-&gt;<span class="built_in">InsertEntry</span>(iwr.tuple_, iwr.rid_, txn);</span><br><span class="line">    &#125;</span><br><span class="line">    txn-&gt;<span class="built_in">GetIndexWriteSet</span>()-&gt;<span class="built_in">pop_back</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="built_in">ReleaseLocks</span>(txn);</span><br><span class="line"></span><br><span class="line">  txn-&gt;<span class="built_in">SetState</span>(TransactionState::ABORTED);</span><br><span class="line">  <span class="function">std::unique_lock&lt;std::shared_mutex&gt; <span class="title">guard</span><span class="params">(txn_map_mutex_)</span></span>;</span><br><span class="line">  txn_map_.<span class="built_in">erase</span>(txn-&gt;<span class="built_in">GetTransactionId</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>SeqScanExecutor修改</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">SeqScanExecutor::Init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> catalog = exec_ctx_-&gt;<span class="built_in">GetCatalog</span>();</span><br><span class="line">  table_info_ = catalog-&gt;<span class="built_in">GetTable</span>(plan_-&gt;table_oid_);</span><br><span class="line">  <span class="keyword">auto</span> txn = exec_ctx_-&gt;<span class="built_in">GetTransaction</span>();</span><br><span class="line">  <span class="keyword">auto</span> iso_level = txn-&gt;<span class="built_in">GetIsolationLevel</span>();</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (exec_ctx_-&gt;<span class="built_in">IsDelete</span>()) &#123;<span class="comment">//当前进行的sql操作是DELETE或者UPDATE</span></span><br><span class="line">      <span class="keyword">auto</span> res =</span><br><span class="line">          exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">LockTable</span>(txn, LockManager::LockMode::INTENTION_EXCLUSIVE, plan_-&gt;table_oid_);</span><br><span class="line">      <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor LockTable Failed&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!txn-&gt;<span class="built_in">IsTableIntentionExclusiveLocked</span>(plan_-&gt;table_oid_) &amp;&amp;  <span class="comment">// 避免反向升级</span></span><br><span class="line">               (iso_level == IsolationLevel::READ_COMMITTED || iso_level == IsolationLevel::REPEATABLE_READ)) &#123;</span><br><span class="line">      <span class="keyword">auto</span> res =</span><br><span class="line">          exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">LockTable</span>(txn, LockManager::LockMode::INTENTION_SHARED, plan_-&gt;table_oid_);</span><br><span class="line">      <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor LockTable Failed&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="built_in">catch</span> (TransactionAbortException &amp;exception) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor LockTable Failed&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  iterator_ = std::<span class="built_in">make_unique</span>&lt;TableIterator&gt;(table_info_-&gt;table_-&gt;<span class="built_in">MakeEagerIterator</span>());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">SeqScanExecutor::Next</span><span class="params">(Tuple *tuple, RID *rid)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  std::pair&lt;TupleMeta, Tuple&gt; pair;</span><br><span class="line">  <span class="keyword">auto</span> txn = exec_ctx_-&gt;<span class="built_in">GetTransaction</span>();</span><br><span class="line">  <span class="keyword">auto</span> iso_level = txn-&gt;<span class="built_in">GetIsolationLevel</span>();</span><br><span class="line">  <span class="keyword">while</span> (!iterator_-&gt;<span class="built_in">IsEnd</span>()) &#123;</span><br><span class="line">    pair = iterator_-&gt;<span class="built_in">GetTuple</span>();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (exec_ctx_-&gt;<span class="built_in">IsDelete</span>()) &#123;</span><br><span class="line">        <span class="keyword">auto</span> res = exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">LockRow</span>(txn, LockManager::LockMode::EXCLUSIVE, plan_-&gt;table_oid_, pair.second.<span class="built_in">GetRid</span>());</span><br><span class="line">        <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor LockRow Failed&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!txn-&gt;<span class="built_in">IsRowExclusiveLocked</span>(plan_-&gt;table_oid_, pair.second.<span class="built_in">GetRid</span>()) &amp;&amp;  <span class="comment">// 避免反向升级</span></span><br><span class="line">                 (iso_level == IsolationLevel::READ_COMMITTED || iso_level == IsolationLevel::REPEATABLE_READ)) &#123;</span><br><span class="line">        <span class="keyword">auto</span> res = exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">LockRow</span>(txn, LockManager::LockMode::SHARED, plan_-&gt;table_oid_, pair.second.<span class="built_in">GetRid</span>());</span><br><span class="line">        <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor LockRow Failed&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="built_in">catch</span> (TransactionAbortException &amp;exception) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor LockRow Failed&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (iterator_-&gt;<span class="built_in">GetTuple</span>().first.is_deleted_ ||</span><br><span class="line">        (plan_-&gt;filter_predicate_ &amp;&amp;</span><br><span class="line">         plan_-&gt;filter_predicate_-&gt;<span class="built_in">Evaluate</span>(&amp;pair.second, table_info_-&gt;schema_)</span><br><span class="line">                 .<span class="built_in">CompareEquals</span>(ValueFactory::<span class="built_in">GetBooleanValue</span>(<span class="literal">false</span>)) == CmpBool::CmpTrue)) &#123;</span><br><span class="line">      <span class="keyword">if</span> (exec_ctx_-&gt;<span class="built_in">IsDelete</span>() ||</span><br><span class="line">          (iso_level == IsolationLevel::READ_COMMITTED || iso_level == IsolationLevel::REPEATABLE_READ)) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="keyword">auto</span> res = exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">UnlockRow</span>(txn, plan_-&gt;table_oid_, pair.second.<span class="built_in">GetRid</span>(), <span class="literal">true</span>);</span><br><span class="line">          <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor Force UnLockRow Failed&quot;</span>);</span><br><span class="line">          &#125;</span><br><span class="line">        &#125; <span class="built_in">catch</span> (TransactionAbortException &amp;exception) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor Force UnLockRow Failed&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      ++(*iterator_);</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!exec_ctx_-&gt;<span class="built_in">IsDelete</span>() &amp;&amp; iso_level == IsolationLevel::READ_COMMITTED) &#123;</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">auto</span> res = exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">UnlockRow</span>(txn, plan_-&gt;table_oid_, pair.second.<span class="built_in">GetRid</span>());</span><br><span class="line">        <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">          <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor UnLockRow Failed&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">      &#125; <span class="built_in">catch</span> (TransactionAbortException &amp;exception) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor UnLockRow Failed&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    ++(*iterator_);</span><br><span class="line">    *tuple = std::<span class="built_in">move</span>(pair.second);</span><br><span class="line">    *rid = tuple-&gt;<span class="built_in">GetRid</span>();</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (!exec_ctx_-&gt;<span class="built_in">IsDelete</span>() &amp;&amp; iso_level == IsolationLevel::READ_COMMITTED) &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">auto</span> res = exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">UnlockTable</span>(txn, plan_-&gt;table_oid_);</span><br><span class="line">      <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor UnLockTable Failed&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="built_in">catch</span> (TransactionAbortException &amp;exception) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;SeqScanExecutor UnLockTable Failed&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>InsertExecutor修改，给table加IE锁，并且table和index插入记录需要被保存下来</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">InsertExecutor::Init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  child_executor_-&gt;<span class="built_in">Init</span>();</span><br><span class="line">  <span class="keyword">auto</span> cata_log = exec_ctx_-&gt;<span class="built_in">GetCatalog</span>();</span><br><span class="line">  table_info_ = cata_log-&gt;<span class="built_in">GetTable</span>(plan_-&gt;table_oid_);</span><br><span class="line">  index_infos_ = cata_log-&gt;<span class="built_in">GetTableIndexes</span>(table_info_-&gt;name_);</span><br><span class="line">  successful_ = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">auto</span> txn = exec_ctx_-&gt;<span class="built_in">GetTransaction</span>();</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="keyword">auto</span> res =</span><br><span class="line">        exec_ctx_-&gt;<span class="built_in">GetLockManager</span>()-&gt;<span class="built_in">LockTable</span>(txn, LockManager::LockMode::INTENTION_EXCLUSIVE, plan_-&gt;table_oid_);</span><br><span class="line">    <span class="keyword">if</span> (!res) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;InsertExecutor LockTable Failed&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="built_in">catch</span> (TransactionAbortException &amp;exception) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="built_in">ExecutionException</span>(<span class="string">&quot;InsertExecutor LockTable Failed&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">InsertExecutor::Next</span><span class="params">(Tuple *tuple, RID *rid)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  TupleMeta meta;</span><br><span class="line">  <span class="keyword">if</span> (successful_) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  meta.insert_txn_id_ = INVALID_TXN_ID;</span><br><span class="line">  meta.delete_txn_id_ = INVALID_TXN_ID;</span><br><span class="line">  meta.is_deleted_ = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">auto</span> count = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (child_executor_-&gt;<span class="built_in">Next</span>(tuple, rid)) &#123;</span><br><span class="line">    <span class="keyword">auto</span> tuple_rid = table_info_-&gt;table_-&gt;<span class="built_in">InsertTuple</span>(meta, *tuple, exec_ctx_-&gt;<span class="built_in">GetLockManager</span>(), exec_ctx_-&gt;<span class="built_in">GetTransaction</span>(), table_info_-&gt;oid_);</span><br><span class="line">    <span class="keyword">if</span> (tuple_rid == std::<span class="literal">nullopt</span>) &#123;</span><br><span class="line">      <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">auto</span> twr = <span class="built_in">TableWriteRecord</span>(table_info_-&gt;oid_, tuple_rid.<span class="built_in">value</span>(), table_info_-&gt;table_.<span class="built_in">get</span>());</span><br><span class="line">    twr.wtype_ = WType::INSERT;</span><br><span class="line">    exec_ctx_-&gt;<span class="built_in">GetTransaction</span>()-&gt;<span class="built_in">GetWriteSet</span>()-&gt;<span class="built_in">push_back</span>(twr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> index_info : index_infos_) &#123;</span><br><span class="line">      <span class="keyword">auto</span> key = tuple-&gt;<span class="built_in">KeyFromTuple</span>(table_info_-&gt;schema_, index_info-&gt;key_schema_, index_info-&gt;index_-&gt;<span class="built_in">GetKeyAttrs</span>());</span><br><span class="line">      index_info-&gt;index_-&gt;<span class="built_in">InsertEntry</span>(key, *tuple_rid, exec_ctx_-&gt;<span class="built_in">GetTransaction</span>());</span><br><span class="line">      <span class="keyword">auto</span> iwr = <span class="built_in">IndexWriteRecord</span>(tuple_rid.<span class="built_in">value</span>(), table_info_-&gt;oid_, WType::INSERT, key, index_info-&gt;index_oid_,</span><br><span class="line">                                  exec_ctx_-&gt;<span class="built_in">GetCatalog</span>());</span><br><span class="line">      exec_ctx_-&gt;<span class="built_in">GetTransaction</span>()-&gt;<span class="built_in">GetIndexWriteSet</span>()-&gt;<span class="built_in">push_back</span>(iwr);</span><br><span class="line">    &#125;</span><br><span class="line">    ++count;</span><br><span class="line">  &#125;</span><br><span class="line">  std::vector&lt;Value&gt; values;</span><br><span class="line">  values.<span class="built_in">emplace_back</span>(TypeId::INTEGER, count);</span><br><span class="line">  *tuple = <span class="built_in">Tuple</span>(values, &amp;<span class="built_in">GetOutputSchema</span>());</span><br><span class="line">  successful_ = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>DeleteExecutor修改，并且table和index删除记录需要被保存下来</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">DeleteExecutor::Init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  child_executor_-&gt;<span class="built_in">Init</span>();</span><br><span class="line">  successful_ = <span class="literal">false</span>;</span><br><span class="line">  <span class="keyword">auto</span> catalog = exec_ctx_-&gt;<span class="built_in">GetCatalog</span>();</span><br><span class="line">  table_info_ = catalog-&gt;<span class="built_in">GetTable</span>(plan_-&gt;<span class="built_in">TableOid</span>());</span><br><span class="line">  index_infos_ = catalog-&gt;<span class="built_in">GetTableIndexes</span>(table_info_-&gt;name_);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">DeleteExecutor::Next</span><span class="params">(Tuple *tuple, RID *rid)</span> -&gt; <span class="type">bool</span> </span>&#123;</span><br><span class="line">  TupleMeta tuple_meta;</span><br><span class="line">  <span class="keyword">if</span> (successful_) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  tuple_meta.delete_txn_id_ = INVALID_TXN_ID;</span><br><span class="line">  tuple_meta.insert_txn_id_ = INVALID_TXN_ID;</span><br><span class="line">  tuple_meta.is_deleted_ = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">auto</span> count = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> (child_executor_-&gt;<span class="built_in">Next</span>(tuple, rid)) &#123;</span><br><span class="line">    table_info_-&gt;table_-&gt;<span class="built_in">UpdateTupleMeta</span>(tuple_meta, *rid);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">auto</span> twr = <span class="built_in">TableWriteRecord</span>(table_info_-&gt;oid_, *rid, table_info_-&gt;table_.<span class="built_in">get</span>());</span><br><span class="line">    twr.wtype_ = WType::DELETE;</span><br><span class="line">    exec_ctx_-&gt;<span class="built_in">GetTransaction</span>()-&gt;<span class="built_in">GetWriteSet</span>()-&gt;<span class="built_in">push_back</span>(twr);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> index_info : index_infos_) &#123;</span><br><span class="line">      <span class="keyword">auto</span> key = tuple-&gt;<span class="built_in">KeyFromTuple</span>(table_info_-&gt;schema_, index_info-&gt;key_schema_, index_info-&gt;index_-&gt;<span class="built_in">GetKeyAttrs</span>());</span><br><span class="line">      index_info-&gt;index_-&gt;<span class="built_in">DeleteEntry</span>(key, *rid, exec_ctx_-&gt;<span class="built_in">GetTransaction</span>());</span><br><span class="line"></span><br><span class="line">      <span class="keyword">auto</span> iwr = <span class="built_in">IndexWriteRecord</span>(*rid, table_info_-&gt;oid_, WType::DELETE, key, index_info-&gt;index_oid_,</span><br><span class="line">                                  exec_ctx_-&gt;<span class="built_in">GetCatalog</span>());</span><br><span class="line">      exec_ctx_-&gt;<span class="built_in">GetTransaction</span>()-&gt;<span class="built_in">GetIndexWriteSet</span>()-&gt;<span class="built_in">push_back</span>(iwr);</span><br><span class="line">    &#125;</span><br><span class="line">    count++;</span><br><span class="line">  &#125;</span><br><span class="line">  std::vector&lt;Value&gt; values;</span><br><span class="line">  values.<span class="built_in">emplace_back</span>(TypeId::INTEGER, count);</span><br><span class="line">  *tuple = <span class="built_in">Tuple</span>(values, &amp;<span class="built_in">GetOutputSchema</span>());</span><br><span class="line">  successful_ = <span class="literal">true</span>;</span><br><span class="line">  <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>五种细粒度锁IS IX S SIX X相容矩阵</p>
+<table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">IS</th>
+<th align="center">IX</th>
+<th align="center">S</th>
+<th align="center">SIX</th>
+<th align="center">X</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">IS</td>
+<td align="center">YES</td>
+<td align="center">YES</td>
+<td align="center">YES</td>
+<td align="center">YES</td>
+<td align="center">NO</td>
+</tr>
+<tr>
+<td align="center">IX</td>
+<td align="center">YES</td>
+<td align="center">YES</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+</tr>
+<tr>
+<td align="center">S</td>
+<td align="center">YES</td>
+<td align="center">NO</td>
+<td align="center">YES</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+</tr>
+<tr>
+<td align="center">SIX</td>
+<td align="center">YES</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+</tr>
+<tr>
+<td align="center">X</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+<td align="center">NO</td>
+</tr>
+</tbody></table>
+<p>本地测试通过：<br><img src="/../images/cmu15445-project4/14.png" alt="img"><br><img src="/../images/cmu15445-project4/15.png" alt="img"><br><img src="/../images/cmu15445-project4/16.png" alt="img"><br><img src="/../images/cmu15445-project4/17.png" alt="img"><br><img src="/../images/cmu15445-project4/18.png" alt="img"></p>
+<p>线上测试通过:<br><img src="/../images/cmu15445-project4/19.png" alt="img"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/02/28/ssh%E5%85%8D%E5%AF%86%E7%99%BB%E5%BD%95%E5%A4%B1%E8%B4%A5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -988,410 +1607,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/07/cmake-generator-error-under-windows-system/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/12/07/cmake-generator-error-under-windows-system/" class="post-title-link" itemprop="url">cmake-generator-error-under-windows-system</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-12-07 00:22:51" itemprop="dateCreated datePublished" datetime="2023-12-07T00:22:51-08:00">2023-12-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/cmake/" itemprop="url" rel="index"><span itemprop="name">cmake</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>1.安装windows版本cmake（配置环境变量）<br>2.安装windows版本mingw（配置环境变量）<br>3.创建工程目录<br>执行以下命令</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir build</span><br><span class="line">cd build</span><br><span class="line">cmake -G &quot;MinGW Makefiles&quot; -D &quot;CMAKE_MAKE_PROGRAM:PATH=your path to make.exe&quot;</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
-
-<p>参考：<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/dcrmg/article/details/103918543">https://blog.csdn.net/dcrmg/article/details/103918543</a><br><a target="_blank" rel="noopener" href="https://codeantenna.com/a/ELzh11ElWs">https://codeantenna.com/a/ELzh11ElWs</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/12/05/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/" class="post-title-link" itemprop="url">SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-12-05 22:02:09" itemprop="dateCreated datePublished" datetime="2023-12-05T22:02:09-08:00">2023-12-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>SALI: A Scalable Adaptive Learned Index Framework based on<br>Probability Models<br>一个基于概率模型的可进化学习索引框架</p>
-<h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><p>LI：只读<br>可写：<br>1.基于缓冲区的策略（插入时放入缓冲区，到达一个阈值后进行合并操作）<br>XIndex、FINEdex<br>2.基于模型的策略（就地插入）<br>ALEX（在插入冲突中，映射的slot已经被占用，通过移动来尝试重新组织节点）、<br>LIPP（利用链接方案，为相应的时隙创建一个新节点，将最后一英里问题转化为子树遍历问题）</p>
-<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/1.png" alt="img"><br>上述的索引结构都不能以高并发性进行扩展</p>
-<p>并发数较少的时候，与基于模型的策略（ALEX+、LIPP+）相比，基于缓冲区策略（XIndex、FINEdex）的索引表现出较差的基本性能和较差的扩展性；并且随着并发数的提高，“最后一英里问题”搜索会迅速饱和内存带宽，从而成为系统的瓶颈（ALEX+必须为此操作获取粗粒度写锁，线程数量增加时，越来越多的线程被阻塞）</p>
-<p>LIPP+没有最后一英里问题，但是它需要在每个节点中维护统计信息，如访问计数和冲突计数（以触发节点再训练，防止性能下降）。这些节点计数器在线程之间造成高争用。</p>
-<h2 id="难点与分析过程"><a href="#难点与分析过程" class="headerlink" title="难点与分析过程"></a>难点与分析过程</h2><p>我们需要设计一个满足如下要求的可扩展学习索引<br>1.Efficient Concurrency高效并发：<br>为了实现高效的插入性能，索引必须跟踪统计信息，这些信息反映了由于新的插入而导致的索引结构随时间的退化（这些信息对于触发节点再训练至关重要），但是节点计数器在线程之间会造成高争用，需要一种轻量级方法<br>2.Adaptive ability适应能力<br>与均匀工作负载相比，学习索引在倾斜插入工作负载下表现出次优性能。因此，学习索引需要有自适应能力以保证其在并发场景的鲁棒性。此外，学习的索引缺乏用于查找操作的优化策略。在偏斜的工作负载下，学习索引尚未充分利用显著降低索引空间成本的机会。</p>
-<p>3.Low overheads of basic performance基本性能的低开销<br>(1)Efficient lookup<br>实现高查找性能，通常取决于最大限度地减少查找的预测错误<br>(2)Efficient insert<br>采用基于模型的策略，而不是基于缓冲区的策略，通过在每个节点中保留间隙，可以显著提高学习索引的插入性能</p>
-<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>提出SALI<br>1.利用LIPP+结构（使用细粒度锁）<br>2.除了模型重训练以外定义一组节点进化策略，以允许学习到的索引自适应于不同的工作负载倾斜（建议对具有不同读写热度的节点应用不同的进化策略）<br>3.用轻量级概率模型取代了现有学习索引中的每个节点的统计信息，以消除统计信息维护的可扩展性瓶颈</p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/2.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/3.png" alt="img"></p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/4.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/5.png" alt="img"></p>
-<p>进化策略：<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/6.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/7.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/8.png" alt="img"></p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/9.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/10.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/11.png" alt="img"></p>
-<p>概率模型：<br>为了确保最佳性能，学习索引必须监控退化统计信息，以便在必要时启动调整；另外，进化策略需要额外的统计信息。<br>基本概念：模拟信息积累时利用概率</p>
-<p>例子：<br>1.当模拟指定时间段内插入key的累积数量时，我们设计一个基于插入率和插入时间的概率模型<br>2.几何分布可以用来模拟信息的累计（插入冲突等）</p>
-<p>触发insert evolution的条件</p>
-<p>Condition1：评估一个节点及其子树中新key插入的频率<br>该节点容纳足够数量的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/12.png" alt="img"></p>
-<p>n.current_num:是指在当前插入操作结束时节点中包含的key的数量<br>n.build_num:是指上一次执行完进化策略后节点中的key的数量<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/13.png" alt="img"></p>
-<p>Condition2：节点内冲突的升级（判断节点是否恶化）<br>Node必须由足够的新插入的key<br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/14.png" alt="img"><br><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/15.png" alt="img"></p>
-<p><strong>先计算Pconflict是否被触发，如果触发，再判断Pacc是否被触发，如果两个条件都被触发，执行进化策略</strong></p>
-<p>触发lookup evolution的条件<br>Phl<br>还需要考虑以下两个条件<br>Condition1:<br>再很长的一段时间内，节点上的查找操作没有触发进化策略</p>
-<p>Condition2:<br>节点累计数据的速率并不慢</p>
-<p>For condition1：如果一个节点的最后一次进化操作是由hot lookup触发的，这意味着自那以后没有插入操作触发该节点进化，即该节点没有严重恶化，并且新插入key的数量可能很少，可以将Phl调整到一个更小的值</p>
-<p><img src="/../images/SALI-A-Scalable-Adaptive-Learned-Index-Framework-based-on-Probability-Models/16.png" alt="img"></p>
-<p>For condition2：引入Pacc，如果自上次进化操作以来插入了大量新的key，则表明可能需要进行新一轮的进化操作</p>
-<p>每个线程维护一个skip_counter，每次查找操作，skip_counter加1，10次查找操作后，执行一次伯努利实验来判断Phl是否被触发。如果Phl被触发，判断Pacc是否也被触发，如果触发，执行进化策略。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/05/NFL-Robust-Learned-Index-via-Distribution-Transformation/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/12/05/NFL-Robust-Learned-Index-via-Distribution-Transformation/" class="post-title-link" itemprop="url">NFL-Robust-Learned-Index-via-Distribution-Transformation</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-12-05 21:37:11" itemprop="dateCreated datePublished" datetime="2023-12-05T21:37:11-08:00">2023-12-05</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h2><ul>
-<li>只读负载</li>
-<li>读写负载，但是数据分布变化不大（即CDF随着key的插入删除变化较小）</li>
-</ul>
-<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>之前的学习索引通过设计更好的启发式方法来划分key空间，使得每一份被分割的sub key空间可以更好地被线性模型拟合。<br>缺点：</p>
-<ul>
-<li>为了达到这个目的，学习索引必须构建更深的层次结构，从而产生更多的遍历时间和预测数量<br>（类似于用一个分段线性函数去拟合数据分布CDF）。</li>
-</ul>
-<h2 id="难点和分析过程："><a href="#难点和分析过程：" class="headerlink" title="难点和分析过程："></a>难点和分析过程：</h2><p>本文提出了学习索引NFL（包括两个结构Normalizing Flow 和 Learned Index ）</p>
-<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg" alt="img"><br>思想： 先用分布转换模型将复杂key分布转换为近似均匀的分布，然后利用转换的key构建学习索引</p>
-<p><strong>难点</strong></p>
-<p>（1）Efficacy of Normalizing flow:</p>
-<ul>
-<li>由于key的数字数据特征有限，分布转换模型表现不佳</li>
-<li>均匀分布很难作为训练目标（我们设计了一个具有丰富特征空间的分布转换模型和一个易于操作的训练目标）</li>
-</ul>
-<p>（2）Efficiency of normalizing flow</p>
-<ul>
-<li>分布转化必须是高效的在线步骤，这样就限制了NF的复杂性。但是直接减少参数数量标准化流程可能会降低转换质量（这样会导致学习索引需要更深的层次结构和更多的模型来近似CDF），（我们设计了一套效率优化方案，并且保证NF的功效）</li>
-</ul>
-<p>（3）Lack of proper indexes for transformed keys：</p>
-<ul>
-<li>numerica NF的转换使线性模型拟合地更好，学习索引应该以新的视角重新思考。（我们提出了After-Flow Learned Index（AFLI），充分利用转换后的key）</li>
-</ul>
-<p><strong>方法</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/1.jpg" alt="img"><br>以下两个是评价模型转换质量的指标<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/2.jpg" alt="img"></p>
-<p>Tail conflict degree：</p>
-<p>Numerical Normalizing Flow:<br>Feature Space Expansion:现有的NF大多用在cv和nlp领域，用于处理高纬的图片和文本，这些数据都有丰富的特征。然而keys都是数值数据，含有的特征较少。<br>使用Algorithm 3.1分布转换算法（对keys的数值特征进行扩展）<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/3.jpg" alt="img"></p>
-<p>特征扩展的时间复杂度为O（n x d）</p>
-<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/4.png" alt="img"></p>
-<p>Structure of AFLI：<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/5.jpg" alt="img"></p>
-<p><strong>Model node:</strong><br>Empty Slot：unused slot<br>Data Slot：key payload<br>Bucket Pointer: 指向一个bucket<br>Node Pointer：指向一个model node或者dense node<br><strong>Bucket:</strong><br>a short data array.它的size由tail conflict degree决定，但将保持在预设阈值范围内。我们提供两种桶，线性桶（默认）和有序桶</p>
-<p><strong>Dense node：</strong><br>Also a data array，比bucket大一点，但是比Model node小很多，是一个ordered and gapped array, gap的最大值由tail conflict degree</p>
-<p><strong>Analysis:</strong><br>当索引无法建立模型节点时，因为节点中的所有键都太近（即拟合线性模型的斜率为0），索引会分配一个dense array</p>
-<p><strong>Queries:</strong><br>（1）从root node开始查找，如果是model node，先用linear model预测position，判断它的类型，如果是empty slot，表示不存在；如果是data slot，比较是否是相同的key；如果是bucket pointer，在bucket中查找；如果是node pointer，递归操作<br>（2）如果node是dense node，使用二分查找查找这个结果。</p>
-<p><strong>Insertions:</strong><br>（1）如果key-payload pair被插入model node，先用linear model预测position</p>
-<ul>
-<li>如果是empty slot，直接存储key-payload</li>
-<li>如果是data slot，表明发生冲突，创建一个bucket来存储这两个key</li>
-<li>如果是bucket pointer或者node pointer，插入key-payload到bucket或者child node中<br>（2）插入到bucket中时，将key-payload会直接被加到sorted data的末尾；如果bucket是一个ordered mode，将会执行一次插入排序。<br>（3）插入到dense node中时，先在array上执行二分查找，如果那个position是一个empty slot，我们会直接插入key-payload pair；，否则会移动到最近的empty slot再插入。</li>
-</ul>
-<p>如果bucket或者dense node没有empty slots，我们尽量通过一个modeling operation将它转换为model node<br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/6.jpg" alt="img"></p>
-<p><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/7.jpg" alt="img"><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/8.jpg" alt="img"></p>
-<p>我们首先一个使用线性回归创建线性模型（Line 1）<br>如果slope 为0（所有key被映射到一个相同的position），我们为创建一个dense node（Line 2 - 4）<br>否则如果我们成功创建一个linear model，就计算model node所有位置的conflict degree（Line 6）<br>然后我们遍历所有预测的位置，决定每个pos的entry type。如果conflict degree为1，我们直接在data slot存储该key；如果conflict degree大于1但是比bucket的tail confict degree小，存储在一个bucket中（Line 14 - 17）；<br>否则，如果某个position的confict degree比bucket的tail conflict degree大，找到下一个conflict degree也大于tail conflict degree的position或者到末尾，并将经过的position的key都收集起来，并分配一个新的节点来处理它们（第18 - 21行）<br>BulkLoad：首先计算tail conflict degree. The returned result is the root node.<br>Update: lookup + in-place update<br>Delete</p>
-<h2 id="结果："><a href="#结果：" class="headerlink" title="结果："></a>结果：</h2><p><strong>数据集：</strong><br>选取了7个不同的数据集进行评估<br>（Key的类型为double     payload的类型是int64）</p>
-<p>对每种类型的数据集构建了四种类型的工作负载</p>
-<p>每种工作负载包括 批量加载和运行阶段<br>我们使用批量加载操作来加载数据集的50%的key；在运行阶段，根据不同的操作比率生成请求</p>
-<ul>
-<li>只读</li>
-<li>读80% 写20%</li>
-<li>写 20% 读80%</li>
-<li>只写</li>
-</ul>
-<p>将NFL与LIPP、ALEX、PGM-index、B-Tree、an efficient B-Tree对比</p>
-<p><strong>平均吞吐量</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/9.jpg" alt="img"></p>
-<ul>
-<li>只读：NFL与LIPP、ALEX、PGM、B-Tree相比，平均吞吐量分别提高了2.34倍、2.46倍、3.82倍、7.45倍；对于具有大冲突程度的工作负载（即LLT和FB），可以分别实现比LIPP、ALEX高2.41x和3.70x的吞吐量。</li>
-<li>重读：与LIPP、ALEX、PGM、B-Tree相比，NFL在吞吐量上分别提高72.22%、101.05%、611.48%、389.45%</li>
-<li>重写：与LIPP、ALEX、PGM、B-Tree相比，NFL在吞吐量上分别提高29.10%、39.28%、50.88%、162.92%</li>
-<li>只写：与LIPP、ALEX、B-Tree相比，NFL在吞吐量上分别提高22.65%、28.30%和131.58%</li>
-</ul>
-<p><strong>延迟</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/10.jpg" alt="img"></p>
-<ul>
-<li>只读：与LIPP、ALEX、PGM index、B-Tree相比，NFL可以将延迟分别降低58.68%、32.89%、62.73%和80.77%</li>
-<li>读写：与LIPP、ALEX、PGM index和B-Tree相比，NFL可以将延迟分别降低26.64%、45.05%、59.49%、65.31%</li>
-<li>只写：与LIPP、ALEX、B-Tree相比，NFL可以将延迟减少2.26%、27.92%、50.48%</li>
-</ul>
-<p><strong>批量加载时间</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/11.jpg" alt="img"></p>
-<p>与LIPP、ALEX、B-Tree相比，NFL需要2.25倍、0.86倍、2.81倍的大容量加载时间，其中77%的时间是用来转换key的</p>
-<p><strong>索引大小：</strong><br><img src="/../images/NFL-Robust-Learned-Index-via-Distribution-Transformation/12.jpg" alt="img"><br>NFL的指数大小分别是ALEX和PGM的2.26倍和3.1倍；然而，NFL的大小仅为LIPP大小的0.51</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/10/10/Updatable-Learned-Index-with-Precise-Positions/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/10/10/Updatable-Learned-Index-with-Precise-Positions/" class="post-title-link" itemprop="url">Updatable-Learned-Index-with-Precise-Positions</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-10-10 04:13:07" itemprop="dateCreated datePublished" datetime="2023-10-10T04:13:07-07:00">2023-10-10</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><p>读写负载</p>
-<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>Learned Index：只能在只读数据集上查找，无法处理索引结构中必不可少的更新操作<br>ALEX和PGM：它们对更新的支持是以查找操作的额外搜索为代价的；并且这些索引的更新操作也会导致大量元素的移动</p>
-<p>需要一种索引可以解决“最后一英里问题”</p>
-<h2 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h2><p>每个Node包含一个model、一个entries array、一个bit数组，<br>每个bit表示array中一个entry的类型，<br>类型有<br>NULL（空entry），<br>DATA(entry包含一个键值对，如果键值对太大，保存一个指向payload的指针)，<br>NODE（该entry指向下一层中的一个子节点，将一个新元素插入DATA entry时，创建一个子节点保存这两个entry，该entry指向这个新的节点）</p>
-<p>三种类型的entry的大小都为16byte，其中DATA类型的entry由8byte的key和8byte的payload组成<br>对于第i个entry，bit数组的第2<em>i位表示该entry是不是NULL,第2</em>i + 1位表示entry的type</p>
-<p>LIPP不区分leaf node和internal node<br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/1.jpg" alt="img"><br>各种操作的算法：<br>FMCD算法：</p>
-<blockquote>
-<p>给定一组key和数组长度L，计算最小的冲突度T及相应的linear model</p>
-</blockquote>
-<p><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/2.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/3.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/4.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/5.jpg" alt="img"><br><img src="/../images/Updatable-Learned-Index-with-Precise-Positions/6.jpg" alt="img"></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1459,20 +1678,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-count">52</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

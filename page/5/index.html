@@ -190,6 +190,345 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/12-%E4%BA%8B%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/12-%E4%BA%8B%E5%8A%A1/" class="post-title-link" itemprop="url">12.事务</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 14:21:58" itemprop="dateCreated datePublished" datetime="2023-05-27T14:21:58-07:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>1.原子性：要么全做，要么全不做<br>2.隔离性：保证其它的状态转换不会影响到本次的状态转换<br>3.一致性（符合所有现实世界的约束）：</p>
+<blockquote>
+<ul>
+<li>数据库本身能为我们保证一部分一致性需求,比如MySQL数据库可以为表建立主键、唯一索引、外键、声明某个列为NOT NULL来拒绝NULL值的插入。又比如对某个列建立了唯一索引时，如果插入某条记录时该列的值重复了，那么MySQL就会报错并且拒绝插入，MySQL还支持CHECK语法来自定义约束,但是实际上MySQL并不会去检查CHECK子句中的约束是否成立，但是我们还是可以通过定义触发器的方式来自定义一些约束条件以保证数据库中的一致性</li>
+<li>更多的一致性需求需要靠写业务代码的程序员自己保证，现实生活中复杂的一致性需求比比皆是，而由于性能问题把一致性需求交给数据库去解决这是不现实的，所以就把锅甩给了业务端程序员</li>
+</ul>
+</blockquote>
+<p>原子性和隔离性都会对一致性产生影响，数据库某些操作的原子性和隔离性都是保证一致性的一种手段，在操作执行完成后保证符合所有既定的约束则是一种结果</p>
+<p>4.持久性：状态转换后，这个转换的结果是永久保留的</p>
+<p>事务的定义：把需要保证原子性、隔离性、一致性、持久性的一个或多个数据库操作称之为一个事务</p>
+<p>事务的状态转换图如下<br><img src="/images/12_1.jpg" alt="微信截图_20230218105257.png"></p>
+<h3 id="隐式提交"><a href="#隐式提交" class="headerlink" title="隐式提交"></a>隐式提交</h3><p>当我们适用START TRANSACTION 或者BEGIN 语句开启了一个事务，或者把系统标量auto commit为OFF时，事务就不会进行自动提交，但是如果我们输入了某些语句之后就会悄悄的提交掉<br>1.定义或修改数据库对象的数据定义语言：所谓的数据库对象，指的就是数据库、表、视图、存储过程等，当我们使用CREATE、ALTER、DROP等语句去修改这些所谓的数据库对象时，就会隐式的提交前面语句所属的事务<br>2.隐式使用或修改数据库中的表：当我们使用ALTER USER、CREATE USER、DROP USER、GRANT、RENAME USER、REVOKE、SET PASSWORD等语句时也会隐式的提交前面语句所属于的事务<br>3.事务控制或关于锁定的语句：当我们在一个事务还没有提交或者回滚时就又使用START TRANSACTION 或者BEGIN语句开启了另一个事务，会隐式提交上一个事务<br>4.加载数据的语句：使用LOAD DATA等<br>5.关于MySQL复制的一些语句：使用START SLAVE、STOP SLAVE、RESET SLAVE、CHANGE MASTER TO等语句时也会隐式的提交前面语句所属的事务<br>6.其它的一些语句：使用ANALYZE TABLE、CACHE INDEX、CHECK TABLE、FLUSH、LOAD INDEX INTO CACHE、OPTIMIZE TABLE、REPAIR TABLE、RESET等语句</p>
+<h3 id="保存点"><a href="#保存点" class="headerlink" title="保存点"></a>保存点</h3><p>定义保存点的语法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SAVEPOINT 保存点的名称</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ROLLBACK [WORK] TO [SAVEPOINT] 保存点名称</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/11-MySQL%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E4%BC%98%E5%8C%96/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/11-MySQL%E5%9F%BA%E4%BA%8E%E8%A7%84%E5%88%99%E7%9A%84%E4%BC%98%E5%8C%96/" class="post-title-link" itemprop="url">11.MySQL基于规则的优化</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 14:21:17" itemprop="dateCreated datePublished" datetime="2023-05-27T14:21:17-07:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="条件简化"><a href="#条件简化" class="headerlink" title="条件简化"></a>条件简化</h2><p>1.移除不必要的括号<br>2.常量传递<br>3.等值传递<br>4.表达式计算<br>5.HAVING子句和WHERE子句的合并</p>
+<p>子查询的执行方式</p>
+<ul>
+<li>对于包含不相关的标量子查询或者行子查询的语句来说，MySQL会分别独立执行外层查询和子查询，就当作两个单表查询就行</li>
+<li>对于相关的标量子查询或者行子查询，它的执行方式如下：<br><img src="/images/11_1.jpg" alt="QQ截图20230217111828.png"></li>
+</ul>
+<p>IN子查询优化</p>
+<p>如果子查询的结果集中的记录条数很少，那么把子查询和外层查询分别看成两个单独的单表查询效率还是很高的，但是子查询的结果集太多的话会导致一下问题</p>
+<ul>
+<li>结果集太多，内存无法存下</li>
+<li>对于外层查询来说，如果子查询的结果集太多，就意味着IN子句中的参数很多，会导致（1.无法有效的使用索引，只能对外层查询进行全表扫描 2.在对外层查询执行全表扫描时，由于IN子句中的参数太多，这会导致检测一条记录是否符合和IN子句中的参数匹配花费的时间太长）<blockquote>
+<p>解决办法：不直接将不相关子查询的结果集当作外层查询的参数，而是将该结果写入一个临时表（1.该临时表的列就是子查询结果集中的列 2.写入临时表的记录会被去重 3.一般情况下子查询结果不会大的离谱，所以会为集合中的数据建立基于内存的存储引擎的临时表，并为该表建立哈希索引，如果子查询结果很大，会转而使用基于磁盘的存储引擎来保存结果集中的记录，索引类型也对应转变为B+树索引）</p>
+</blockquote>
+</li>
+</ul>
+<p>物化表转连接</p>
+<p>松散索引扫描</p>
+<p>如果IN子查询不满足转换为semi-join的条件，又不能转换为物化表或者转换为物化表的成本太大，那么它就会转换为EXISTS查询</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/10-InnoDB%E7%BB%9F%E8%AE%A1%E6%95%B0%E6%8D%AE%E6%98%AF%E5%A6%82%E4%BD%95%E6%94%B6%E9%9B%86%E7%9A%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/10-InnoDB%E7%BB%9F%E8%AE%A1%E6%95%B0%E6%8D%AE%E6%98%AF%E5%A6%82%E4%BD%95%E6%94%B6%E9%9B%86%E7%9A%84/" class="post-title-link" itemprop="url">10.InnoDB统计数据是如何收集的</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 14:20:43" itemprop="dateCreated datePublished" datetime="2023-05-27T14:20:43-07:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>InnoDB提供了两种存储统计数据的方式</p>
+<ul>
+<li>永久性的统计数据：<br>这些数据存储在磁盘上，服务器重启之后这些统计数据还在</li>
+<li>非永久性的统计数据：<br>这种数据存储在内存中，服务器重启之后，在某些适当的场景下才会重新收集这些统计数据<blockquote>
+<p>系统变量innodb_status_persistent来控制到底采用哪种方式去存储统计数据。另外，InnoDB默认是以表为单位来收集和存储统计数据的，所以可以把某些表的统计数据存储在磁盘上，把另一些表的统计数据存储在内存中。可以在创建和修改表的时候通过指定STATS_PERSISTENT属性来指明该表的统计数据存储方式</p>
+</blockquote>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/9-%E8%BF%9E%E6%8E%A5%E7%9A%84%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/9-%E8%BF%9E%E6%8E%A5%E7%9A%84%E5%8E%9F%E7%90%86/" class="post-title-link" itemprop="url">9.连接的原理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 14:20:17" itemprop="dateCreated datePublished" datetime="2023-05-27T14:20:17-07:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h3 id="连接过程简介"><a href="#连接过程简介" class="headerlink" title="连接过程简介"></a>连接过程简介</h3><ul>
+<li>涉及单表的条件</li>
+<li>涉及两表的条件</li>
+</ul>
+<p>1.嵌套循环连接<br>2.使用索引加快连接速度<br>3.基于块的嵌套循环连接</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/8-%E5%8D%95%E8%A1%A8%E8%AE%BF%E9%97%AE%E6%96%B9%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -797,226 +1136,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/2-%E7%B3%BB%E7%BB%9F%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/2-%E7%B3%BB%E7%BB%9F%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">2.系统变量</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:15:34" itemprop="dateCreated datePublished" datetime="2023-05-27T14:15:34-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="系统变量简介"><a href="#系统变量简介" class="headerlink" title="系统变量简介"></a>系统变量简介</h3><blockquote>
-<p>MySQL服务器程序运行过程中会用到许多影响程序行为的变量，它们被称为MySQL系统变量，比如允许同时连入的客户端数量用系统变量max_connections表示，表的默认存储引擎用系统变量default_storage_engine表示，查询缓存的大小用系统变量query_cache_size表示，MySQL服务器程序的系统变量有好几百条，我们就不一一列举了。</p>
-</blockquote>
-<p>我们可以使用下列命令查看MySQL服务器程序支持的系统变量以及它们的当前值：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW VARIABLES [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
-<h3 id="设置系统变量"><a href="#设置系统变量" class="headerlink" title="设置系统变量"></a>设置系统变量</h3><h4 id="通过启动选项设置"><a href="#通过启动选项设置" class="headerlink" title="通过启动选项设置"></a>通过启动选项设置</h4><p>1.通过命令行添加启动选项。<br>2.通过配置文件添加启动选项</p>
-<h4 id="服务器程序运行过程中设置"><a href="#服务器程序运行过程中设置" class="headerlink" title="服务器程序运行过程中设置"></a>服务器程序运行过程中设置</h4><h5 id="设置不同作用范围的系统变量"><a href="#设置不同作用范围的系统变量" class="headerlink" title="设置不同作用范围的系统变量"></a>设置不同作用范围的系统变量</h5><blockquote>
-<p>我们前面说过，多个客户端程序可以同时连接到一个服务器程序。对于同一个系统变量，我们有时想让不同的客户端有不同的值。比方说狗哥使用客户端A，他想让当前客户端对应的默认存储引擎为InnoDB，所以他可以把系统变量default_storage_engine的值设置为InnoDB；猫爷使用客户端B，他想让当前客户端对应的默认存储引擎为MyISAM，所以他可以把系统变量default_storage_engine的值设置为MyISAM。这样可以使狗哥和猫爷的的客户端拥有不同的默认存储引擎，使用时互不影响，十分方便。但是这样各个客户端都私有一份系统变量会产生这么两个问题：</p>
-</blockquote>
-<ul>
-<li>有一些系统变量并不是针对单个客户端的，比如允许同时连接到服务器的客户端数量max_connections，查询缓存的大小query_cache_size，这些公有的系统变量让某个客户端私有显然不合适。</li>
-<li>一个新连接到服务器的客户端对应的系统变量的值该怎么设置？<blockquote>
-<p>为了解决这两个问题，设计MySQL的大佬提出了系统变量的作用范围的概念，具体来说作用范围分为这两种,GLOBAL（全局变量，影响服务器整体操作）和SESSION（会话变量，影响某个客户端连接的操作，别名LOCAL）通过启动选项设置的系统变量的作用范围都是GLOBAL的，也就是对所有客户端都有效的</p>
-</blockquote>
-</li>
-</ul>
-<p>在服务器程序运行期间通过客户端程序设置系统变量的语法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SET [GLOBAL|SESSION] 系统变量名 = 值;</span><br></pre></td></tr></table></figure>
-<h5 id="查看不同作用范围的系统变量"><a href="#查看不同作用范围的系统变量" class="headerlink" title="查看不同作用范围的系统变量"></a>查看不同作用范围的系统变量</h5><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW [GLOBAL|SESSION] VARIABLES [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
-<p>小贴士：如果某个客户端改变了某个系统变量在<code>GLOBAL</code>作用范围的值，并不会影响该系统变量在当前已经连接的客户端作用范围为<code>SESSION</code>的值，只会影响后续连入的客户端在作用范围为<code>SESSION</code>的值。</p>
-<h5 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h5><ul>
-<li><p>并不是所有系统变量都具有<code>GLOBAL</code>和<code>SESSION</code>的作用范围。</p>
-<ul>
-<li><p>有一些系统变量只具有<code>GLOBAL</code>作用范围，比方说<code>max_connections</code>，表示服务器程序支持同时最多有多少个客户端程序进行连接。</p>
-</li>
-<li><p>有一些系统变量只具有<code>SESSION</code>作用范围，比如<code>insert_id</code>，表示在对某个包含<code>AUTO_INCREMENT</code>列的表进行插入时，该列初始的值。</p>
-</li>
-<li><p>有一些系统变量的值既具有<code>GLOBAL</code>作用范围，也具有<code>SESSION</code>作用范围，比如我们前面用到的<code>default_storage_engine</code>，而且其实大部分的系统变量都是这样的，</p>
-</li>
-</ul>
-</li>
-<li><p>有些系统变量是只读的，并不能设置值。</p>
-<p>  比方说<code>version</code>，表示当前<code>MySQL</code>的版本，我们客户端是不能设置它的值的，只能在<code>SHOW VARIABLES</code>语句里查看。</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/1-%E5%90%AF%E5%8A%A8%E9%80%89%E9%A1%B9/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/1-%E5%90%AF%E5%8A%A8%E9%80%89%E9%A1%B9/" class="post-title-link" itemprop="url">1.启动选项</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:11:32" itemprop="dateCreated datePublished" datetime="2023-05-27T14:11:32-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <blockquote>
-<p>在MySQL安装目录下的bin目录中的各种可执行文件，不论是服务器相关的程序（比如mysqld、mysqld_safe）还是客户端相关的程序（比如mysql、mysqladmin），在启动的时候基本都可以指定启动参数。这些启动参数可以放在命令行中指定，也可以把它们放在配置文件中指定。</p>
-</blockquote>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysqld --skip-networking 禁止客户端使用TCP/IP网络进行通信</span><br><span class="line">mysqld --default-storage-engine=MyISAM 指定服务端的存储引擎&#x27;</span><br></pre></td></tr></table></figure>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h -u -p 客户端</span><br></pre></td></tr></table></figure>
-
-<h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><blockquote>
-<p>MySQL程序在启动时会寻找多个路径下的配置文件，这些路径有的是固定的，有的是可以在命令行指定的。根据操作系统的不同，配置文件的路径也有所不同。</p>
-</blockquote>
-<p><img src="/images/1_1.jpg" alt="本地图片"></p>
-<ul>
-<li><p>%WINDIR%是机器上的Windows目录，通常是C:\WINDOWS，可以使用echo %WINDIR%查看</p>
-</li>
-<li><p>BASEDIR指的是MySQL安装目录</p>
-</li>
-<li><p>第四个路径指的是我们在启动程序时可以通过指定default-extra-file参数来额外配置文件路径</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqld --defaults-extra-file=C:\Users\xiaohaizi\my_extra_file.txt</span><br></pre></td></tr></table></figure></li>
-</ul>
-<p><img src="/images/1_2.jpg" alt="本地图片"></p>
-<ul>
-<li>MYSQL_HOME是一个环境变量，该变量的值是我们自己设置的，我们想设置就设置，不想设置就不设置。该变量的值代表一个路径，我们可以在该路径下创建一个my.cnf配置文件，那么这个配置文件中只能放置关于启动服务器程序相关的选项（言外之意就是其他的配置文件既能存放服务器相关的选项也能存放客户端相关的选项，.mylogin.cnf除外，它只能存放客户端相关的一些选项）</li>
-<li>defaults-extra-file的含义与Windows中的一样。<br><strong>在mysqld_safe调用mysqld时，会把它处理不了的这个skip-networking选项交给mysqld处理。</strong></li>
-</ul>
-<h3 id="配置文件的内容"><a href="#配置文件的内容" class="headerlink" title="配置文件的内容"></a>配置文件的内容</h3><p>[server]<br>(具体的启动选项…)</p>
-<p>[mysqld]<br>(具体的启动选项…)</p>
-<p>[mysqld_safe]<br>(具体的启动选项…)</p>
-<p>[client]<br>(具体的启动选项…)</p>
-<p>[mysql]<br>(具体的启动选项…)</p>
-<p>[mysqladmin]<br>(具体的启动选项…)</p>
-<p><img src="/images/1_3.jpg" alt="本地图片"><br>不同的启动命令读取配置文件的不同的组</p>
-<h3 id="配置文件的优先级"><a href="#配置文件的优先级" class="headerlink" title="配置文件的优先级"></a>配置文件的优先级</h3><p>如果我们在多个配置文件中设置了相同的启动选项，那以最后一个配置文件中的为准</p>
-<h3 id="同一个配置文件中多个组的优先级"><a href="#同一个配置文件中多个组的优先级" class="headerlink" title="同一个配置文件中多个组的优先级"></a>同一个配置文件中多个组的优先级</h3><p>比如mysqld命令启动服务端程序，可以访问配置文件中的[mysqld]、[server]等，那么将以最后一个出现的组中的启动选项为准</p>
-<h3 id="default-file使用"><a href="#default-file使用" class="headerlink" title="default-file使用"></a>default-file使用</h3><p> 如果我们不想让MySQL到默认的路径下搜索配置文件（就是上表中列出的那些），可以在命令行指定defaults-file选项，比如这样（以UNIX系统为例）：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysqld --defaults-file=/tmp/myconfig.txt</span><br></pre></td></tr></table></figure>
-<p><strong>如果同一个启动选项既出现在配置文件中，又出现在命令行中，以命令行为准</strong></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
+    <a class="extend prev" rel="prev" href="/page/4/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/6/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1084,20 +1207,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-count">52</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-count">17</span>
         <span class="site-state-item-name">tags</span></a>
       </div>
   </nav>

@@ -2012,4 +2012,115 @@
         <tag>Learned Index</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Towards Practical Learned Indexing</title>
+    <url>/2024/10/03/Towards-Practical-Learned-Indexing/</url>
+    <content><![CDATA[<h2 id="背景和应用场景："><a href="#背景和应用场景：" class="headerlink" title="背景和应用场景："></a>背景和应用场景：</h2><p>(1)Learned Index<br></p>
+<p>(2)RadixSpline </p>
+<ul>
+<li>只读工作负载</li>
+<li>相对于Learned Index，RadixSpline含有两个超参数构建spline points的error和radix table的大小（b-length prefix of a lookup key），训练更快（one-single pass）或者说bulk-loading时间更短</li>
+<li>查找过程，radix-table定位包含lookup key的两个spline point，之后使用线性插值得到predict_pos，最后使用二分查找定位real_pos</li>
+</ul>
+<p><img src="/../images/Towards-Practical-Learned-Indexing/image.png" alt="img"><br><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy.png" alt="img"></p>
+<p>(3)PLEX</p>
+<ul>
+<li>RadixSpline + CHT</li>
+<li>只有一个超参数构建spline points的error</li>
+<li>只读工作负载</li>
+</ul>
+<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>(1)RadixSpline的超参数（radix table的大小（b-length prefix of a lookup key））很难调试<br><br>(2)RadixSpline的radix-layer可能因为异常值（如face数据集中key的最长公共前缀很长时，这样radix-table所需要的size就会很大）而导致性能下降<br></p>
+<h2 id="解决方案："><a href="#解决方案：" class="headerlink" title="解决方案："></a>解决方案：</h2><p>提出PLEX(RadixSpline + compact-hist-tree)，需要two-pass</p>
+<p>PLEX对RadixSpline改进，解决两个问题<br><br>1.Radix layer很难参数化。<br><br>2.Radix layer会被outliers影响。<br></p>
+<blockquote>
+<p>RadixSpline使用radix table来索引spline points，然而当key的二进制表示的最长公共前缀很大时，RadixSpline可能会降低性能。PLEX通过由CHT表示的RadixTree来解决这个问题</p>
+</blockquote>
+<h3 id="Hist-tree："><a href="#Hist-tree：" class="headerlink" title="Hist-tree："></a>Hist-tree：</h3><p>Compact-hist-tree是Hist-tree在只读工作负载中的优化<br><br>Compact-hist-tree的构建方式<br><br>（1）从hist-tree构建<br><br>（2）直接从data构建（本文实现）<br></p>
+<h3 id="auto-tuner"><a href="#auto-tuner" class="headerlink" title="auto-tuner"></a>auto-tuner</h3><p>为Compact-hist-tree实现auto-tuner（本文实现）</p>
+<h3 id="cost-model"><a href="#cost-model" class="headerlink" title="cost-model"></a>cost-model</h3><h4 id="radix-Table-cost-model"><a href="#radix-Table-cost-model" class="headerlink" title="radix-Table cost-model"></a>radix-Table cost-model</h4><p>Radix-table使用lookup-key的prefix长度为r<br><br>则radix-table的长度为2^r<br><br>k为lookup key，则bk为radix-table通过k锁定的区间长度<br></p>
+<p><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%202.png" alt="img"><br>Average lookup time 如下:<br><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%203.png" alt="img"><br>Memory Consumption是O(2^R)</p>
+<h4 id="CHT-cost-model"><a href="#CHT-cost-model" class="headerlink" title="CHT cost-model"></a>CHT cost-model</h4><p>CHT有两个参数：（1）使用lookup-key的prefix长度为r（2）通过CHT确定对应的node后，在node中对应的bin中需要进行二分查找的bound</p>
+<p><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%204.png" alt="img"></p>
+<p>Average lookup time 如下:</p>
+<p><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%205.png" alt="img"></p>
+<p><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%206.png" alt="img"></p>
+<p><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%207.png" alt="img"></p>
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h2><p><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%208.png" alt="img"><br><img src="/../images/Towards-Practical-Learned-Indexing/image%20copy%209.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hist-Tree: Those Who Ignore It Are Doomed to Learn </title>
+    <url>/2024/10/03/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/</url>
+    <content><![CDATA[<h2 id="背景和应用场景："><a href="#背景和应用场景：" class="headerlink" title="背景和应用场景："></a>背景和应用场景：</h2><p>在之前的研究中，学习型索引的性能超过过了传统索引，这被归功于是利用数据分布这一特性。但是这篇文章认为，在比较试验中之学习型索引之所以能表现良好，是因为利用了一些隐含条件（例如，bulk-loading时，数据是排序的,数据的范围[min,max],…，））本文提出了一个传统索引结构（Hist-tree），利用了这些隐藏条件，并在只读工作负载的比较实验中，比RMI，PGM-index，RadixSpline的性能要好</p>
+<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>学习索引做了一些隐含假设，例如<br><br>（1）假设bulk-loading数据已经排序<br><br>（2）数据的范围[min, max]<br><br>（3）数据是不被修改的<br><br>但是传统数据结构例如B-tree并没有这样的假设，这样会让B-tree的构建时间变得更长，或者导致B-tree和学习型索引进行比较实验时，处于劣势<br></p>
+<h2 id="方法："><a href="#方法：" class="headerlink" title="方法："></a>方法：</h2><h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h3><p>提出Hist-tree（利用了隐含假设（1）（2））<br><br>以及压缩版本Compact-Hist-tree（利用了隐含假设（1）（2）（3））<br></p>
+<p><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image.png" alt="img"><br>图中的Hist-tree是从一个数据集中选取200个key构建的，数据集的数据分布如（a）所示，（b）（c）为Hist-tree和Compact Hist-tree<br></p>
+<h4 id="（b）Hist-tree"><a href="#（b）Hist-tree" class="headerlink" title="（b）Hist-tree"></a>（b）Hist-tree<br></h4><p>每一个node根据histogram分成多个bin，terminal bin是灰色的，non-terminal bin是白色的，每个bin的值为该子树所包含的key的数量<br><br>查找过程为先锁定一个terminal-bin（有threshold），之后进行二分查找</p>
+<h4 id="（c）-Compact-Hist-tree"><a href="#（c）-Compact-Hist-tree" class="headerlink" title="（c） Compact Hist-tree"></a>（c） Compact Hist-tree</h4><p>每一行代表一个node，每个node根据histogram分为多个binterminal bin是灰色的，non-terminal bin是白色的，白色的bin存储的值为child node的offset，灰色的bin存储累计直到该bin的所有key的数量</p>
+<h3 id="physical-layout"><a href="#physical-layout" class="headerlink" title="physical layout"></a>physical layout</h3><p>Hist-tree的物理结构为两个32位整形数组，第一个数组包含的inner node（含有child node的node 或者说是 至少包含一个non-terminal bin的node），第二个数组包含leaf node（只有terminal bin的node）<br>例如：（b）中的root node要存储在第一个数组中占八个元素，其中由四个histogram bin计数组成，后跟四个child pointers(如果该pointer对应的bin为terminal bin或者指向leaf node，将高位flag标记为1)，并且第一个和第四个child pointer的高位flag标记为1</p>
+<p><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy.png" alt="img"><br><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy%202.png" alt="img"></p>
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果:"></a>结果:</h2><p><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy%203.png" alt="img"><br><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy%204.png" alt="img"></p>
+<p>个人实现版本：<a href="https://github.com/jingtao8a/Hist">https://github.com/jingtao8a/Hist</a></p>
+]]></content>
+      <categories>
+        <category>Learned Index</category>
+      </categories>
+      <tags>
+        <tag>Learned Index</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>树状数组</title>
+    <url>/2024/10/03/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/</url>
+    <content><![CDATA[<p><img src="/../images/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/image.png" alt="img"><br><img src="/../images/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/image%20copy.png" alt="img"></p>
+<p><img src="/../images/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/image%20copy%202.png" alt="img"><br><img src="/../images/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/image%20copy%203.png" alt="img"><br><img src="/../images/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/image%20copy%204.png" alt="img"><br><img src="/../images/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/image%20copy%205.png" alt="img"></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 单点更新</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param i     原始数组索引 i</span></span><br><span class="line"><span class="comment"> * @param delta 变化值 = 更新以后的值 - 原始值</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="type">void</span> <span class="title">update</span><span class="params">(<span class="type">int</span> i, <span class="type">int</span> delta)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 从下到上更新，注意，预处理数组，比原始数组的 len 大 1，故 预处理索引的最大值为 len</span></span><br><span class="line">    <span class="keyword">while</span> (i &lt;= len) &#123;</span><br><span class="line">        tree[i] += delta;</span><br><span class="line">        i += <span class="built_in">lowbit</span>(i);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="type">static</span> <span class="type">int</span> <span class="title">lowbit</span><span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x &amp; (-x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="/../images/%E6%A0%91%E7%8A%B6%E6%95%B0%E7%BB%84/image%20copy%206.png" alt="img"></p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 查询前缀和</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * @param i 前缀的最大索引，即查询区间 [0, i] 的所有元素之和</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="type">int</span> <span class="title">query</span><span class="params">(<span class="type">int</span> i)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 从右到左查询</span></span><br><span class="line">    <span class="type">int</span> sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (i &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        sum += tree[i];</span><br><span class="line">        i -= <span class="built_in">lowbit</span>(i);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>个人实现:<br><a href="https://github.com/jingtao8a/leetcode/blob/master/src/main/java/org/jingtao8a/code_random_notes/TreeArray.java">https://github.com/jingtao8a/leetcode/blob/master/src/main/java/org/jingtao8a/code_random_notes&#x2F;TreeArray.java</a></p>
+]]></content>
+      <categories>
+        <category>数据结构</category>
+      </categories>
+      <tags>
+        <tag>数据结构</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>线段树</title>
+    <url>/2024/10/03/%E7%BA%BF%E6%AE%B5%E6%A0%91/</url>
+    <content><![CDATA[<p>线段树是常用的维护区间信息的数据结构</p>
+<h2 id="线段树支持操作"><a href="#线段树支持操作" class="headerlink" title="线段树支持操作"></a>线段树支持操作</h2><p>（1）单点修改<br><br>（2）区间修改<br><br>（3）区间查询（区间求和，求区间max，求区间min，区间gcd等等）<br></p>
+<h2 id="线段树特点："><a href="#线段树特点：" class="headerlink" title="线段树特点："></a>线段树特点：</h2><p>（1）每个节点表示一个区间<br><br>（2）root node表示区间为[1, n]<br><br>（3）leaf Node表示区间为[x, x]<br><br>（4）线段树中如果一个节点区间为[l, r]（l !&#x3D; r）那么这个节点的左子树的根表示区间为[l, mid]，这个节点的右子树的根表示区间就是[mid + 1, r], 其中mid &#x3D; Floor((l + r) &#x2F;2)<br></p>
+<h2 id="线段树特点：-1"><a href="#线段树特点：-1" class="headerlink" title="线段树特点："></a>线段树特点：</h2><p>（1）每个节点表示一个区间<br>（2）root node表示区间为[1, n]<br>（3）leaf Node表示区间为[x, x]<br>（4）线段树中如果一个节点区间为[l, r]（l !&#x3D; r）那么这个节点的左子树的根表示区间为[l, mid]，这个节点的右子树的根表示区间就是[mid + 1, r], 其中mid &#x3D; Floor((l + r) &#x2F;2)</p>
+<h2 id="线段树的存储方式"><a href="#线段树的存储方式" class="headerlink" title="线段树的存储方式"></a>线段树的存储方式</h2><p><img src="/../images/%E7%BA%BF%E6%AE%B5%E6%A0%91/image.png" alt="img"></p>
+<h2 id="建立线段树"><a href="#建立线段树" class="headerlink" title="建立线段树"></a>建立线段树</h2><p>时间复杂度为O（n）</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Segment_Tree</span> &#123;</span><br><span class="line">    <span class="type">int</span> l,r;</span><br><span class="line">    info_type info;</span><br><span class="line">    tag_type tag;</span><br><span class="line">    <span class="comment">//这里可以维护任何满足区间加法的信息</span></span><br><span class="line">&#125;tr[<span class="number">4</span> * N];   <span class="comment">//要开四倍空间</span></span><br><span class="line"><span class="comment">//实现时可以写 info + info,info + tag,tag + tag 来简化代码</span></span><br><span class="line">info_type <span class="keyword">operator</span> + (info_type x,info_type y) &#123;</span><br><span class="line">    <span class="comment">// 合并 info</span></span><br><span class="line">&#125;</span><br><span class="line">info_type opreator + (info_type x,tag_type y) &#123;</span><br><span class="line">    <span class="comment">// 合并 info 和 tag</span></span><br><span class="line">&#125;</span><br><span class="line">tag_type <span class="keyword">operator</span> + (tag_type x,tag_type y) &#123;</span><br><span class="line">    <span class="comment">// 合并 tag</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">opt</span> <span class="params">(info_type &amp;x,tag_type y)</span> </span>&#123;</span><br><span class="line">    x = x + y;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">push_up</span> <span class="params">(<span class="type">int</span> u)</span> </span>&#123; </span><br><span class="line"><span class="comment">//这里举个例子，比如区间和，区间和就是由一个点的左右子节点的和相加</span></span><br><span class="line">tr[u].info = tr[u &lt;&lt; <span class="number">1</span>].info + tr[u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>].info;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">build</span> <span class="params">(<span class="type">int</span> u,<span class="type">int</span> l,<span class="type">int</span> r)</span> </span>&#123;  <span class="comment">//当前正在下标为u的点，这个点表示的区间是[l,r]</span></span><br><span class="line">    <span class="keyword">if</span> (l == r) &#123;</span><br><span class="line">        tr[u] = &#123;l,r,<span class="built_in">info</span> (a[l])&#125;;</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    tr[u] = &#123;l,r&#125;;  <span class="comment">//记得存储当前点表示的区间，否则你会调上一整天</span></span><br><span class="line">    <span class="type">int</span> mid = l + r &gt;&gt; <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">build</span> (u &lt;&lt; <span class="number">1</span>,l,mid),<span class="built_in">build</span> (u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>,mid + <span class="number">1</span>,r); <span class="comment">//u &lt;&lt; 1就是u * 2，u &lt;&lt; 1 | 1就是u * 2 + 1</span></span><br><span class="line">    <span class="built_in">push_up</span> (u);  <span class="comment">//push_up函数的意思是把某一个节点的信息由它的子节点算出来</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="单点修改"><a href="#单点修改" class="headerlink" title="单点修改"></a>单点修改</h2><p>时间复杂度均为O(logN)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">modify</span> <span class="params">(<span class="type">int</span> u,<span class="type">int</span> x,tag_type d)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (tr[u].l == tr[u].r) &#123;</span><br><span class="line">        tr[u].info += d; <span class="comment">//如果当前区间只有一个数，那么这个数一定是要修改的</span></span><br><span class="line">        <span class="comment">// 修改不局限于覆盖，也可能是别的</span></span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> mid = tr[u].l + tr[u].r &gt;&gt; <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (x &lt;= mid) <span class="built_in">modify</span> (u &lt;&lt; <span class="number">1</span>,x,d);  <span class="comment">//如果在左边就递归修改左半边区间</span></span><br><span class="line">    <span class="keyword">else</span> <span class="built_in">modify</span> (u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>,x,d);    <span class="comment">//如果在右边就递归修改右半边区间</span></span><br><span class="line">    <span class="built_in">push_up</span> (u)   <span class="comment">//记得更新信息</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="区间修改"><a href="#区间修改" class="headerlink" title="区间修改"></a>区间修改</h2><p>思路1：<br>时间复杂度均为O(N)</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">modify</span> <span class="params">(<span class="type">int</span> u,<span class="type">int</span> l,<span class="type">int</span> r,tag_type d)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (tr[u].l == tr[u].r) &#123;   <span class="comment">//叶子节点</span></span><br><span class="line">        tr[u].info += d;</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="type">int</span> mid = tr[u].l + tr[u].r &gt;&gt; <span class="number">1</span>;  <span class="comment">//注意是tr[u].l和tr[u].r</span></span><br><span class="line">    <span class="keyword">if</span> (l &lt;= mid) <span class="built_in">modify</span> (u &lt;&lt; <span class="number">1</span>,l,r,d);  <span class="comment">//左边有修改区间，就递归左半边</span></span><br><span class="line">    <span class="keyword">if</span> (r &gt;= mid + <span class="number">1</span>) <span class="built_in">modify</span> (u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>,l,r,d);  <span class="comment">//右边有修改区间，就递归右半边</span></span><br><span class="line">    <span class="built_in">push_up</span> (u);  <span class="comment">//要记得要把这个点的信息更新一下</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>思路2：</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">push_down</span> <span class="params">(<span class="type">int</span> u)</span> </span>&#123; <span class="comment">//下传标记函数</span></span><br><span class="line">    <span class="keyword">if</span> (tr[u].tag) &#123;  <span class="comment">//有懒标记才下传</span></span><br><span class="line">        tr[u &lt;&lt; <span class="number">1</span>].info += tr[u].tag,tr[u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>].info += tr[u].tag</span><br><span class="line">        tr[u].tag = <span class="built_in">info</span> ();  <span class="comment">//懒标记记得清零</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">modify</span> <span class="params">(<span class="type">int</span> u,<span class="type">int</span> l,<span class="type">int</span> r,<span class="type">int</span> d)</span> </span>&#123; <span class="comment">//当前遍历到的点下标是u，要修改区间[l,r]</span></span><br><span class="line">    <span class="keyword">if</span> (l &lt;= tr[u].l &amp;&amp; tr[u].r &lt;= r) &#123;</span><br><span class="line">        <span class="built_in">opt</span> (u,d);</span><br><span class="line">        <span class="keyword">return</span> ;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">push_down</span> (u);  <span class="comment">//一定要分裂，只要记牢在递归左右区间之前，就要分裂</span></span><br><span class="line">    <span class="type">int</span> mid = tr[u].l + tr[u].r &gt;&gt; <span class="number">1</span>;  <span class="comment">//注意时tr[u].l和tr[u].r</span></span><br><span class="line">    <span class="keyword">if</span> (l &lt;= mid) <span class="built_in">modify</span> (u &lt;&lt; <span class="number">1</span>,l,r,d);  <span class="comment">//左边有修改区间，就递归左半边</span></span><br><span class="line">    <span class="keyword">if</span> (r &gt;= mid + <span class="number">1</span>) <span class="built_in">modify</span> (u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>,l,r,d);  <span class="comment">//右边有修改区间，就递归右半边</span></span><br><span class="line">    <span class="built_in">push_up</span> (u);  <span class="comment">//要记得要把这个点的信息更新一下</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="区间查询"><a href="#区间查询" class="headerlink" title="区间查询"></a>区间查询</h2><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="function">LL <span class="title">query_sum</span> <span class="params">(<span class="type">int</span> u,<span class="type">int</span> l,<span class="type">int</span> r)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (l &lt;= tr[u].l &amp;&amp; tr[u].r &lt;= r) <span class="keyword">return</span> tr[u].sum;</span><br><span class="line">    <span class="built_in">push_down</span> (u);  <span class="comment">//在递归之前一定要分裂</span></span><br><span class="line">    <span class="type">int</span> mid = tr[u].l + tr[u].r &gt;&gt; <span class="number">1</span>;</span><br><span class="line">    LL sum = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> (l &lt;= mid) sum += <span class="built_in">query_sum</span> (u &lt;&lt; <span class="number">1</span>,l,r);  <span class="comment">//左半边有被查询到的数据，就递归左半边</span></span><br><span class="line">    <span class="keyword">if</span> (r &gt;= mid + <span class="number">1</span>) sum += <span class="built_in">query_sum</span> (u &lt;&lt; <span class="number">1</span> | <span class="number">1</span>,l,r);  <span class="comment">//右半边有被查询到的数据，就递归右半边</span></span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参考:<a href="https://www.acwing.com/file_system/file/content/whole/index/content/6505356/">线段树 acwing</a></p>
+<p>个人实现:<br><a href="https://github.com/jingtao8a/leetcode/blob/master/src/main/java/org/jingtao8a/code_random_notes/SegmentTree.java">https://github.com/jingtao8a/leetcode/blob/master/src/main/java/org/jingtao8a/code_random_notes&#x2F;SegmentTree.java</a></p>
+]]></content>
+      <categories>
+        <category>数据结构</category>
+      </categories>
+      <tags>
+        <tag>数据结构</tag>
+      </tags>
+  </entry>
 </search>
