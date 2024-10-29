@@ -190,6 +190,92 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/13-redo%E6%97%A5%E5%BF%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/13-redo%E6%97%A5%E5%BF%97/" class="post-title-link" itemprop="url">13.redo日志</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 14:22:32" itemprop="dateCreated datePublished" datetime="2023-05-27T14:22:32-07:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>与在事务提交时将所有修改过的内存中的页面刷新到磁盘中相比，只将该事务执行过程中产生的redo日志刷新到磁盘的好处如下<br>1.redo日志占用的空间非常小<br>2.redo日志是顺序写入磁盘的</p>
+<p>每条语句包含多个mtr，每个mtr包含一组redo log<br>一个mtr运行结束后，会将产生的一组redolog复制到log buffer中，在一些情况下它们会被刷新到磁盘里<br>1.log buffer空间不足时<br>2.事务提交时<br>3.后台线程不停地刷<br>4.正常关闭服务器<br>5.做checkpoint 时<br>6.其它情况</p>
+<p>redo日志文件前4个block</p>
+<ul>
+<li>log file header：描述该日志文件地一些整体属性</li>
+<li>checkpoint1</li>
+<li>无用</li>
+<li>checkpoint2</li>
+</ul>
+<p>Log Sequence Number（日志序列号）lsn<br>每一组由mtr生成地redo日志都有一个唯一的lsn值与其对应，lsn值越小，说明redo日志产生的越早</p>
+<p>在mtr结束时，还会将执行过程中可能修改过的页面加入到buffer pool 的flush链表</p>
+<p>checkpoint：<br>redo日志只是为了系统崩溃后恢复脏页用的，如果对应的脏页已经刷新到磁盘，就不需要对应的redo日志了，所以判断某些redo日志占用的磁盘空间是否可以覆盖的依据就是它对应的脏页是否已经刷新到磁盘里。</p>
+<p>做一次checkpoint其实可以分为两个步骤<br>1.计算一下当前系统中可以被覆盖的redo日志对应的lsn值最大是多少（有必要的话更新checkpoint_lsn）<br>2.将checkpoint_lsn和对应的redo日志文件组偏移量以及此次checkpoint的编号写到日志文件的管理信息（目前系统做了多少次checkpoint的变量checkpoint_no，每做一次checkpoint，该变量就加1）</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/12-%E4%BA%8B%E5%8A%A1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1059,83 +1145,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/3-%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/27/3-%E7%8A%B6%E6%80%81%E5%8F%98%E9%87%8F/" class="post-title-link" itemprop="url">3.状态变量</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-27 14:16:34" itemprop="dateCreated datePublished" datetime="2023-05-27T14:16:34-07:00">2023-05-27</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="状态变量"><a href="#状态变量" class="headerlink" title="状态变量"></a>状态变量</h3><blockquote>
-<p>为了让我们更好的了解服务器程序的运行情况，MySQL服务器程序中维护了很多关于程序运行状态的变量，它们被称为状态变量。比方说Threads_connected表示当前有多少客户端与服务器建立了连接，Handler_update表示已经更新了多少行记录等，像这样显示服务器程序状态信息的状态变量还有好几百个，我们就不一一介绍了，等遇到了会详细说它们的作用的。</p>
-</blockquote>
-<p>  由于状态变量是用来显示服务器程序运行状况的，所以它们的值只能由服务器程序自己来设置，我们程序员是不能设置的。与系统变量类似，状态变量也有GLOBAL和SESSION两个作用范围的，所以查看状态变量的语句可以这么写：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SHOW [GLOBAL|SESSION] STATUS [LIKE 匹配的模式];</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1207,7 +1216,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">52</span>
+          <span class="site-state-item-count">53</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1306,6 +1315,8 @@
 
 
 
+
+  
 
   
 

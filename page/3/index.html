@@ -190,6 +190,84 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/28/DILI-A-Distribution-Driven-Learned-Index/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/12/28/DILI-A-Distribution-Driven-Learned-Index/" class="post-title-link" itemprop="url">DILI-A-Distribution-Driven-Learned-Index</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-12-28 07:07:45" itemprop="dateCreated datePublished" datetime="2023-12-28T07:07:45-08:00">2023-12-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h2><p>需要有一批数据用于批量加载构建初始数据，不支持从0开始构建（一个key一个key插入），支持读写操作。</p>
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>在一棵树中查找一个key，包含两部分；找到包含key的leaf node，leaf node的local search<br>查找性能取决于leaf node的深度和线性回归模型的accuracy</p>
+<h2 id="方法和结果"><a href="#方法和结果" class="headerlink" title="方法和结果"></a>方法和结果</h2><p>提出一种two-phase bulk loading算法，先构建一棵BU（bottom-up）-Tree，它的node布局由greedy merging 算法（考虑了leaf node的深度和线性回归模型的accuracy）决定，接着根据BU-Tree的node布局构建DILI.<br>BU-Tree中internal node的range并不是被它的child平分<br>DILI与LIPP相比，每个leaf node的keys分布更接近线性，发生冲突的概率更低<br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/1.png" alt="img"></p>
+<p>Search without Optimization<br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/2.png" alt="img"></p>
+<p>Building BU-Tree<br>难点：确定nh的大小和nh - 1个breakpoints<br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/3.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/4.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/5.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/6.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/7.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/8.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/9.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/10.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/11.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/12.png" alt="img"><br><img src="/../images/DILI-A-Distribution-Driven-Learned-Index/13.png" alt="img"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/12/07/cmake-generator-error-under-windows-system/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1099,105 +1177,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/28/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/05/28/%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5/" class="post-title-link" itemprop="url">动态链接</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2023-05-28 11:09:30" itemprop="dateCreated datePublished" datetime="2023-05-28T11:09:30-07:00">2023-05-28</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2024-02-25 23:45:34" itemprop="dateModified" datetime="2024-02-25T23:45:34-08:00">2024-02-25</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。"><a href="#静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想：-把链接过程推迟到运行时进行。" class="headerlink" title="静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。"></a>静态链接浪费内存和磁盘空间并且更新困难。动态链接的基本思想： 把链接过程推迟到运行时进行。</h3><p>-shared</p>
-<blockquote>
-<p>生成动态链接模块时只使用-shared，由于装载时重定位的方法需要修改指令，没有办法做到同一份指令被多个进程共享，因为指令被重定位之后对于每个进程来讲是不同的。</p>
-</blockquote>
-<p>-fPIC 地址无关代码</p>
-<blockquote>
-<p>实现的基本思想就是把指令中那些需要被修改的部分分离出来，跟数据部分放在一起，这样指令部分可以保持不变，而数据部分在每个进程中拥有一个副本。这种方案就是地址无关技术</p>
-</blockquote>
-<p>GOT全局偏移表</p>
-<blockquote>
-<p>对于动态链接模块中,对于外部符号（数据）的访问的机制，当指令需要访问某个外部变量时，程序会先找到GOT，然后根据GOT中变量所对应的项找到变量的目标地址。每个变量都对应一个4个字节的地址，链接器在装载模块的时候会查找每个变量所在的地址，然后填充GOT中的各个项。由于GOT表本身是放在数据段的，所以它可以在模块装载时被修改，并且每个进程都可以有独立的副本。</p>
-</blockquote>
-<p>-fPIE</p>
-<blockquote>
-<p>地址无关代码技术除了可以用在动态链接模块上，它也可以用于可执行文件</p>
-</blockquote>
-<p>共享模块（动态链接模块）的全局变量问题</p>
-<blockquote>
-<p>当一个模块引用了定义在共享对象的全局变量的时候，由于可执行文件在之前链接时就必须确定该全局变量的地址，所以连接器会在创建可执行文件时，在它的.bss段创建一个global变量的副本。导致同一变量同时存在于多个位置<br>于是解决的办法只有一个，那就是所有的使用这个变量的指令都指向位于可执行文件中的那个副本。ELF共享库在编译时，默认都把定义在模块内部的全局变量当作定义在其他模块的全局变量，也就是说当作前面的类型四，通过GOT来实现变量的访问。当共享模块被装载时，如果某个全局变量在可执行文件中拥有副本，那么动态链接器就会把GOT中的相应地址指向该副本，这样该变量在运行时实际上最终就只有一个实例。如果变量在共享模块中被初始化，那么动态链接器还需要将该初始化值复制到程序主模块中的变量副本；如果该全局变量在程序主模块中没有副本，那么GOT中的相应地址就指向模块内部的该变量副本。</p>
-</blockquote>
-<p><strong>默认情况下，如果可执行文件是动态链接的，那么GCC会使用PIC的方法来产生可执行文件的代码段部分，以便于不同的进程能够共享代码段，节省内存。所以动态链接的可执行文件中存在.got段</strong></p>
-<p>延迟绑定</p>
-<blockquote>
-<p>由于动态链接下对于全局数据的访问和跨模块的调用都要进行复杂的GOT定位，然后间接寻址或调用，导致程序的运行速度减慢大概1%~%5。又因为动态链接的链接工作在运行时完成，导致程序的启动速度减慢。<br>程序运行过程中，会有很多函数没有用到（错误处理函数，没有使用的功能模块等），所以没有必要一开始就把所有函数都链接好，ELF采用延迟绑定的方法，基本思想是当函数第一次被用到时才由动态链接器进行绑定（符号查找，重定位等），没用到的不绑定。这提高了程序的启动速度。<br>ELF使用PLT（Procedure Linkage Table）来实现延迟绑定,它使用了一些很精巧的指令序列来完成</p>
-</blockquote>
-<p>ELF将GOT拆分成了两个表.got和.got.plt，其中.got用来保存全局变量引用的地址，.got.plt用来保存函数引用的地址<br>PLT在ELF文件中以独立的段存放，段名通常叫做.plt，因为它本身是一些地址无关代码，所以可以跟代码段合并成同一个可读可写可执行的“Segment”被载入内存<br><a target="_blank" rel="noopener" href="https://markrepo.github.io/kernel/2018/08/19/dynamic-link/">参考链接</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1269,7 +1248,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">52</span>
+          <span class="site-state-item-count">53</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -1368,6 +1347,8 @@
 
 
 
+
+  
 
   
 

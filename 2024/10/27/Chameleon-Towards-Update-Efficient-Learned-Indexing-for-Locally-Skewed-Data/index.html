@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="关键词：learned index，locally skewed data，multi-agent reinfocement learning  Introduction问题描述（1）学习索引利用机器学习模型去拟合局部区域内的数据分布具有挑战性现存的工作（比如ALEX，PGM, FITing-tree采用贪心构建策略来拟合整体数据分布）无法很好地适应局部数据的偏斜分布  （2）频繁插入数据而进行">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data">
+<meta property="og:url" content="http://jingtao8a.github.io/2024/10/27/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="关键词：learned index，locally skewed data，multi-agent reinfocement learning  Introduction问题描述（1）学习索引利用机器学习模型去拟合局部区域内的数据分布具有挑战性现存的工作（比如ALEX，PGM, FITing-tree采用贪心构建策略来拟合整体数据分布）无法很好地适应局部数据的偏斜分布  （2）频繁插入数据而进行">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/imagecopy.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image2.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image3.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image4.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image5.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image6.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image7.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image8.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image9.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image10.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image11.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image12.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image13.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image14.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image15.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image16.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image17.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image18.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image19.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image20.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image21.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image22.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image23.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image24.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image25.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image26.png">
+<meta property="article:published_time" content="2024-10-28T03:08:38.000Z">
+<meta property="article:modified_time" content="2024-10-29T02:42:54.813Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="Learned Index">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image.png">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2024/10/27/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/10/27/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-10-27 20:08:38" itemprop="dateCreated datePublished" datetime="2024-10-27T20:08:38-07:00">2024-10-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2024-10-28 19:42:54" itemprop="dateModified" datetime="2024-10-28T19:42:54-07:00">2024-10-28</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>关键词：learned index，locally skewed data，multi-agent reinfocement learning</p>
+</blockquote>
+<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><h3 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h3><p>（1）学习索引利用机器学习模型去拟合局部区域内的数据分布具有挑战性<br>现存的工作（比如ALEX，PGM, FITing-tree采用贪心构建策略来拟合整体数据分布）无法很好地适应局部数据的偏斜分布</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image.png" alt="img"></p>
+<p>（2）频繁插入数据而进行的重新构建或者重训练对查询延迟有显著影响</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>（1）提出了一个名为Chameleon的一维学习型索引，分为non-leaf node（使用linear model）和leaf node（使用EBH（Error Bounded Hashing） model）<br>（2）提出了一个测量local skewness的指标，提出MARL（Multi Agent Reinforcement Learning）方法用来构建索引结构和定位局部倾斜的区域<br>（3）提出一个轻量级锁（名为interval lock）和一个基于此的无锁重训练机制，</p>
+<p>（1）、（2）解决了问题1，（3）解决了问题2</p>
+<h2 id="Related-work"><a href="#Related-work" class="headerlink" title="Related work"></a>Related work</h2><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/imagecopy.png" alt="img"></p>
+<h2 id="OVERVIEW-OF-CHAMELEON"><a href="#OVERVIEW-OF-CHAMELEON" class="headerlink" title="OVERVIEW OF CHAMELEON"></a>OVERVIEW OF CHAMELEON</h2><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image2.png" alt="img"></p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image3.png" alt="img"></p>
+<h3 id="Inner-node"><a href="#Inner-node" class="headerlink" title="Inner node"></a>Inner node</h3><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image4.png" alt="img"></p>
+<h3 id="Leaf-node"><a href="#Leaf-node" class="headerlink" title="Leaf node"></a>Leaf node</h3><p>因为输入的微小变化可以导致相应的哈希值的显著变化，使得哈希函数能够分散密集数据，从而有效降低索引树的高度<br><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image5.png" alt="img"></p>
+<h3 id="难点"><a href="#难点" class="headerlink" title="难点"></a>难点</h3><p>解决局部倾斜问题的关键在于如何测量和识别这种偏斜，以及在数据更新时可能导致局部偏斜区域的变化</p>
+<h3 id="提出了一个测量local-skewness的指标"><a href="#提出了一个测量local-skewness的指标" class="headerlink" title="提出了一个测量local skewness的指标"></a>提出了一个测量local skewness的指标</h3><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image6.png" alt="img"></p>
+<h3 id="提出MARL（Multi-Agent-Reinforcement-Learning）方法"><a href="#提出MARL（Multi-Agent-Reinforcement-Learning）方法" class="headerlink" title="提出MARL（Multi Agent Reinforcement Learning）方法"></a>提出MARL（Multi Agent Reinforcement Learning）方法</h3><p>提出MARL（Multi Agent Reinforcement Learning）方法用来构建索引结构和定位局部倾斜的区域</p>
+<ul>
+<li>首先提取数据集的分布信息（即D的PDF，|D|和D的lsn），输入DARE，输出为一个矩阵，用于确定前h-1层的分支因子，用来构建前h层的索引，最后提取第h层每个节点的数据分布信息将其输入TSMDP，输入每个节点的分支因子（可能为1）</li>
+<li>当数据更新导致局部数据分布发生变化时，重训练线程会定位局部倾斜的区域并调用TSMDP来调整局部结构，而不会阻塞查询（使用interval lock）</li>
+</ul>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image7.png" alt="img"></p>
+<h2 id="CHAMELEON-INDEX-CONSTRUCTION"><a href="#CHAMELEON-INDEX-CONSTRUCTION" class="headerlink" title="CHAMELEON INDEX CONSTRUCTION"></a>CHAMELEON INDEX CONSTRUCTION</h2><h3 id="Resolving-local-skewness"><a href="#Resolving-local-skewness" class="headerlink" title="Resolving local skewness"></a>Resolving local skewness</h3><p>为了有效解决局部偏斜问题，我们根据定理1自适应地调整每个叶子节点 $ N_{ij}.c $ 的容量，以确保每个节点满足所需的 $ \tau $ 值。</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image8.png" alt="img"></p>
+<h3 id="Locating-the-Locally-Skewed-Regions"><a href="#Locating-the-Locally-Skewed-Regions" class="headerlink" title="Locating the Locally Skewed Regions"></a>Locating the Locally Skewed Regions</h3><p>在索引构建过程中，每个内部节点都会影响其所有子节点。现有的基于马尔可夫决策过程（MDP）的强化学习算法侧重于顺序决策问题，无法直接应用于我们的基于树的决策过程。为了解决这一问题，我们提出了一个树结构马尔可夫决策过程（TSMDP），基于深度 Q 网络（DQN）的思想。以与节点 $ N_{ij} $ 对应的数据集特征作为输入，TSMDP 输出节点 $ N_{ij} $ 的扇出 $ N_{ij}.f $。接下来，我们定义 TSMDP 过程，并介绍训练过程。</p>
+<h4 id="TSMDP公式定义"><a href="#TSMDP公式定义" class="headerlink" title="TSMDP公式定义"></a>TSMDP公式定义</h4><p>State：状态s是节点划分之前的信息，包括PDF，key的数量，lsn（其中PDF由大小为bt的桶表示）</p>
+<p>Action：动作a是指分配给当前状态对应节点的fanout，动作空间是一个离散值的预定义值</p>
+<p>Transition：给定s和a，如果a &#x3D; 1，则TSMDP到达一个终止状态，并构建一个叶子节点。由于基于树的索引结构的特点，当前状态s可能会导致多个下一个状态{s1，s2}</p>
+<p>Reward function：评估在给定s和a下构建的索引的查询成本和内存成本<br> $ r &#x3D; -w_t \cdot R_t - w_m \cdot R_m $。其中，$ w_t $ 和 $ w_m $ 表示查询时间奖励和内存奖励的权重系数。我们用 $ R_t $ 表示遍历树和在叶节点内进行二次搜索的成本，用 $ R_m $ 表示执行动作后节点的内存使用量。根据应用需求，还可以将查询分布等其他因素加入到奖励函数中</p>
+<h4 id="TSMDP训练过程"><a href="#TSMDP训练过程" class="headerlink" title="TSMDP训练过程"></a>TSMDP训练过程</h4><p>学习算法：带经验回放（experience replay）的DQN<br>智能体的经验，包括状态、动作、奖励和下一状态 $(s_t, a_t, r_t, s_{t+1})$ ，在每个时间步 $ t $ 进行存储。在每一步中，使用<em><strong>Boltzmann</strong></em> 探索策略来选择动作。我们实现了两个网络：一个为参数为 $ \theta $ 的策略网络 $ Q_T $ ，另一个为参数为 $ \theta^{-} $ 的目标网络 $ \hat{Q}_T $ ，这种设置使 TSMDP 比使用单一网络更稳定。</p>
+<p>给定一批转换 $(s, a, r, s’)$ 后，通过最小化<strong>平均绝对误差</strong>（Mean Absolute Error，MAE）损失来使用梯度下降更新策略网络的参数 $ \theta $ 。具体而言，损失函数为：<br><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image9.png" alt="img"></p>
+<p>其中，$ \gamma \in (0, 1) $ 表示折扣因子，决定了未来奖励的重要性，$ a’_z $ 表示由 $ s’_z $ 所采取的最优动作。$ w_z $ 是 $ s’_z $ 的权重，即 $ s’_z $ 中键数量与 $ s $ 中键数量的比值。<br>请注意，目标网络的参数 $ \theta^- $ 仅在每隔 $ K $ 个步骤（系统参数）时与策略网络的参数 $ \theta $ 同步，而在其他时间保持不变。</p>
+<h4 id="只使用TSMDP的缺点"><a href="#只使用TSMDP的缺点" class="headerlink" title="只使用TSMDP的缺点"></a>只使用TSMDP的缺点</h4><p>1.索引构建时间很长，因为需要递归调用TSMDP模型为每个节点做出决策</p>
+<p>2.高训练开销。在训练过程中，每个经验都包含了每个节点及其所有子节点的概率密度函数 (PDF)。逐一使用 $ Qˆ_T $ 计算子节点的 $ Qˆ_T(s’, a’) $ 的过程非常耗时。同时，离散动作空间的使用限制了我们在更大动作空间中的探索能力。</p>
+<p>3.当应用需求发生变化时（例如，奖励函数优先考虑查询时间而非索引，或反之），TSMDP需要重新训练</p>
+<h3 id="Enhancing-TSMDP-with-DARE"><a href="#Enhancing-TSMDP-with-DARE" class="headerlink" title="Enhancing TSMDP with DARE"></a>Enhancing TSMDP with DARE</h3><blockquote>
+<p>为了解决限制 (1)，Chameleon 只需调用 DARE 一次来构建索引的上层 $ h $ 层，仅对下层进行局部 TSMDP 调用以进行微调。</p>
+</blockquote>
+<blockquote>
+<p>为了解决限制（2），DARE 使用单步决策的强化学习模型，该模型具有较低的训练开销，使我们可以在一个大且连续的动作空间中探索，以找到最佳动作。</p>
+</blockquote>
+<blockquote>
+<p>为了解决限制 (3)，我们提出了一个动态奖励函数，使其能够适应系统动态约束，而无需重新训练强化学习代理。</p>
+</blockquote>
+<p>具体来说，给定一个数据集 $ D $，其最大和最小键分别为 $ M_k $ 和 $ m_k $，DARE 首先提取全局数据分布特征。基于这些特征，它输出一个固定大小的参数矩阵 $ M(h - 2, L) $ 和根节点的分支因子 $ p_0 $（根节点的分支因子作为一个单独的输出参数，因为它在索引中具有唯一性）。这里，$ h $ 表示层数，矩阵 $ M $ 的每一行代表第 $ i $ 层中各个非根内节点的参数 $ p_{i,0}, p_{i,1}, …, p_{i,L-1} $</p>
+<p>在获得 $ M $ 和 $ p_0 $ 后，我们首先计算节点 $ N_{ij} $ 在 $ M $ 中的位置 $ x $ 的映射，其中 $ x &#x3D; \frac{\frac{(N_{ij}.lk + N_{ij}.uk)}{2} - m_k}{M_k - m_k}{(L-1)} $。接下来，计算矩阵 $ M $ 中包含 $ x $ 的区间 $[p_{i,l}, p_{i,l+1}]$，其中 $ l &#x3D; \lfloor x \rfloor $。然后，我们采用分段线性插值函数将离散参数转换为连续值，公式为：</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image10.png" alt="img"></p>
+<p>在构建了上层 $ h $ 级索引后，基于 DARE 构建的索引，TSMDP 精细化下层，决定是否继续分裂。在这里，索引构建完成。</p>
+<p>如图 6 所示，假设 $ h &#x3D; 3 $，$ L &#x3D; 4 $，最小键 $ m_k &#x3D; 0 $ 和最大键 $ M_k &#x3D; 3 $。在步骤 (1) 中，提取数据集特征并作为 DARE 的状态。在步骤 (2) 中，DARE 输出根节点的分支因子 $ p_0 $ 和一个 $ 1 \times 4 $ 的参数矩阵 $ M $。由于 $ p_0 &#x3D; 3 $，根节点有三个子节点，其中 $ N_{10}.lk &#x3D; 0 $ 和 $ N_{10}.uk &#x3D; 1 $。因此，计算 $ x &#x3D; \frac{\frac{(0+1)}{2} - 0}{3-0}\cdot 3 &#x3D; 0.5 $，并得到 $ l &#x3D; \lfloor x \rfloor &#x3D; 0 $。最后，得到 $ N_{10}.f &#x3D; (0.5 - 0) \cdot 1.3 + (1 - 0.5) \cdot 5.1 &#x3D; 3.2 \approx 3 $。</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image11.png" alt="img"></p>
+<h4 id="DARE公式定义"><a href="#DARE公式定义" class="headerlink" title="DARE公式定义"></a>DARE公式定义</h4><p>Experience: 由于DARE处理的是单步强化学习问题,经验仅包含state，action，reward</p>
+<p>State: 我们还使用概率密度函数（PDF，表示为大小为 bD 的向量）、|D| 和局部偏斜度（lsn）来表示状态 sD。因此，状态空间的大小为 bD + 2。</p>
+<p>Reward：为了适应不断变化的应用需求，我们提出了一种动态奖励函数（Dynamic Reward Function，DRF），表示为 $ r_D $ &#x3D; $\sum_{i&#x3D;1}^{n} w_i \cdot \text{cost}_i $。</p>
+<p>假设一个深度Q网络（DQN）已经训练好，可以将高维状态空间和动作空间映射到低维成本空间。给定系数权重 $ w_i $（根据一些特定要求，使得 $ \sum_{i&#x3D;1}^{n} w_i &#x3D; 1 $）和不同应用特定指标的成本 $ \text{cost}_1, \text{cost}_2, \ldots, \text{cost}_n $，DRF 可以预测奖励 $ r_D $。当这些权重发生变化时，Q函数仍然有效。</p>
+<p>action： 动作$ a_D $ 代表一组参数，用于确定上层 $ h - 1 $ 级节点的扇出（fanout）。根节点的更大扇出有助于提高学习索引的查询性能。大多数现有的一维学习索引的根节点扇出设置在 20 到 220 之间，例如 ALEX。因此，根节点的扇出在范围 [20, 220] 内进行搜索。对于内节点，根据现有的研究，扇出范围设置为 [20, 210]，。对于 DARE 的 $ (h - 2) \cdot L $ 参数矩阵，每行向量的大小 $ L $ 设置为 256。<br><br>为了提供稳定的动作选择策略，DARE 利用遗传算法（Genetic Algorithm，GA）作为行为者，并使用深度Q网络（DQN）作为评论者。在这种方法中，GA 将动作视为基因，将 $ Q_D(s_D, a_D) $ 作为给定状态的适应度函数。通过数值变异和交叉的方式迭代提高适应度，GA 逐渐识别出最接近最大值的动作，从而确定最优策略。算法 1 概述了使用 GA 输出最优参数的过程。</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image12.png" alt="img"></p>
+<ul>
+<li>种群。由于矩阵 $ M $ 中的值是有限的浮点值，我们可以直观地将每个值视为一个染色体。每个个体有 $ 1 + (h - 2) \cdot L $ 个染色体。</li>
+<li>变异（第 3-4 行）可以分为两种类型。第一种类型是添加一组随机的扇出，以生成种群中全新的基因型。第二种类型允许 GA 更好地利用现有的高质量基因，随机选择某些染色体将其传递给后代。后者涉及在同一染色体内进行数值交叉。</li>
+<li>交叉（第 5 行）也可以分为两种类型。前者是多点交叉，其中一个配置包含 $ 1 + (h - 2) \cdot L $ 个染色体，而 DARE随机选择某些染色体将其传递给后代。后者涉及在同一染色体内执行数值交叉。</li>
+<li>适应度（第 6 行）。GA 算法提供根节点参数 $ p_0 $ 和其他内节点的参数矩阵 $ M $。基于这些参数，通过 Q 网络预测索引的查询成本和内存成本。随后，基于动态奖励函数（DRF）计算的预测值被用作适应度值。</li>
+<li>选择（第 7-8 行）过程涉及保留一部分适应度最高的基因，通过轻微的变异。随机选择某些染色体将其传递给<br>后代。后者涉及执行数值<br>同一染色体内的交叉</li>
+</ul>
+<h3 id="Training-Chameleon"><a href="#Training-Chameleon" class="headerlink" title="Training Chameleon"></a>Training Chameleon</h3><p>算法 2 总结了整个 Chameleon 的训练过程。<br>首先，我们初始化 </p>
+<p>TSMDP 策略网络 $ Q_T $、<br>目标网络 $ \hat{Q}_T $、 </p>
+<p>DARE 策略网络 $ Q_D $、<br>探索概率 $ e_r $ 和探索终止概率（第 1-2 行）。</p>
+<p>$ e_r $ 决定在选择 $ a_D $ 时探索与利用之间的倾向。我们使用大量真实和合成数据集作为训练集。随后，在每个回合中，我们从训练集中随机选择一个数据集 $ D $ 并提取其特征作为 $ s_D $（第 3-6 行）。我们随机生成 DRF 的权重 $ w $（第 7 行），并根据算法 1 获取 $ s_D $ 和 $ w $ 的最佳参数 $ a_{\text{best}} $（第 8 行）。参数 $ a_{\text{random}} $ 是随机生成的（第 9 行）。为了在探索和利用之间取得平衡，DARE 根据 $ e_r $ 选择一组参数 $ a_D $（第 10 行），其中 $ e_r $ 在训练过程中逐渐从 1 降至 0。通过 $ a_D $ 和 $ Q_T $ 实例化 Chameleon-Index（第 11-12 行）。然后，我们训练 TSMDP $ Q_T $ 和 DARE $ Q_D $（第 13-14 行）。最后，我们减少 $ e_r $ 并重复上述过程，直到达到 $ \epsilon $（第 15 行）。损失函数为：</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image13.png" alt="img"></p>
+<p>其中 $ \theta_D $ 代表 $ Q_D $ 的参数。</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image14.png" alt="img"></p>
+<h2 id="ONLINE-RETRAINING-FOR-UPDATE"><a href="#ONLINE-RETRAINING-FOR-UPDATE" class="headerlink" title="ONLINE RETRAINING FOR UPDATE"></a>ONLINE RETRAINING FOR UPDATE</h2><p>使用后台线程重训练索引，不阻塞查询过程</p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image15.png" alt="img"></p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image16.png" alt="img"></p>
+<p>时间复杂度分析<br><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image17.png" alt="img"></p>
+<h2 id="EXPERIMENTS"><a href="#EXPERIMENTS" class="headerlink" title="EXPERIMENTS"></a>EXPERIMENTS</h2><h3 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h3><h4 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h4><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image18.png" alt="img"></p>
+<h4 id="工作负载"><a href="#工作负载" class="headerlink" title="工作负载"></a>工作负载</h4><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image19.png" alt="img"></p>
+<h4 id="参数设置"><a href="#参数设置" class="headerlink" title="参数设置"></a>参数设置</h4><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image20.png" alt="img"></p>
+<h4 id="基线选取"><a href="#基线选取" class="headerlink" title="基线选取"></a>基线选取</h4><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image21.png" alt="img"></p>
+<h3 id="只读工作负载下的实验结果"><a href="#只读工作负载下的实验结果" class="headerlink" title="只读工作负载下的实验结果"></a>只读工作负载下的实验结果</h3><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image22.png" alt="img"></p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image23.png" alt="img"></p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image24.png" alt="img"></p>
+<h3 id="混合工作负载下的实验结果"><a href="#混合工作负载下的实验结果" class="headerlink" title="混合工作负载下的实验结果"></a>混合工作负载下的实验结果</h3><p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image25.png" alt="img"></p>
+<p><img src="/../images/Chameleon-Towards-Update-Efficient-Learned-Indexing-for-Locally-Skewed-Data/image26.png" alt="img"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Learned-Index/" rel="tag"># Learned Index</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/10/03/%E7%BA%BF%E6%AE%B5%E6%A0%91/" rel="prev" title="线段树">
+      <i class="fa fa-chevron-left"></i> 线段树
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">1.2.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Related-work"><span class="nav-number">2.</span> <span class="nav-text">Related work</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OVERVIEW-OF-CHAMELEON"><span class="nav-number">3.</span> <span class="nav-text">OVERVIEW OF CHAMELEON</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Inner-node"><span class="nav-number">3.1.</span> <span class="nav-text">Inner node</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Leaf-node"><span class="nav-number">3.2.</span> <span class="nav-text">Leaf node</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%BE%E7%82%B9"><span class="nav-number">3.3.</span> <span class="nav-text">难点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E5%87%BA%E4%BA%86%E4%B8%80%E4%B8%AA%E6%B5%8B%E9%87%8Flocal-skewness%E7%9A%84%E6%8C%87%E6%A0%87"><span class="nav-number">3.4.</span> <span class="nav-text">提出了一个测量local skewness的指标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8F%90%E5%87%BAMARL%EF%BC%88Multi-Agent-Reinforcement-Learning%EF%BC%89%E6%96%B9%E6%B3%95"><span class="nav-number">3.5.</span> <span class="nav-text">提出MARL（Multi Agent Reinforcement Learning）方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CHAMELEON-INDEX-CONSTRUCTION"><span class="nav-number">4.</span> <span class="nav-text">CHAMELEON INDEX CONSTRUCTION</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Resolving-local-skewness"><span class="nav-number">4.1.</span> <span class="nav-text">Resolving local skewness</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Locating-the-Locally-Skewed-Regions"><span class="nav-number">4.2.</span> <span class="nav-text">Locating the Locally Skewed Regions</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#TSMDP%E5%85%AC%E5%BC%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">4.2.1.</span> <span class="nav-text">TSMDP公式定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#TSMDP%E8%AE%AD%E7%BB%83%E8%BF%87%E7%A8%8B"><span class="nav-number">4.2.2.</span> <span class="nav-text">TSMDP训练过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%AA%E4%BD%BF%E7%94%A8TSMDP%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-number">4.2.3.</span> <span class="nav-text">只使用TSMDP的缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Enhancing-TSMDP-with-DARE"><span class="nav-number">4.3.</span> <span class="nav-text">Enhancing TSMDP with DARE</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DARE%E5%85%AC%E5%BC%8F%E5%AE%9A%E4%B9%89"><span class="nav-number">4.3.1.</span> <span class="nav-text">DARE公式定义</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Training-Chameleon"><span class="nav-number">4.4.</span> <span class="nav-text">Training Chameleon</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ONLINE-RETRAINING-FOR-UPDATE"><span class="nav-number">5.</span> <span class="nav-text">ONLINE RETRAINING FOR UPDATE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EXPERIMENTS"><span class="nav-number">6.</span> <span class="nav-text">EXPERIMENTS</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C%E8%AE%BE%E7%BD%AE"><span class="nav-number">6.1.</span> <span class="nav-text">实验设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E9%9B%86"><span class="nav-number">6.1.1.</span> <span class="nav-text">数据集</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD"><span class="nav-number">6.1.2.</span> <span class="nav-text">工作负载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE"><span class="nav-number">6.1.3.</span> <span class="nav-text">参数设置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E7%BA%BF%E9%80%89%E5%8F%96"><span class="nav-number">6.1.4.</span> <span class="nav-text">基线选取</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AA%E8%AF%BB%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD%E4%B8%8B%E7%9A%84%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">6.2.</span> <span class="nav-text">只读工作负载下的实验结果</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B7%E5%90%88%E5%B7%A5%E4%BD%9C%E8%B4%9F%E8%BD%BD%E4%B8%8B%E7%9A%84%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">6.3.</span> <span class="nav-text">混合工作负载下的实验结果</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">53</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
