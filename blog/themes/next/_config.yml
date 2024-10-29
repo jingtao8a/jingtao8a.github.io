@@ -493,23 +493,24 @@ baidu_push: false
 
 # Math Formulas Render Support
 math:
+  enable: true
   # Default (true) will load mathjax / katex script on demand.
   # That is it only render those page which has `mathjax: true` in Front-matter.
   # If you set it to false, it will load mathjax / katex srcipt EVERY PAGE.
   per_page: true
-
-  # hexo-renderer-pandoc (or hexo-renderer-kramed) required for full MathJax support.
+  
+  # # hexo-renderer-pandoc (or hexo-renderer-kramed) required for full MathJax support.
   mathjax:
-    enable: false
+    enable: true
     # See: https://mhchem.github.io/MathJax-mhchem/
     mhchem: false
-
-  # hexo-renderer-markdown-it-plus (or hexo-renderer-markdown-it with markdown-it-katex plugin) required for full Katex support.
-  katex:
-    enable: false
-    # See: https://github.com/KaTeX/KaTeX/tree/master/contrib/copy-tex
-    copy_tex: false
-
+  engine: mathjax
+  # # hexo-renderer-markdown-it-plus (or hexo-renderer-markdown-it with markdown-it-katex plugin) required for full Katex support.
+  # katex:
+  #   enable: false
+  #   # See: https://github.com/KaTeX/KaTeX/tree/master/contrib/copy-tex
+  #   copy_tex: false
+  
 # Easily enable fast Ajax navigation on your website.
 # Dependencies: https://github.com/theme-next/theme-next-pjax
 pjax: false
