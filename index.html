@@ -190,6 +190,107 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2025/03/23/3-NP%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2025/03/23/3-NP%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">3-NP问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2025-03-23 15:28:33" itemprop="dateCreated datePublished" datetime="2025-03-23T15:28:33+08:00">2025-03-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-24 14:39:20" itemprop="dateModified" datetime="2025-03-24T14:39:20+08:00">2025-03-24</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%AB%98%E7%BA%A7%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">高级算法</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="算法效率"><a href="#算法效率" class="headerlink" title="算法效率"></a>算法效率</h1><p>1.多项式时间复杂度（O(n)、O(nlogn)、O($n^2$)、O($n^{10}$)）<br><br>2.非多项式时间复杂度（O($n^{logn}$)、O($2^n$)、O($n!$)）</p>
+<h1 id="P问题定义"><a href="#P问题定义" class="headerlink" title="P问题定义"></a>P问题定义</h1><p>多项式时间内可以解决的问题</p>
+<h1 id="NP问题定义"><a href="#NP问题定义" class="headerlink" title="NP问题定义"></a>NP问题定义</h1><p>就是对于一个给定的解，能够在多项式时间内验证其是否正确的问题</p>
+<blockquote>
+<p>所有的P问题都是NP问题</p>
+</blockquote>
+<h1 id="NPC问题-NP完全问题-定义"><a href="#NPC问题-NP完全问题-定义" class="headerlink" title="NPC问题(NP完全问题)定义"></a>NPC问题(NP完全问题)定义</h1><p>需满足两个条件<br><br>1.是一个NP问题<br><br>2.所有NP问题都可以归约成此问题<br></p>
+<p><img src="/../images/3-NP%E9%97%AE%E9%A2%98/1.png" alt="img"></p>
+<h1 id="规约"><a href="#规约" class="headerlink" title="规约"></a>规约</h1><p><img src="/../images/3-NP%E9%97%AE%E9%A2%98/2.png" alt="img"><br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/3.png" alt="img"></p>
+<h1 id="P问题的证明"><a href="#P问题的证明" class="headerlink" title="P问题的证明"></a>P问题的证明</h1><h2 id="2CNF-SAT（2合取范式的可满足问题）"><a href="#2CNF-SAT（2合取范式的可满足问题）" class="headerlink" title="2CNF-SAT（2合取范式的可满足问题）"></a>2CNF-SAT（2合取范式的可满足问题）</h2><p>是否存在一个赋值使得2CNF为真</p>
+<h1 id="NPC问题的证明"><a href="#NPC问题的证明" class="headerlink" title="NPC问题的证明"></a>NPC问题的证明</h1><h2 id="电路可满足问题（第一个NPC问题）"><a href="#电路可满足问题（第一个NPC问题）" class="headerlink" title="电路可满足问题（第一个NPC问题）"></a>电路可满足问题（第一个NPC问题）</h2><p>给定一个逻辑电路，是否存在一种输入使得输出为True</p>
+<h2 id="公式可满足性问题"><a href="#公式可满足性问题" class="headerlink" title="公式可满足性问题"></a>公式可满足性问题</h2><p>1.它是一个NP问题，可以在多项式时间判断解是否正确<br><br>2.电路可满足问题可以 <strong>规约</strong> 到公式可满足问题</p>
+<h2 id="3CNF-SAT问题-3合取范式的可满足问题"><a href="#3CNF-SAT问题-3合取范式的可满足问题" class="headerlink" title="3CNF-SAT问题(3合取范式的可满足问题)"></a>3CNF-SAT问题(3合取范式的可满足问题)</h2><p>1.它是一个NP问题，可以在多项式时间判断解是否正确<br><br>2.公式可满足问题可以 <strong>规约</strong> 到3CNF-SAT问题</p>
+<h2 id="团问题"><a href="#团问题" class="headerlink" title="团问题"></a>团问题</h2><p>团问题是关于寻找图中规模最大的团的最优化问题<br><br>我们仅仅要考虑的是：在图中是否存在一个给定规模为k的团<br></p>
+<p>1.它是一个NP问题，可以在多项式时间判断解是否正确<br></p>
+<blockquote>
+<p>给定义一个图G的顶点集，可以在多项式时间判断它是否是团</p>
+</blockquote>
+<p>2.3CNF-SAT问题可以 <strong>规约</strong> 到团问题<br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/4.png" alt="img"><br>输出一致性：<br></p>
+<blockquote>
+<p>若3CNF-SAT有真，则必然所有子句都为真，则子句内有真，真值之间都是互联的，所以有团<br></p>
+</blockquote>
+<h2 id="顶点覆盖问题"><a href="#顶点覆盖问题" class="headerlink" title="顶点覆盖问题"></a>顶点覆盖问题</h2><p>找出最小数目的顶点集合S，使得G中的每条边都至少被集合S中的一个顶点覆盖<br></p>
+<p>1.它是一个NP问题，可以在多项式时间判断解是否正确<br><br>2.团问题可以 <strong>规约</strong> 为顶点覆盖问题<br></p>
+<p>原图和补图<br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/5.png" alt="img"><br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/6.png" alt="img"><br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/7.png" alt="img"><br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/8.png" alt="img"></p>
+<h2 id="哈密顿回路问题"><a href="#哈密顿回路问题" class="headerlink" title="哈密顿回路问题"></a>哈密顿回路问题</h2><p>在一个图（通常指无向图图）中，从某个顶点出发，经过其它顶点一次且仅一次的回路称作哈密顿回路。将这个问题转为一个判断性问题“给定一个图，判断它是否包含哈密顿回路”</p>
+<p>1.它是一个NP问题，可以在多项式时间判断解是否正确<br><br>2.顶点覆盖问题可以 <strong>规约</strong> 为哈密顿回路问题<br></p>
+<p>转化后的图中有顶点数：12m + k<br><br>转化后的图中有边数：14m + 2m - n + 2kn<br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/9.png" alt="img"><br><img src="/../images/3-NP%E9%97%AE%E9%A2%98/10.png" alt="img"></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2025/03/20/2-%E9%AB%98%E7%BA%A7%E5%9B%BE%E7%AE%97%E6%B3%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1045,80 +1146,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/08/20/VMware%E7%9A%84%E4%B8%89%E7%A7%8D%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2024/08/20/VMware%E7%9A%84%E4%B8%89%E7%A7%8D%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F/" class="post-title-link" itemprop="url">VMware的三种网络模式</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2024-08-20 18:31:39" itemprop="dateCreated datePublished" datetime="2024-08-20T18:31:39+08:00">2024-08-20</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2025-03-20 14:44:11" itemprop="dateModified" datetime="2025-03-20T14:44:11+08:00">2025-03-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E9%9A%8F%E7%AC%94/" itemprop="url" rel="index"><span itemprop="name">随笔</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p><a target="_blank" rel="noopener" href="https://wxler.github.io/2021/02/02/221724/">参考链接</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1190,7 +1217,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">54</span>
+          <span class="site-state-item-count">55</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
