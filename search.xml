@@ -2309,4 +2309,33 @@
         <tag>高级算法</tag>
       </tags>
   </entry>
+  <entry>
+    <title>5-随机算法</title>
+    <url>/2025/03/26/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/</url>
+    <content><![CDATA[<h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><p>前面所讲述的算法都是确定性算</p>
+<ol>
+<li>算法总能得出确定的结果</li>
+<li>算法总能在确定的时间内完成</li>
+</ol>
+<p>当算法引入一些随机因素后，算法将不再具有上述性质</p>
+<h2 id="分类1"><a href="#分类1" class="headerlink" title="分类1"></a>分类1</h2><h3 id="拉斯维加斯算法-Las-Vegas"><a href="#拉斯维加斯算法-Las-Vegas" class="headerlink" title="拉斯维加斯算法(Las Vegas)"></a>拉斯维加斯算法(Las Vegas)</h3><p>在限定时间内，算法不一定能找到解；如果找到解，一定是正确解</p>
+<h3 id="蒙特卡洛算法-Monte-Carlo"><a href="#蒙特卡洛算法-Monte-Carlo" class="headerlink" title="蒙特卡洛算法(Monte Carlo)"></a>蒙特卡洛算法(Monte Carlo)</h3><p>执行时间是确定的，但是解不一定是正确解</p>
+<h2 id="分类2"><a href="#分类2" class="headerlink" title="分类2"></a>分类2</h2><h3 id="避免落入最坏情形"><a href="#避免落入最坏情形" class="headerlink" title="避免落入最坏情形"></a>避免落入最坏情形</h3><p>这类随机算法也称为舍伍德算法(Sherwood)</p>
+<h3 id="降低时间复杂度"><a href="#降低时间复杂度" class="headerlink" title="降低时间复杂度"></a>降低时间复杂度</h3><ol>
+<li>求解概率</li>
+<li>近似因子</li>
+</ol>
+<h1 id="随机快速排序"><a href="#随机快速排序" class="headerlink" title="随机快速排序"></a>随机快速排序</h1><p><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/1.png" alt="img"></p>
+<h1 id="最小圆覆盖问题"><a href="#最小圆覆盖问题" class="headerlink" title="最小圆覆盖问题"></a>最小圆覆盖问题</h1><p><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/2.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/3.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/4.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/5.png" alt="img"><br>基于随机增量法的最小圆覆盖的最差时间复杂度为$O(n^3)$,期望时间复杂度为$O(n)$</p>
+<h1 id="弗里瓦德算法-Frievald’s-Algorithm"><a href="#弗里瓦德算法-Frievald’s-Algorithm" class="headerlink" title="弗里瓦德算法(Frievald’s Algorithm)"></a>弗里瓦德算法(Frievald’s Algorithm)</h1><p><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/6.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/7.png" alt="img"><br>弗里瓦德算法得到错误解的概率小于等于$1&#x2F;2$</p>
+<h1 id="集合覆盖的随机算法"><a href="#集合覆盖的随机算法" class="headerlink" title="集合覆盖的随机算法"></a>集合覆盖的随机算法</h1><p><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/8.png" alt="img"></p>
+<h1 id="最小割"><a href="#最小割" class="headerlink" title="最小割"></a>最小割</h1><p><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/9.png" alt="img"><br>随机算法通过收缩的方式来找最小割<br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/10.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/11.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/12.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/13.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/14.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/15.png" alt="img"><br><img src="/../images/5-%E9%9A%8F%E6%9C%BA%E7%AE%97%E6%B3%95/16.png" alt="img"></p>
+]]></content>
+      <categories>
+        <category>高级算法</category>
+      </categories>
+      <tags>
+        <tag>高级算法</tag>
+      </tags>
+  </entry>
 </search>
