@@ -190,6 +190,98 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/8-%E5%8D%95%E8%A1%A8%E8%AE%BF%E9%97%AE%E6%96%B9%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/05/27/8-%E5%8D%95%E8%A1%A8%E8%AE%BF%E9%97%AE%E6%96%B9%E6%B3%95/" class="post-title-link" itemprop="url">8.单表访问方法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2023-05-27 14:19:50" itemprop="dateCreated datePublished" datetime="2023-05-27T14:19:50+08:00">2023-05-27</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-20 14:44:11" itemprop="dateModified" datetime="2025-03-20T14:44:11+08:00">2025-03-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <blockquote>
+<p>const:<br>1.直接利用主键值在聚簇索引中定位对应的用户记录<br>2.根据唯一二级索引列来定位一条记录</p>
+</blockquote>
+<blockquote>
+<p>ref:<br>1.对某个普通的二级索引列与常数进行等值比较<br>2.无论是普通二级索引还是唯一二级索引，索引列值为NULL<br>3.对于某个包含多个索引列的二级索引来说，只要是最左边的连续索引列是与常数的等值比较</p>
+</blockquote>
+<blockquote>
+<p>ref_of_null:<br>1.当我们不仅想找出某个二级索引列的值等于某个常数的记录，还想把列的值为NULL的记录也找出来</p>
+</blockquote>
+<blockquote>
+<p>range:<br>1.利用索引进行范围匹配</p>
+</blockquote>
+<blockquote>
+<p>index:<br>1.直接遍历二级索引记录</p>
+</blockquote>
+<blockquote>
+<p>all:<br>1.全表扫描</p>
+</blockquote>
+<p>优化</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2023/05/27/7-B-%E6%A0%91%E7%B4%A2%E5%BC%95/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -992,7 +1084,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">57</span>
+          <span class="site-state-item-count">58</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
