@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jingtao8a.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"right","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="概述经典优化算法 默认存在唯一最优解，问题是凸优化的 对解空间枚举(离散)，对目标函数的微分(连续)求最优解  某些优化问题 解空间太大，无法枚举 问题不是凸优化的  只能求近似解 近似算法、随机算法 启发式算法  启发式算法定义(heuristic algorithm)通过对过去经验的归纳推理以及实验分析来解决问题的方法，借助于某种直观判断或试探的方法，以求得问题的次优解或以一定概率求其最优解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="7-启发式算法">
+<meta property="og:url" content="http://jingtao8a.github.io/2025/03/29/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/index.html">
+<meta property="og:site_name" content="jingtao8a&#39;s blog">
+<meta property="og:description" content="概述经典优化算法 默认存在唯一最优解，问题是凸优化的 对解空间枚举(离散)，对目标函数的微分(连续)求最优解  某些优化问题 解空间太大，无法枚举 问题不是凸优化的  只能求近似解 近似算法、随机算法 启发式算法  启发式算法定义(heuristic algorithm)通过对过去经验的归纳推理以及实验分析来解决问题的方法，借助于某种直观判断或试探的方法，以求得问题的次优解或以一定概率求其最优解">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/1.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/2.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/3.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/4.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/5.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/6.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/7.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/8.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/9.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/10.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/11.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/12.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/13.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/14.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/16.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/15.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/17.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/19.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/18.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/20.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/21.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/22.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/23.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/24.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/25.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/26.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/27.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/28.png">
+<meta property="og:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/29.png">
+<meta property="article:published_time" content="2025-03-29T01:57:40.000Z">
+<meta property="article:modified_time" content="2025-03-29T12:04:45.155Z">
+<meta property="article:author" content="jingtao8a">
+<meta property="article:tag" content="高级算法">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://jingtao8a.github.io/images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/1.png">
+
+<link rel="canonical" href="http://jingtao8a.github.io/2025/03/29/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>7-启发式算法 | jingtao8a's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">jingtao8a's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2025/03/29/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          7-启发式算法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2025-03-29 09:57:40 / Modified: 20:04:45" itemprop="dateCreated datePublished" datetime="2025-03-29T09:57:40+08:00">2025-03-29</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E9%AB%98%E7%BA%A7%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">高级算法</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h1><h2 id="经典优化算法"><a href="#经典优化算法" class="headerlink" title="经典优化算法"></a>经典优化算法</h2><ol>
+<li>默认存在唯一最优解，问题是凸优化的</li>
+<li>对解空间枚举(离散)，对目标函数的微分(连续)求最优解</li>
+</ol>
+<h2 id="某些优化问题"><a href="#某些优化问题" class="headerlink" title="某些优化问题"></a>某些优化问题</h2><ol>
+<li>解空间太大，无法枚举</li>
+<li>问题不是凸优化的</li>
+</ol>
+<h2 id="只能求近似解"><a href="#只能求近似解" class="headerlink" title="只能求近似解"></a>只能求近似解</h2><ol>
+<li>近似算法、随机算法</li>
+<li>启发式算法</li>
+</ol>
+<h2 id="启发式算法定义-heuristic-algorithm"><a href="#启发式算法定义-heuristic-algorithm" class="headerlink" title="启发式算法定义(heuristic algorithm)"></a>启发式算法定义(heuristic algorithm)</h2><p>通过对过去经验的归纳推理以及实验分析来解决问题的方法，借助于某种直观判断或试探的方法，以求得问题的次优解或以一定概率求其最优解</p>
+<h2 id="元启发式算法-metaheuristic"><a href="#元启发式算法-metaheuristic" class="headerlink" title="元启发式算法(metaheuristic)"></a>元启发式算法(metaheuristic)</h2><p>从自然界的一些现象取得灵感，通过这些现象获取的额求解过程来解决实际的问题</p>
+<blockquote>
+<p>启发式算法 &#x3D; 元启发式算法 + 问题特征</p>
+</blockquote>
+<h2 id="局部搜索方法"><a href="#局部搜索方法" class="headerlink" title="局部搜索方法"></a>局部搜索方法</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/1.png" alt="img"></p>
+<h2 id="局部搜索-2-opt算法"><a href="#局部搜索-2-opt算法" class="headerlink" title="局部搜索:2-opt算法"></a>局部搜索:2-opt算法</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/2.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/3.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/4.png" alt="img"></p>
+<h1 id="模拟退火-Simulated-annealing"><a href="#模拟退火-Simulated-annealing" class="headerlink" title="模拟退火(Simulated annealing)"></a>模拟退火(Simulated annealing)</h1><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/5.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/6.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/7.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/8.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/9.png" alt="img"></p>
+<h2 id="旅行商问题-TSP问题"><a href="#旅行商问题-TSP问题" class="headerlink" title="旅行商问题(TSP问题)"></a>旅行商问题(TSP问题)</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/10.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/11.png" alt="img"></p>
+<h1 id="禁忌搜索-Tabu-search"><a href="#禁忌搜索-Tabu-search" class="headerlink" title="禁忌搜索(Tabu search)"></a>禁忌搜索(Tabu search)</h1><h2 id="邻域"><a href="#邻域" class="headerlink" title="邻域"></a>邻域</h2><p>当前解进行一个操作（这个操作就是领域动作）可以得到的所有解的集合</p>
+<h2 id="邻域动作"><a href="#邻域动作" class="headerlink" title="邻域动作"></a>邻域动作</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/12.png" alt="img"></p>
+<h2 id="禁忌表"><a href="#禁忌表" class="headerlink" title="禁忌表"></a>禁忌表</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/13.png" alt="img"></p>
+<h2 id="候选集合"><a href="#候选集合" class="headerlink" title="候选集合"></a>候选集合</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/14.png" alt="img"></p>
+<h2 id="评价函数-目标函数"><a href="#评价函数-目标函数" class="headerlink" title="评价函数(目标函数)"></a>评价函数(目标函数)</h2><p>候选集合元素选取的一个评价公式</p>
+<h2 id="特赦规则"><a href="#特赦规则" class="headerlink" title="特赦规则"></a>特赦规则</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/16.png" alt="img"></p>
+<h2 id="Tabu-search-算法"><a href="#Tabu-search-算法" class="headerlink" title="Tabu search 算法"></a>Tabu search 算法</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/15.png" alt="img"></p>
+<h2 id="旅行商问题-TSP问题-1"><a href="#旅行商问题-TSP问题-1" class="headerlink" title="旅行商问题(TSP问题)"></a>旅行商问题(TSP问题)</h2><p>过程见PPT</p>
+<h1 id="遗传算法-Genetic-algorithms"><a href="#遗传算法-Genetic-algorithms" class="headerlink" title="遗传算法(Genetic algorithms)"></a>遗传算法(Genetic algorithms)</h1><p>先随机生成一组候选解，候选解中的个体通过交叉和变异产生新的解群，再从中选取较优的个体，重复此过程，直到满足某种收敛指标为止</p>
+<h2 id="种群"><a href="#种群" class="headerlink" title="种群"></a>种群</h2><p>对应组候选解的集合</p>
+<h2 id="个体"><a href="#个体" class="headerlink" title="个体"></a>个体</h2><p>对应一个解。在遗传算法中，需要把一个解构造成染色体</p>
+<h2 id="基因"><a href="#基因" class="headerlink" title="基因"></a>基因</h2><p>染色体由基因构成</p>
+<h2 id="交叉"><a href="#交叉" class="headerlink" title="交叉"></a>交叉</h2><ol>
+<li>单点交叉</li>
+<li>多点交叉</li>
+<li>均匀交叉</li>
+<li>洗牌交叉</li>
+</ol>
+<h2 id="变异"><a href="#变异" class="headerlink" title="变异"></a>变异</h2><p>按照一定概率将个体中的基因值用其它基因值来替换，从而形成一个新的个体</p>
+<h2 id="选择"><a href="#选择" class="headerlink" title="选择"></a>选择</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/17.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/19.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/18.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/20.png" alt="img"></p>
+<h2 id="旅行商问题-TSP问题-2"><a href="#旅行商问题-TSP问题-2" class="headerlink" title="旅行商问题(TSP问题)"></a>旅行商问题(TSP问题)</h2><p>染色体交叉会出现非法解，通过两种方式解决<br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/21.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/22.png" alt="img"><br>染色体变异也会出现非法解，通过两种方式<br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/23.png" alt="img"></p>
+<h1 id="蚁群算法-Ant-colonies"><a href="#蚁群算法-Ant-colonies" class="headerlink" title="蚁群算法(Ant colonies)"></a>蚁群算法(Ant colonies)</h1><h2 id="基本蚁群算法"><a href="#基本蚁群算法" class="headerlink" title="基本蚁群算法"></a>基本蚁群算法</h2><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/24.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/25.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/26.png" alt="img"></p>
+<h2 id="改进的蚁群算法"><a href="#改进的蚁群算法" class="headerlink" title="改进的蚁群算法"></a>改进的蚁群算法</h2><h3 id="路径选择采用了利用和探索相结合的方法"><a href="#路径选择采用了利用和探索相结合的方法" class="headerlink" title="路径选择采用了利用和探索相结合的方法"></a>路径选择采用了利用和探索相结合的方法</h3><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/27.png" alt="img"></p>
+<h3 id="信息素的更新采用全局更新和局部更新相结合的方案"><a href="#信息素的更新采用全局更新和局部更新相结合的方案" class="headerlink" title="信息素的更新采用全局更新和局部更新相结合的方案"></a>信息素的更新采用全局更新和局部更新相结合的方案</h3><p><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/28.png" alt="img"><br><img src="/../images/7-%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95/29.png" alt="img"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%AB%98%E7%BA%A7%E7%AE%97%E6%B3%95/" rel="tag"># 高级算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2025/03/28/6-%E5%9C%A8%E7%BA%BF%E7%AE%97%E6%B3%95/" rel="prev" title="6-在线算法">
+      <i class="fa fa-chevron-left"></i> 6-在线算法
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%8F%E5%85%B8%E4%BC%98%E5%8C%96%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.</span> <span class="nav-text">经典优化算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9F%90%E4%BA%9B%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">1.2.</span> <span class="nav-text">某些优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AA%E8%83%BD%E6%B1%82%E8%BF%91%E4%BC%BC%E8%A7%A3"><span class="nav-number">1.3.</span> <span class="nav-text">只能求近似解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95%E5%AE%9A%E4%B9%89-heuristic-algorithm"><span class="nav-number">1.4.</span> <span class="nav-text">启发式算法定义(heuristic algorithm)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%83%E5%90%AF%E5%8F%91%E5%BC%8F%E7%AE%97%E6%B3%95-metaheuristic"><span class="nav-number">1.5.</span> <span class="nav-text">元启发式算法(metaheuristic)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%80%E9%83%A8%E6%90%9C%E7%B4%A2%E6%96%B9%E6%B3%95"><span class="nav-number">1.6.</span> <span class="nav-text">局部搜索方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B1%80%E9%83%A8%E6%90%9C%E7%B4%A2-2-opt%E7%AE%97%E6%B3%95"><span class="nav-number">1.7.</span> <span class="nav-text">局部搜索:2-opt算法</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A8%A1%E6%8B%9F%E9%80%80%E7%81%AB-Simulated-annealing"><span class="nav-number">2.</span> <span class="nav-text">模拟退火(Simulated annealing)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%85%E8%A1%8C%E5%95%86%E9%97%AE%E9%A2%98-TSP%E9%97%AE%E9%A2%98"><span class="nav-number">2.1.</span> <span class="nav-text">旅行商问题(TSP问题)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%A6%81%E5%BF%8C%E6%90%9C%E7%B4%A2-Tabu-search"><span class="nav-number">3.</span> <span class="nav-text">禁忌搜索(Tabu search)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%82%BB%E5%9F%9F"><span class="nav-number">3.1.</span> <span class="nav-text">邻域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%82%BB%E5%9F%9F%E5%8A%A8%E4%BD%9C"><span class="nav-number">3.2.</span> <span class="nav-text">邻域动作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A6%81%E5%BF%8C%E8%A1%A8"><span class="nav-number">3.3.</span> <span class="nav-text">禁忌表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%80%99%E9%80%89%E9%9B%86%E5%90%88"><span class="nav-number">3.4.</span> <span class="nav-text">候选集合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%84%E4%BB%B7%E5%87%BD%E6%95%B0-%E7%9B%AE%E6%A0%87%E5%87%BD%E6%95%B0"><span class="nav-number">3.5.</span> <span class="nav-text">评价函数(目标函数)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%B9%E8%B5%A6%E8%A7%84%E5%88%99"><span class="nav-number">3.6.</span> <span class="nav-text">特赦规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tabu-search-%E7%AE%97%E6%B3%95"><span class="nav-number">3.7.</span> <span class="nav-text">Tabu search 算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%85%E8%A1%8C%E5%95%86%E9%97%AE%E9%A2%98-TSP%E9%97%AE%E9%A2%98-1"><span class="nav-number">3.8.</span> <span class="nav-text">旅行商问题(TSP问题)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%81%97%E4%BC%A0%E7%AE%97%E6%B3%95-Genetic-algorithms"><span class="nav-number">4.</span> <span class="nav-text">遗传算法(Genetic algorithms)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A7%8D%E7%BE%A4"><span class="nav-number">4.1.</span> <span class="nav-text">种群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AA%E4%BD%93"><span class="nav-number">4.2.</span> <span class="nav-text">个体</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E5%9B%A0"><span class="nav-number">4.3.</span> <span class="nav-text">基因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%A4%E5%8F%89"><span class="nav-number">4.4.</span> <span class="nav-text">交叉</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%98%E5%BC%82"><span class="nav-number">4.5.</span> <span class="nav-text">变异</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%89%E6%8B%A9"><span class="nav-number">4.6.</span> <span class="nav-text">选择</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%85%E8%A1%8C%E5%95%86%E9%97%AE%E9%A2%98-TSP%E9%97%AE%E9%A2%98-2"><span class="nav-number">4.7.</span> <span class="nav-text">旅行商问题(TSP问题)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%9A%81%E7%BE%A4%E7%AE%97%E6%B3%95-Ant-colonies"><span class="nav-number">5.</span> <span class="nav-text">蚁群算法(Ant colonies)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%9A%81%E7%BE%A4%E7%AE%97%E6%B3%95"><span class="nav-number">5.1.</span> <span class="nav-text">基本蚁群算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%B9%E8%BF%9B%E7%9A%84%E8%9A%81%E7%BE%A4%E7%AE%97%E6%B3%95"><span class="nav-number">5.2.</span> <span class="nav-text">改进的蚁群算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%AF%E5%BE%84%E9%80%89%E6%8B%A9%E9%87%87%E7%94%A8%E4%BA%86%E5%88%A9%E7%94%A8%E5%92%8C%E6%8E%A2%E7%B4%A2%E7%9B%B8%E7%BB%93%E5%90%88%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">5.2.1.</span> <span class="nav-text">路径选择采用了利用和探索相结合的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%A1%E6%81%AF%E7%B4%A0%E7%9A%84%E6%9B%B4%E6%96%B0%E9%87%87%E7%94%A8%E5%85%A8%E5%B1%80%E6%9B%B4%E6%96%B0%E5%92%8C%E5%B1%80%E9%83%A8%E6%9B%B4%E6%96%B0%E7%9B%B8%E7%BB%93%E5%90%88%E7%9A%84%E6%96%B9%E6%A1%88"><span class="nav-number">5.2.2.</span> <span class="nav-text">信息素的更新采用全局更新和局部更新相结合的方案</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jingtao8a"
+      src="/images/iverson.jpg">
+  <p class="site-author-name" itemprop="name">jingtao8a</p>
+  <div class="site-description" itemprop="description">this is life, full of ups and down</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2025</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">jingtao8a</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
