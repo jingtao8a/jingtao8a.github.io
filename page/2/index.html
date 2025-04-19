@@ -190,6 +190,89 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/10/03/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/iverson.jpg">
+      <meta itemprop="name" content="jingtao8a">
+      <meta itemprop="description" content="this is life, full of ups and down">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="jingtao8a's blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2024/10/03/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/" class="post-title-link" itemprop="url">Hist-Tree: Those Who Ignore It Are Doomed to Learn </a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2024-10-03 23:10:36" itemprop="dateCreated datePublished" datetime="2024-10-03T23:10:36+08:00">2024-10-03</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2025-03-20 14:44:11" itemprop="dateModified" datetime="2025-03-20T14:44:11+08:00">2025-03-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="背景和应用场景："><a href="#背景和应用场景：" class="headerlink" title="背景和应用场景："></a>背景和应用场景：</h2><p>在之前的研究中，学习型索引的性能超过过了传统索引，这被归功于是利用数据分布这一特性。但是这篇文章认为，在比较试验中之学习型索引之所以能表现良好，是因为利用了一些隐含条件（例如，bulk-loading时，数据是排序的,数据的范围[min,max],…，））本文提出了一个传统索引结构（Hist-tree），利用了这些隐藏条件，并在只读工作负载的比较实验中，比RMI，PGM-index，RadixSpline的性能要好</p>
+<h2 id="问题描述："><a href="#问题描述：" class="headerlink" title="问题描述："></a>问题描述：</h2><p>学习索引做了一些隐含假设，例如<br><br>（1）假设bulk-loading数据已经排序<br><br>（2）数据的范围[min, max]<br><br>（3）数据是不被修改的<br><br>但是传统数据结构例如B-tree并没有这样的假设，这样会让B-tree的构建时间变得更长，或者导致B-tree和学习型索引进行比较实验时，处于劣势<br></p>
+<h2 id="方法："><a href="#方法：" class="headerlink" title="方法："></a>方法：</h2><h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h3><p>提出Hist-tree（利用了隐含假设（1）（2））<br><br>以及压缩版本Compact-Hist-tree（利用了隐含假设（1）（2）（3））<br></p>
+<p><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image.png" alt="img"><br>图中的Hist-tree是从一个数据集中选取200个key构建的，数据集的数据分布如（a）所示，（b）（c）为Hist-tree和Compact Hist-tree<br></p>
+<h4 id="（b）Hist-tree"><a href="#（b）Hist-tree" class="headerlink" title="（b）Hist-tree"></a>（b）Hist-tree<br></h4><p>每一个node根据histogram分成多个bin，terminal bin是灰色的，non-terminal bin是白色的，每个bin的值为该子树所包含的key的数量<br><br>查找过程为先锁定一个terminal-bin（有threshold），之后进行二分查找</p>
+<h4 id="（c）-Compact-Hist-tree"><a href="#（c）-Compact-Hist-tree" class="headerlink" title="（c） Compact Hist-tree"></a>（c） Compact Hist-tree</h4><p>每一行代表一个node，每个node根据histogram分为多个binterminal bin是灰色的，non-terminal bin是白色的，白色的bin存储的值为child node的offset，灰色的bin存储累计直到该bin的所有key的数量</p>
+<h3 id="physical-layout"><a href="#physical-layout" class="headerlink" title="physical layout"></a>physical layout</h3><p>Hist-tree的物理结构为两个32位整形数组，第一个数组包含的inner node（含有child node的node 或者说是 至少包含一个non-terminal bin的node），第二个数组包含leaf node（只有terminal bin的node）<br>例如：（b）中的root node要存储在第一个数组中占八个元素，其中由四个histogram bin计数组成，后跟四个child pointers(如果该pointer对应的bin为terminal bin或者指向leaf node，将高位flag标记为1)，并且第一个和第四个child pointer的高位flag标记为1</p>
+<p><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy.png" alt="img"><br><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy%202.png" alt="img"></p>
+<h2 id="结果"><a href="#结果" class="headerlink" title="结果:"></a>结果:</h2><p><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy%203.png" alt="img"><br><img src="/../images/Hist-Tree-Those-Who-Ignore-It-Are-Doomed-to-Learn/image%20copy%204.png" alt="img"></p>
+<p>个人实现版本：<a target="_blank" rel="noopener" href="https://github.com/jingtao8a/Hist">https://github.com/jingtao8a/Hist</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/10/03/Towards-Practical-Learned-Indexing/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1062,106 +1145,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://jingtao8a.github.io/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/iverson.jpg">
-      <meta itemprop="name" content="jingtao8a">
-      <meta itemprop="description" content="this is life, full of ups and down">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="jingtao8a's blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2024/03/04/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/" class="post-title-link" itemprop="url">GRE使用手册</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2024-03-04 06:02:31" itemprop="dateCreated datePublished" datetime="2024-03-04T06:02:31+08:00">2024-03-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2025-03-20 14:44:11" itemprop="dateModified" datetime="2025-03-20T14:44:11+08:00">2025-03-20</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">In</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Learned-Index/" itemprop="url" rel="index"><span itemprop="name">Learned Index</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="下载官网地址"><a href="#下载官网地址" class="headerlink" title="下载官网地址:"></a>下载官网地址:<br></h2><p><a target="_blank" rel="noopener" href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
-<h2 id="软件环境"><a href="#软件环境" class="headerlink" title="软件环境"></a>软件环境</h2><p>Ubuntu 20.04.6 LTS<br><br>gcc 9.4.0<br><br>cmake 3.16.3</p>
-<h2 id="Dependencies"><a href="#Dependencies" class="headerlink" title="Dependencies"></a>Dependencies</h2><h3 id="intel-mkl-2018-4-274"><a href="#intel-mkl-2018-4-274" class="headerlink" title="intel-mkl 2018.4.274"></a>intel-mkl 2018.4.274<br></h3><p>这里安装2024的版本也可以<br><br>进入官网 <a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html">https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html</a><br></p>
-<p>选择Linux 和 APT Package Manager<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/3.png" alt="img"><br>依次输入命令<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/1.png" alt="img"><br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/2.png" alt="img"></p>
-<p>默认安装路径如下：<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/4.png" alt="img"></p>
-<p>使用mkl库需要配置环境变量：<br></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">对所有用户生效，需要重启系统</span><br><span class="line">vim /etc/profile</span><br></pre></td></tr></table></figure>
-<p><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/5.png" alt="img"></p>
-<h3 id="intel-tbb-2020-3"><a href="#intel-tbb-2020-3" class="headerlink" title="intel-tbb 2020.3"></a>intel-tbb 2020.3<br></h3><p>tbb库的版本必须使用2020.3<br><br>下载地址<a target="_blank" rel="noopener" href="https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3">https://github.com/oneapi-src/oneTBB/releases/tag/2020_U3</a></p>
-<h4 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">解压</span></span><br><span class="line">tar -zxvf oneTBB-2020_U3.tar.gz</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">因为要使用 gcc-9 进行编译，所以需要编辑成 gcc-9 形式</span></span><br><span class="line">cp build/linux.gcc.inc build/linux.gcc-9.inc </span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编辑 linux.gcc-9.inc 文件：</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">第15、16行原来是</span></span><br><span class="line">CPLUS ?= g++</span><br><span class="line">CONLY ?= gcc</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改为</span></span><br><span class="line">CPLUS ?= g++-9</span><br><span class="line">CONLY ?= gcc-9</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">然后在文件夹 oneTBB-2020_U3/ 中编译</span></span><br><span class="line">cd oneTBB-2020_U3</span><br><span class="line">make compiler=gcc-9 stdver=c++17 tbb_build_prefix=my_tbb_build</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">编译完成后，在 builld/ 文件夹下会看到编译生成的文件夹 my_tbb_build_release/</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir /usr/local/tbb-2020_U3</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/include /usr/local/tbb-2020_U3/include</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/include/tbb /usr/local/include/tbb</span><br><span class="line"></span><br><span class="line">sudo cp -r oneTBB-2020_U3/build/my_tbb_build_release /usr/local/tbb-2020_U3/lib</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">建立新安装tbb版本的符号链接</span></span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbb.so.2 /usr/local/lib/libtbb.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc.so.2 /usr/local/lib/libtbbmalloc.so2</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so</span><br><span class="line">sudo ln -s /usr/local/tbb-2020_U3/lib/libtbbmalloc_proxy.so.2 /usr/local/lib/libtbbmalloc_proxy.so2</span><br></pre></td></tr></table></figure>
-
-<p>然后把 库文件的路径写入到 ~&#x2F;.bashrc：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export LD_LIBRARY_PATH=/usr/local/tbb-2020_U3/lib:$LD_LIBRARY_PATH&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
-
-<p>参考链接: <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_39779233/article/details/126284595">https://blog.csdn.net/qq_39779233&#x2F;article&#x2F;details&#x2F;126284595</a></p>
-<h3 id="jemalloc"><a href="#jemalloc" class="headerlink" title="jemalloc"></a>jemalloc</h3><p>下载地址: <a target="_blank" rel="noopener" href="https://github.com/jemalloc/jemalloc/releases">https://github.com/jemalloc/jemalloc/releases</a></p>
-<h4 id="编译与安装"><a href="#编译与安装" class="headerlink" title="编译与安装"></a>编译与安装</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 1</span></span><br><span class="line">./autogen.sh</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 2</span></span><br><span class="line">make</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">step 3</span></span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure>
-<p>参考链接: <a target="_blank" rel="noopener" href="https://blog.csdn.net/SweeNeil/article/details/94648313">https://blog.csdn.net/SweeNeil/article/details/94648313</a></p>
-<h2 id="USAGE"><a href="#USAGE" class="headerlink" title="USAGE"></a>USAGE</h2><h3 id="Build"><a href="#Build" class="headerlink" title="Build"></a>Build</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git submodule update --init # only for the first time</span><br><span class="line">mkdir -p build</span><br><span class="line">cd build</span><br><span class="line">cmake -DCMAKE_BUILD_TYPE=Release .. &amp;&amp; make</span><br></pre></td></tr></table></figure>
-<h3 id="RUN"><a href="#RUN" class="headerlink" title="RUN"></a>RUN</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">./build/microbench \</span><br><span class="line">--keys_file=./data/dataset \  // 数据地址</span><br><span class="line">--keys_file_type=&#123;binary,text&#125; \  // 二进制 或者 文本</span><br><span class="line">--read=0.5 --insert=0.5 \ </span><br><span class="line">--operations_num=800000000 \ </span><br><span class="line">--table_size=-1 \ // 所使用的数据的size</span><br><span class="line">--init_table_ratio=0.5 \ //bulk_load所使用的数据的百分比</span><br><span class="line">--thread_num=24 \</span><br><span class="line">--index=index_name \ //测试的索引名称</span><br></pre></td></tr></table></figure>
-
-<p>其它参数见官网:<br><a target="_blank" rel="noopener" href="https://github.com/jingtao8a/GRE">https://github.com/jingtao8a/GRE</a></p>
-<h3 id="如果要测试新的索引结构"><a href="#如果要测试新的索引结构" class="headerlink" title="如果要测试新的索引结构"></a>如果要测试新的索引结构</h3><h4 id="step1"><a href="#step1" class="headerlink" title="step1"></a>step1</h4><p>src&#x2F;competitor&#x2F;competitor.h<br>get_index函数中添加对应的index_type<br><img src="/../images/GRE%E4%BD%BF%E7%94%A8%E6%89%8B%E5%86%8C/6.png" alt="img"></p>
-<h4 id="step2"><a href="#step2" class="headerlink" title="step2"></a>step2</h4><p>在 src&#x2F;competitor 下放置源代码 new_index_name&#x2F;src<br>编写接口文件 src&#x2F;competitor&#x2F;new_index_name.h</p>
-<p>以lipp的接口文件为例：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;./src/src/core/lipp.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&quot;../indexInterface.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LIPPInterface</span> : <span class="keyword">public</span> indexInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt; &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">init</span><span class="params">(Param *param = <span class="literal">nullptr</span>)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">bulk_load</span><span class="params">(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">put</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">update</span><span class="params">(KEY_TYPE key, PAYLOAD_TYPE value, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">remove</span><span class="params">(KEY_TYPE key, Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">scan</span><span class="params">(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num, std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span></span></span><br><span class="line"><span class="params"><span class="function">                Param *param = <span class="literal">nullptr</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="type">long</span> <span class="type">long</span> <span class="title">memory_consumption</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> lipp.<span class="built_in">total_size</span>(); &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    LIPP &lt;KEY_TYPE, PAYLOAD_TYPE&gt; lipp;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">void</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">bulk_load</span>(std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *key_value, <span class="type">size_t</span> num,</span><br><span class="line">                                                      Param *param) &#123;</span><br><span class="line">    lipp.<span class="built_in">bulk_load</span>(key_value, <span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(num));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">get</span>(KEY_TYPE key, PAYLOAD_TYPE &amp;val, Param *param) &#123;</span><br><span class="line">    <span class="type">bool</span> exist;</span><br><span class="line">    val = lipp.<span class="built_in">at</span>(key, <span class="literal">false</span>, exist);</span><br><span class="line">    <span class="keyword">return</span> exist;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">put</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">insert</span>(key, value);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">update</span>(KEY_TYPE key, PAYLOAD_TYPE value, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">update</span>(key, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">bool</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">remove</span>(KEY_TYPE key, Param *param) &#123;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">remove</span>(key);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">KEY_TYPE</span>, <span class="keyword">class</span> <span class="title class_">PAYLOAD_TYPE</span>&gt;</span><br><span class="line"><span class="type">size_t</span> LIPPInterface&lt;KEY_TYPE, PAYLOAD_TYPE&gt;::<span class="built_in">scan</span>(KEY_TYPE key_low_bound, <span class="type">size_t</span> key_num,</span><br><span class="line">                                                   std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt; *result,</span><br><span class="line">                                                   Param *param) &#123;</span><br><span class="line">    <span class="keyword">if</span>(!result) &#123;</span><br><span class="line">        result = <span class="keyword">new</span> std::pair &lt;KEY_TYPE, PAYLOAD_TYPE&gt;[key_num];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> lipp.<span class="built_in">range_query_len</span>(result, key_low_bound, key_num);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1233,7 +1216,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">59</span>
+          <span class="site-state-item-count">60</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
